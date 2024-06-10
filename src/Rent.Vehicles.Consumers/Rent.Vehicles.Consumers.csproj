@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-Rent.Vehicles.Consumers-9ff167d7-71ab-4ea5-bcd4-4a4082dc59fe</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rent.Vehicles.Lib\Rent.Vehicles.Lib.csproj" />
+    <ProjectReference Include="..\Rent.Vehicles.Messages\Rent.Vehicles.Messages.csproj" />
+    <ProjectReference Include="..\Rent.Vehicles.Services\Rent.Vehicles.Services.csproj" />
+  </ItemGroup>
+</Project>

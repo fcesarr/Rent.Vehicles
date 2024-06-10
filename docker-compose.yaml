@@ -1,0 +1,17 @@
+services:
+  brooker-rabbitmq:
+    image: rabbitmq:3.13.3-management-alpine
+    container_name: brooker-rabbitmq
+    ports:
+      - "5672:5672"      # AMQP port
+      - "15672:15672"    # Management interface port
+    volumes:
+      - type: bind
+        source: ./config/rabbitmq.conf
+        target: /etc/rabbitmq/rabbitmq.conf
+      - type: bind
+        source: ./config/definitions.json
+        target: /etc/rabbitmq/definitions.json
+      
+volumes:
+  brooker_rabbitmq_data:
