@@ -53,7 +53,11 @@ builder.Services.AddSingleton<IRepository<Command>, Repository<Command>>(service
 
 builder.Services.AddSingleton<ICreateService<Command>, Service<Command>>();
 
+builder.Services.AddSingleton<IDeleteService<Command>, Service<Command>>();
+
 builder.Services.AddHostedService<CreateBackgroundService<CreateVehiclesCommand, Command>>();
+
+builder.Services.AddHostedService<DeleteBackgroundService<DeleteVehiclesCommand, Command>>();
 
 builder.Services.AddSingleton<IPeriodicTimer>(service => {
 

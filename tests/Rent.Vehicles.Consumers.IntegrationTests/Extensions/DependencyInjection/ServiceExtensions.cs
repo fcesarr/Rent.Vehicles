@@ -62,9 +62,11 @@ public static class ServiceExtensions
 
                     return new Repository<Command>(logger, sqlScripts, connectionFactory);
                 })
+                .AddSingleton<IDeleteService<Command>, Service<Command>>()
                 .AddSingleton<ICreateService<Command>, Service<Command>>()
                 .AddSingleton<IService<Command>, Service<Command>>()
                 .AddSingleton<CreateBackgroundService<CreateVehiclesCommand, Command>>()
+                .AddSingleton<DeleteBackgroundService<DeleteVehiclesCommand, Command>>()
                 .AddSingleton<IPeriodicTimer>(service => {
 
                     var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));

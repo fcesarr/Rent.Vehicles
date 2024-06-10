@@ -7,26 +7,37 @@ namespace Rent.Vehicles.Consumers.Mappings;
 
 public static class Mapping
 {
-    public static async Task<H?> MapCreateVehiclesCommandToCommand<H>(this Message message, ISerializer serializer) where H : Entity
+    public static async Task<H?> MapCommandToCommand<H>(this Message message, ISerializer serializer) where H : Entity
     {
         var data = message switch
         {
-            CreateVehiclesCommand => await GetCreateVehiclesCommand(message, serializer),
-            _ => await GetDefault(message, serializer)
+            CreateVehiclesCommand => new { @Type = Entities.Types.ActionType.Create, Data = await GetCreateVehiclesCommand(message, serializer) },
+            DeleteVehiclesCommand => new { @Type = Entities.Types.ActionType.Delete, Data = await GetDeleteVehiclesCommand(message, serializer) },
+            _ => new { @Type = Entities.Types.ActionType.Create, Data = await GetDefault(message, serializer) }
         };
 
         return new Command
         {
             SagaId = message.SagaId,
-            Type = Entities.Types.ActionType.Create,
+            Type = data.Type,
             SerializerType = Lib.Types.SerializerType.MessagePack,
-            Data = data
+            Data = data.Data
         } as H;
     }
 
     static async Task<byte[]> GetCreateVehiclesCommand(Message message, ISerializer serializer)
     {
         var command = message as CreateVehiclesCommand;
+
+        if(command == null)
+            return [];
+
+        return await serializer.SerializeAsync(new { Id = command.Id });
+    }
+
+    static async Task<byte[]> GetDeleteVehiclesCommand(Message message, ISerializer serializer)
+    {
+        var command = message as DeleteVehiclesCommand;
 
         if(command == null)
             return [];

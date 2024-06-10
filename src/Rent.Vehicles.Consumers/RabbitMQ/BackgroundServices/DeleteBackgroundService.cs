@@ -8,9 +8,9 @@ using Rent.Vehicles.Consumers.Mappings;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 
-public sealed class CreateBackgroundService<T, H> : BackgroundService where T : Message where H : Entity
+public sealed class DeleteBackgroundService<T, H> : BackgroundService where T : Message where H : Entity
 {
-    private readonly ILogger<CreateBackgroundService<T, H>> _logger;
+    private readonly ILogger<DeleteBackgroundService<T, H>> _logger;
 
     private readonly IModel _channel;
 
@@ -18,19 +18,19 @@ public sealed class CreateBackgroundService<T, H> : BackgroundService where T : 
 
     private readonly ISerializer _serializer;
 
-    private readonly ICreateService<H> _createService;
+    private readonly IDeleteService<H> _deleteService;
 
-    public CreateBackgroundService(ILogger<CreateBackgroundService<T, H>> logger,
+    public DeleteBackgroundService(ILogger<DeleteBackgroundService<T, H>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        ICreateService<H> createService)
+        IDeleteService<H> deleteService)
     {
         _logger = logger;
         _channel = channel;
         _periodicTimer = periodicTimer;
         _serializer = serializer;
-        _createService = createService;
+        _deleteService = deleteService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -55,7 +55,7 @@ public sealed class CreateBackgroundService<T, H> : BackgroundService where T : 
                     var entity = await message
                         .MapCommandToCommand<H>(_serializer);
 
-                    await _createService.CreateAsync(entity, stoppingToken);    
+                    await _deleteService.DeleteAsync(entity, stoppingToken);    
                 }
             }
             catch (Exception ex)
