@@ -27,7 +27,7 @@ public class CreateVehiclesBackgroundServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SendCreateCommand_EmptyQueue_Success()
+    public async Task SendCreateVehiclesCommandAndVerifyCommandIsCreatedInDatabase()
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
@@ -44,9 +44,11 @@ public class CreateVehiclesBackgroundServiceTests : IDisposable
 
         do
         {
-            found = await _fixture.GetCommandAsync(@"SELECT * FROM Command WHERE SagaId = @SagaId", new Dictionary<string, dynamic>{
-                { "@SagaId", command.SagaId }
-            }) != null;
+            found = await _fixture.GetCommandAsync(@"SELECT * FROM Command WHERE SagaId = @SagaId",
+                new Dictionary<string, dynamic>{
+                    { "@SagaId", command.SagaId }
+                }
+            ) != null;
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
 
