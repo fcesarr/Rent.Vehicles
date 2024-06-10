@@ -12,6 +12,11 @@ using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Services.Repositories.Interfaces;
+using Rent.Vehicles.Services.Repositories;
+using Npgsql;
+using System.Text;
+using System.Reflection;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 
@@ -26,7 +31,39 @@ public static class ServiceExtensions
                     var connection = factory.CreateConnection();
                     return connection.CreateModel();
                 })
-                .AddSingleton<ICreateService<Command>, Services<Command>>()
+                .AddSingleton<IRepository<Command>, Repository<Command>>(service =>
+                {
+                    var logger = service.GetRequiredService<ILogger<Repository<Command>>>();
+
+                    var configuration = service.GetRequiredService<IConfiguration>();
+
+                    var connectionString = configuration.GetConnectionString("Database") ?? string.Empty;
+
+                    var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
+
+                    var assembly = Assembly.GetExecutingAssembly();
+                    var resourceNames = assembly.GetManifestResourceNames();
+                    var sqlScripts = new Dictionary<string, string>();
+
+                    string namespacePrefix = $"{assembly.GetName().Name}.Scripts.";
+
+                    foreach (var resourceName in resourceNames)
+                    {
+                        if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+                        {
+                            using (var stream = assembly.GetManifestResourceStream(resourceName))
+                            using (var reader = new StreamReader(stream, Encoding.UTF8))
+                            {
+                                var sqlScript = reader.ReadToEnd();
+                                sqlScripts.Add(resourceName.Replace(namespacePrefix, ""), sqlScript);
+                            }
+                        }
+                    }
+
+                    return new Repository<Command>(logger, sqlScripts, connectionFactory);
+                })
+                .AddSingleton<ICreateService<Command>, Service<Command>>()
+                .AddSingleton<IService<Command>, Service<Command>>()
                 .AddSingleton<CreateBackgroundService<CreateVehiclesCommand, Command>>()
                 .AddSingleton<IPeriodicTimer>(service => {
 

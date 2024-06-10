@@ -55,7 +55,7 @@ public sealed class CreateBackgroundService<T, H> : BackgroundService where T : 
                     var entity = await message
                         .MapCreateVehiclesCommandToCommand<H>(_serializer);
 
-                    await _createService.Create(entity, stoppingToken);    
+                    await _createService.CreateAsync(entity, stoppingToken);    
                 }
             }
             catch (Exception ex)

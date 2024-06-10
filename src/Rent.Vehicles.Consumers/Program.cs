@@ -7,16 +7,51 @@ using Rent.Vehicles.Services;
 using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 using RabbitMQ.Client;
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Services.Repositories.Interfaces;
+using Rent.Vehicles.Services.Repositories;
+using Npgsql;
+using System.Reflection;
+using System.Text;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton<IModel>(service => {
-    var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "user", Password = "password" };
+    var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
     var connection = factory.CreateConnection();
     return connection.CreateModel();
 });
 
-builder.Services.AddSingleton<ICreateService<Command>, Services<Command>>();
+builder.Services.AddSingleton<IRepository<Command>, Repository<Command>>(service =>
+{
+    var logger = service.GetRequiredService<ILogger<Repository<Command>>>();
+
+    var configuration = service.GetRequiredService<IConfiguration>();
+
+    var connectionString = configuration.GetConnectionString("Database");
+
+    var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
+
+    var assembly = Assembly.GetExecutingAssembly();
+    var resourceNames = assembly.GetManifestResourceNames();
+    var sqlScripts = new Dictionary<string, string>();
+
+    foreach (var resourceName in resourceNames)
+    {
+        if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+        {
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            using (var reader = new StreamReader(stream, Encoding.UTF8))
+            {
+                var sqlScript = reader.ReadToEnd();
+                sqlScripts.Add(resourceName, sqlScript);
+            }
+        }
+    }
+
+    return new Repository<Command>(logger, sqlScripts, connectionFactory);
+});
+
+builder.Services.AddSingleton<ICreateService<Command>, Service<Command>>();
 
 builder.Services.AddHostedService<CreateBackgroundService<CreateVehiclesCommand, Command>>();
 

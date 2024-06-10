@@ -12,6 +12,34 @@ services:
       - type: bind
         source: ./config/definitions.json
         target: /etc/rabbitmq/definitions.json
-      
+  
+  database-postgres:
+    image: postgres:14.9-alpine3.18
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+    container_name: database-postgres
+    environment:
+      POSTGRES_DB: "rent-vehicles"
+      POSTGRES_PASSWORD: "postgres"
+    ports:
+      - "5432:5432"
+    volumes:
+      - database-postgres-volume:/var/lib/postgresql/data
+
+networks:
+  default:
+    driver: bridge
+    name: rent-vehicles-sln
+
 volumes:
-  brooker_rabbitmq_data:
+  brooker-rabbitmq-volume:
+    name: brooker-rabbitmq-volume
+
+  database-postgres-volume:
+    name: database-postgres-volume

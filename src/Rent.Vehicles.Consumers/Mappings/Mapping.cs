@@ -17,7 +17,9 @@ public static class Mapping
 
         return new Command
         {
+            SagaId = message.SagaId,
             Type = Entities.Types.ActionType.Create,
+            SerializerType = Lib.Types.SerializerType.MessagePack,
             Data = data
         } as H;
     }

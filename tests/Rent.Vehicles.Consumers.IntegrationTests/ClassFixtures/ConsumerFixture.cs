@@ -8,15 +8,20 @@ using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.IntegrationTests.Configuration;
+using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages;
+using Rent.Vehicles.Services.Interfaces;
 
 using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 
 [ExcludeFromCodeCoverage]
-public class ConsumerFixture<TBackgroundService, TMessage> : IDisposable where TBackgroundService : BackgroundService where TMessage : Message
+public class ConsumerFixture<TBackgroundService, TCommand, TMessage> : IDisposable 
+    where TBackgroundService : BackgroundService 
+    where TCommand : Entity 
+    where TMessage : Message
 {
     private TBackgroundService? _backgroundService;
 
@@ -30,6 +35,8 @@ public class ConsumerFixture<TBackgroundService, TMessage> : IDisposable where T
 
     private ISerializer? _serializer;
 
+    private IService<TCommand>? _service;
+
     public void Init(ITestOutputHelper output)
     {
         _serviceProfile = ServiceProviderManager
@@ -39,6 +46,7 @@ public class ConsumerFixture<TBackgroundService, TMessage> : IDisposable where T
         _backgroundService = _serviceProfile.GetRequiredService<TBackgroundService>();
         _model = _serviceProfile.GetRequiredService<IModel>();
         _serializer = _serviceProfile.GetRequiredService<ISerializer>();
+        _service = _serviceProfile.GetRequiredService<IService<TCommand>>();
     }
 
     public Fixture GetFixture() => _fixture ?? new Fixture();
@@ -76,6 +84,11 @@ public class ConsumerFixture<TBackgroundService, TMessage> : IDisposable where T
     public uint QueueCount(string queueName)
     {
         return _model?.QueueDeclarePassive(queueName).MessageCount ?? default;
+    }
+
+    public async Task<TCommand?> GetCommandAsync(string sql, IDictionary<string, dynamic> parameters)
+    {
+        return await _service!.GetAsync(sql, parameters);
     }
 
     public void Dispose()

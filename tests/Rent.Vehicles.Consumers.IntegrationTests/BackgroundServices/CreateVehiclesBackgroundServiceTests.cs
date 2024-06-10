@@ -29,9 +29,9 @@ public class CreateVehiclesBackgroundServiceTests : IDisposable
     [Fact]
     public async Task SendCreateCommand_EmptyQueue_Success()
     {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
+        var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
 
         var command = _fixture.GetFixture()
             .Create<CreateVehiclesCommand>();
@@ -44,7 +44,9 @@ public class CreateVehiclesBackgroundServiceTests : IDisposable
 
         do
         {
-            found = _fixture.QueueCount("CreateVehiclesCommand") == 0;
+            found = await _fixture.GetCommandAsync(@"SELECT * FROM Command WHERE SagaId = @SagaId", new Dictionary<string, dynamic>{
+                { "@SagaId", command.SagaId }
+            }) != null;
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
 
