@@ -6,5 +6,5 @@ namespace Rent.Vehicles.Messages;
 public abstract record Message
 {
     [Key(0)]
-    public Guid Id { get; init; } = Guid.NewGuid();
+    public required Guid SagaId { get; init; }
 }

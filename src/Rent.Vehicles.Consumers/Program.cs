@@ -1,11 +1,12 @@
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib.Serializers;
-using Rent.Vehicles.Messages;
+using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 using RabbitMQ.Client;
+using Rent.Vehicles.Entities;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -15,9 +16,9 @@ builder.Services.AddSingleton<IModel>(service => {
     return connection.CreateModel();
 });
 
-builder.Services.AddSingleton<IService<CreateVehiclesCommand>, Services<CreateVehiclesCommand>>();
+builder.Services.AddSingleton<ICreateService<Command>, Services<Command>>();
 
-builder.Services.AddHostedService<CreateBackgroundService<CreateVehiclesCommand>>();
+builder.Services.AddHostedService<CreateBackgroundService<CreateVehiclesCommand, Command>>();
 
 builder.Services.AddSingleton<IPeriodicTimer>(service => {
 

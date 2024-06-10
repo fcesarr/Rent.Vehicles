@@ -1,8 +1,8 @@
-using Rent.Vehicles.Messages;
+using Rent.Vehicles.Entities;
 
 namespace Rent.Vehicles.Services.Interfaces;
 
-public interface ICreateService<T> where T : Message
+public interface ICreateService<in T> where T : Entity
 {
-    Task Create(T message, CancellationToken cancellationToken = default);
+    Task Create(T? entity, CancellationToken cancellationToken = default);
 }

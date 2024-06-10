@@ -3,12 +3,14 @@ using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Entities;
+using Rent.Vehicles.Consumers.Mappings;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 
-public sealed class CreateBackgroundService<T> : BackgroundService where T : Message
+public sealed class CreateBackgroundService<T, H> : BackgroundService where T : Message where H : Entity
 {
-    private readonly ILogger<CreateBackgroundService<T>> _logger;
+    private readonly ILogger<CreateBackgroundService<T, H>> _logger;
 
     private readonly IModel _channel;
 
@@ -16,13 +18,13 @@ public sealed class CreateBackgroundService<T> : BackgroundService where T : Mes
 
     private readonly ISerializer _serializer;
 
-    private readonly ICreateService<T> _createService;
+    private readonly ICreateService<H> _createService;
 
-    public CreateBackgroundService(ILogger<CreateBackgroundService<T>> logger,
+    public CreateBackgroundService(ILogger<CreateBackgroundService<T, H>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        ICreateService<T> createService)
+        ICreateService<H> createService)
     {
         _logger = logger;
         _channel = channel;
@@ -49,7 +51,12 @@ public sealed class CreateBackgroundService<T> : BackgroundService where T : Mes
                 var message = await _serializer.DeserializeAsync<T>(bytes, stoppingToken);
 
                 if(message != null)
-                    await _createService.Create(message, stoppingToken);
+                {
+                    var entity = await message
+                        .MapCreateVehiclesCommandToCommand<H>(_serializer);
+
+                    await _createService.Create(entity, stoppingToken);    
+                }
             }
             catch (Exception ex)
             {

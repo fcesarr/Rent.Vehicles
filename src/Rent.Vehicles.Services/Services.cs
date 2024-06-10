@@ -1,12 +1,12 @@
 
 using Microsoft.Extensions.Logging;
 
-using Rent.Vehicles.Messages;
+using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Services;
 
-public sealed class Services<T> : IService<T> where T : Message
+public sealed class Services<T> : IService<T> where T : Entity
 {
     private readonly ILogger<Services<T>> _logger;
 
@@ -15,8 +15,8 @@ public sealed class Services<T> : IService<T> where T : Message
         _logger = logger;
     }
 
-    public async Task Create(T message, CancellationToken cancellationToken = default)
-        => await Task.Run(() =>  _logger.LogInformation("Create {obj}", message), cancellationToken);
+    public async Task Create(T? entity, CancellationToken cancellationToken = default)
+        => await Task.Run(() =>  _logger.LogInformation("Create {obj}", entity), cancellationToken);
 
 }
 

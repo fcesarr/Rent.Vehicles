@@ -1,7 +1,7 @@
-using Rent.Vehicles.Messages;
+using Rent.Vehicles.Entities;
 
 namespace Rent.Vehicles.Services.Interfaces;
 
-public interface IService<T> : ICreateService<T> where T : Message
+public interface IService<in T> : ICreateService<T> where T : Entity
 {
 }

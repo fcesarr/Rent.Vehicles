@@ -2,7 +2,8 @@ using AutoFixture;
 
 using FluentAssertions;
 
-using Rent.Vehicles.Messages;
+using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures.RabbitMQ.CollectionFixtures;
+using Rent.Vehicles.Messages.Commands;
 
 using Xunit.Abstractions;
 

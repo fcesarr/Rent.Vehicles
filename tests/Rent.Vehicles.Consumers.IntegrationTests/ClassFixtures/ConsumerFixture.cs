@@ -65,7 +65,7 @@ public class ConsumerFixture<TBackgroundService, TMessage> : IDisposable where T
 
     public async Task SendCommandAsync(TMessage message, CancellationToken cancellationToken)
     {
-        var bytes = await _serializer?.SerializeAsync(message, cancellationToken);
+        var bytes = await _serializer!.SerializeAsync(message, cancellationToken);
 
         _model?.BasicPublish(exchange: string.Empty,
             routingKey: typeof(TMessage).Name,

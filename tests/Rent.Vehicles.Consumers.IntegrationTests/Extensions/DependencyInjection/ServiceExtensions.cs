@@ -5,12 +5,13 @@ using Xunit.Abstractions;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Messages;
+using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib.Serializers;
+using Rent.Vehicles.Entities;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 
@@ -25,8 +26,8 @@ public static class ServiceExtensions
                     var connection = factory.CreateConnection();
                     return connection.CreateModel();
                 })
-                .AddSingleton<ICreateService<CreateVehiclesCommand>, Services<CreateVehiclesCommand>>()
-                .AddSingleton<CreateBackgroundService<CreateVehiclesCommand>>()
+                .AddSingleton<ICreateService<Command>, Services<Command>>()
+                .AddSingleton<CreateBackgroundService<CreateVehiclesCommand, Command>>()
                 .AddSingleton<IPeriodicTimer>(service => {
 
                     var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));

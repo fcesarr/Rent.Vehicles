@@ -1,9 +1,10 @@
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
-using Rent.Vehicles.Messages;
+using Rent.Vehicles.Entities;
+using Rent.Vehicles.Messages.Commands;
 
-using Xunit;
 
+namespace Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures.RabbitMQ.CollectionFixtures;
 
 [CollectionDefinition(nameof(CreateVehiclesBackgroundServiceCollection))]
 public class CreateVehiclesBackgroundServiceCollection :
@@ -12,7 +13,7 @@ public class CreateVehiclesBackgroundServiceCollection :
 
 }
 
-public class CreateVehiclesBackgroundServiceFixture : ConsumerFixture<CreateBackgroundService<CreateVehiclesCommand>, CreateVehiclesCommand>
+public class CreateVehiclesBackgroundServiceFixture : ConsumerFixture<CreateBackgroundService<CreateVehiclesCommand, Command>, CreateVehiclesCommand>
 {
 
 }
