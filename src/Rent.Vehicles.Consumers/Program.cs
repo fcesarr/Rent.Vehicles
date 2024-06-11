@@ -3,6 +3,7 @@ using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Factories;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 using RabbitMQ.Client;
@@ -21,9 +22,9 @@ builder.Services.AddSingleton<IModel>(service => {
     return connection.CreateModel();
 });
 
-builder.Services.AddSingleton<IRepository<Command>, Repository<Command>>(service =>
+builder.Services.AddSingleton<IRepository<Entity>, Repository<Entity>>(service =>
 {
-    var logger = service.GetRequiredService<ILogger<Repository<Command>>>();
+    var logger = service.GetRequiredService<ILogger<Repository<Entity>>>();
 
     var configuration = service.GetRequiredService<IConfiguration>();
 
@@ -48,16 +49,16 @@ builder.Services.AddSingleton<IRepository<Command>, Repository<Command>>(service
         }
     }
 
-    return new Repository<Command>(logger, sqlScripts, connectionFactory);
+    return new Repository<Entity>(logger, sqlScripts, connectionFactory);
 });
 
-builder.Services.AddSingleton<ICreateService<Command>, Service<Command>>();
+builder.Services.AddSingleton<ICreateService<Entity>, Service<Entity>>();
 
-builder.Services.AddSingleton<IDeleteService<Command>, Service<Command>>();
+builder.Services.AddSingleton<IDeleteService<Entity>, Service<Entity>>();
 
-builder.Services.AddHostedService<CreateBackgroundService<CreateVehiclesCommand, Command>>();
+builder.Services.AddHostedService<CreateVehiclesBackgroundService>();
 
-builder.Services.AddHostedService<DeleteBackgroundService<DeleteVehiclesCommand, Command>>();
+builder.Services.AddHostedService<DeleteVehiclesBackgroundService>();
 
 builder.Services.AddSingleton<IPeriodicTimer>(service => {
 

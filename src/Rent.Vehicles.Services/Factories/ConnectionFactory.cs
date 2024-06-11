@@ -1,8 +1,7 @@
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
 
-namespace Rent.Vehicles.Services;
+namespace Rent.Vehicles.Services.Factories;
 
 public interface IConnectionFactory
 {

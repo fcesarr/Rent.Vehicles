@@ -1,11 +1,10 @@
 
-using System.Data;
-
 using Dapper;
 
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Services.Factories;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 
 namespace Rent.Vehicles.Services.Repositories;

@@ -8,9 +8,7 @@ using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.IntegrationTests.Configuration;
-using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Messages;
 using Rent.Vehicles.Services.Interfaces;
 
 using Xunit.Abstractions;
@@ -18,10 +16,10 @@ using Xunit.Abstractions;
 namespace Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 
 [ExcludeFromCodeCoverage]
-public class ConsumerFixture<TBackgroundService, TCommand, TMessage> : IDisposable 
+public class ConsumerFixture<TBackgroundService, TMessage, TEntity> : IDisposable 
     where TBackgroundService : BackgroundService 
-    where TCommand : Entity 
-    where TMessage : Message
+    where TMessage : Messages.Command
+    where TEntity : Entities.Command
 {
     private TBackgroundService? _backgroundService;
 
@@ -35,7 +33,7 @@ public class ConsumerFixture<TBackgroundService, TCommand, TMessage> : IDisposab
 
     private ISerializer? _serializer;
 
-    private IService<TCommand>? _service;
+    private IService<TEntity>? _service;
 
     public void Init(ITestOutputHelper output)
     {
@@ -46,7 +44,7 @@ public class ConsumerFixture<TBackgroundService, TCommand, TMessage> : IDisposab
         _backgroundService = _serviceProfile.GetRequiredService<TBackgroundService>();
         _model = _serviceProfile.GetRequiredService<IModel>();
         _serializer = _serviceProfile.GetRequiredService<ISerializer>();
-        _service = _serviceProfile.GetRequiredService<IService<TCommand>>();
+        _service = _serviceProfile.GetRequiredService<IService<TEntity>>();
     }
 
     public Fixture GetFixture() => _fixture ?? new Fixture();
@@ -86,7 +84,7 @@ public class ConsumerFixture<TBackgroundService, TCommand, TMessage> : IDisposab
         return _model?.QueueDeclarePassive(queueName).MessageCount ?? default;
     }
 
-    public async Task<TCommand?> GetCommandAsync(string sql, IDictionary<string, dynamic> parameters)
+    public async Task<TEntity?> GetCommandAsync(string sql, IDictionary<string, dynamic> parameters)
     {
         return await _service!.GetAsync(sql, parameters);
     }

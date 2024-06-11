@@ -2,13 +2,13 @@ using MessagePack;
 
 using Rent.Vehicles.Entities.Types;
 
-namespace Rent.Vehicles.Messages.Commands;
+namespace Rent.Vehicles.Messages.Events;
 
 [MessagePackObject]
-public record CreateVehiclesCommand : Command
+public record CreateVehiclesEvent : Event
 {
     [Key(1)]
-    public required Guid Id { get; init; } = Guid.NewGuid();
+    public required Guid Id { get; init; }
 
     [Key(2)]
     public required int Year { get; init; }

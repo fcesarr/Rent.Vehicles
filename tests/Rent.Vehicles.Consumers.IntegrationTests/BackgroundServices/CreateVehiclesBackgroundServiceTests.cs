@@ -44,7 +44,7 @@ public class CreateVehiclesBackgroundServiceTests : IDisposable
 
         do
         {
-            found = await _fixture.GetCommandAsync(@"SELECT * FROM Command WHERE SagaId = @SagaId",
+            found = await _fixture.GetCommandAsync(@"SELECT * FROM Commands WHERE SagaId = @SagaId",
                 new Dictionary<string, dynamic>{
                     { "@SagaId", command.SagaId }
                 }

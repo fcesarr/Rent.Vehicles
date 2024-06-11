@@ -3,6 +3,7 @@
 public enum VehicleType
 {
     A,
+    AB,
     B,
     C,
     D,

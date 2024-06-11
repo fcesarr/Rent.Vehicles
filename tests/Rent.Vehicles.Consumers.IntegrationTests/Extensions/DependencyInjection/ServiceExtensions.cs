@@ -17,6 +17,7 @@ using Rent.Vehicles.Services.Repositories;
 using Npgsql;
 using System.Text;
 using System.Reflection;
+using Rent.Vehicles.Services.Factories;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 
@@ -65,8 +66,8 @@ public static class ServiceExtensions
                 .AddSingleton<IDeleteService<Command>, Service<Command>>()
                 .AddSingleton<ICreateService<Command>, Service<Command>>()
                 .AddSingleton<IService<Command>, Service<Command>>()
-                .AddSingleton<CreateBackgroundService<CreateVehiclesCommand, Command>>()
-                .AddSingleton<DeleteBackgroundService<DeleteVehiclesCommand, Command>>()
+                .AddSingleton<CreateVehiclesBackgroundService>()
+                .AddSingleton<DeleteVehiclesBackgroundService>()
                 .AddSingleton<IPeriodicTimer>(service => {
 
                     var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
