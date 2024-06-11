@@ -19,6 +19,6 @@ public class CreateVehiclesYearEventBackgroundService : HandlerConsumerEventBack
 
     protected override async Task HandlerAsync(CreateVehiclesEvent @event, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("{obj}", @event);
+        await Task.Run(() => _logger.LogInformation("{obj}", @event), cancellationToken);
     }
 }

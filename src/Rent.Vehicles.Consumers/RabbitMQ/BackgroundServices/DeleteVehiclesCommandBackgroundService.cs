@@ -10,9 +10,9 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 
-public class DeleteVehiclesBackgroundService : ConsumerDeleteCommandBackgroundService<DeleteVehiclesCommand, DeleteVehiclesEvent, Command>
+public class DeleteVehiclesCommandBackgroundService : ConsumerDeleteCommandBackgroundService<DeleteVehiclesCommand, DeleteVehiclesEvent, Command>
 {
-    public DeleteVehiclesBackgroundService(ILogger<DeleteVehiclesBackgroundService> logger,
+    public DeleteVehiclesCommandBackgroundService(ILogger<DeleteVehiclesCommandBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,

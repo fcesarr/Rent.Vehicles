@@ -16,7 +16,7 @@ public class CreateVehiclesEventBackgroundService : HandlerConsumerEventToEntity
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        ICreateService<Vehicle> createService) : base(logger, channel, periodicTimer, serializer)
+        ICreateService<Vehicle> createService) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesEvent")
     {
         _createService = createService;
     }
@@ -32,8 +32,10 @@ public class CreateVehiclesEventBackgroundService : HandlerConsumerEventToEntity
         }, cancellationToken);
     }
 
-    protected override async Task HandlerAsync(Vehicle entity, CancellationToken cancellationToken = default)
+    protected override async Task HandlerAsync(CreateVehiclesEvent message, CancellationToken cancellationToken = default)
     {
+        var entity = await EventToEntityAsync(message, cancellationToken);
+
         await _createService.CreateAsync(entity, cancellationToken);
     }
 }

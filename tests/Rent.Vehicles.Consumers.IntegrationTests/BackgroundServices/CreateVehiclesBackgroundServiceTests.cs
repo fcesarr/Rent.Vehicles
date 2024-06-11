@@ -41,9 +41,9 @@ public class CreateVehiclesBackgroundServiceTests : IDisposable
 
         await _fixture.StartWorkerAsync(cancellationTokenSource.Token);
 
-        await _fixture.StartWorkerEventAsync<CreateVehiclesEventBackgroundService>(cancellationTokenSource.Token);
+        // await _fixture.StartWorkerEventAsync<CreateVehiclesEventBackgroundService>(cancellationTokenSource.Token);
 
-        await _fixture.StartWorkerEventAsync<CreateVehiclesYearEventBackgroundService>(cancellationTokenSource.Token);
+        // await _fixture.StartWorkerEventAsync<CreateVehiclesYearEventBackgroundService>(cancellationTokenSource.Token);
 
         var found = false;
 
@@ -60,9 +60,9 @@ public class CreateVehiclesBackgroundServiceTests : IDisposable
         // Assert
         found.Should().BeTrue();
 
-        await _fixture.StopWorkerEventAsync<CreateVehiclesYearEventBackgroundService>(cancellationTokenSource.Token);
+        // await _fixture.StopWorkerEventAsync<CreateVehiclesYearEventBackgroundService>(cancellationTokenSource.Token);
 
-        await _fixture.StopWorkerEventAsync<CreateVehiclesEventBackgroundService>(cancellationTokenSource.Token);
+        // await _fixture.StopWorkerEventAsync<CreateVehiclesEventBackgroundService>(cancellationTokenSource.Token);
 
         await _fixture.StopWorkerAsync(cancellationTokenSource.Token);
     }

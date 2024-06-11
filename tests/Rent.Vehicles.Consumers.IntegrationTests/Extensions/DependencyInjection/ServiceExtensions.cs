@@ -78,7 +78,7 @@ public static class ServiceExtensions
                 .AddSingleton<IPublisher, Publisher>()
                 .AddSingleton<ISerializer, MessagePackSerializer>()
                 .AddSingleton<CreateVehiclesCommandBackgroundService>()
-                .AddSingleton<DeleteVehiclesBackgroundService>()
+                .AddSingleton<DeleteVehiclesCommandBackgroundService>()
                 .AddSingleton<CreateVehiclesEventBackgroundService>()
                 .AddSingleton<CreateVehiclesYearEventBackgroundService>();
 

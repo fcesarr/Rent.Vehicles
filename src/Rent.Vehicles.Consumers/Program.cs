@@ -67,7 +67,7 @@ builder.Services.AddSingleton<IModel>(service => {
     .AddSingleton<IPublisher, Publisher>()
     .AddSingleton<ISerializer, MessagePackSerializer>()
     .AddHostedService<CreateVehiclesCommandBackgroundService>()
-    .AddHostedService<DeleteVehiclesBackgroundService>()
+    .AddHostedService<DeleteVehiclesCommandBackgroundService>()
     .AddHostedService<CreateVehiclesYearEventBackgroundService>()
     .AddHostedService<CreateVehiclesEventBackgroundService>();
 
