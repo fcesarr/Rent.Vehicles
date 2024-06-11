@@ -2,16 +2,14 @@ using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices.Abstracts;
 
-public abstract class HandlerCommandBackgroundService <TCommand, TEvent, TEntity> : BackgroundService 
-    where TCommand : Messages.Command
+public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEntity> : BackgroundService 
     where TEvent : Messages.Event
-    where TEntity : Entities.Command
+    where TEntity : Entities.Entity
 {
-    private readonly ILogger<HandlerCommandBackgroundService<TCommand, TEvent, TEntity>> _logger;
+    protected readonly ILogger<HandlerConsumerEventToEntityBackgroundService<TEvent, TEntity>> _logger;
 
     private readonly IModel _channel;
 
@@ -19,19 +17,15 @@ public abstract class HandlerCommandBackgroundService <TCommand, TEvent, TEntity
 
     private readonly ISerializer _serializer;
 
-    private readonly IPublisher _publisher;
-
-    public HandlerCommandBackgroundService(ILogger<HandlerCommandBackgroundService<TCommand, TEvent, TEntity>> logger,
+    protected HandlerConsumerEventToEntityBackgroundService(ILogger<HandlerConsumerEventToEntityBackgroundService<TEvent, TEntity>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
-        ISerializer serializer,
-        IPublisher publisher)
+        ISerializer serializer)
     {
         _logger = logger;
         _channel = channel;
         _periodicTimer = periodicTimer;
         _serializer = serializer;
-        _publisher = publisher;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,24 +36,20 @@ public abstract class HandlerCommandBackgroundService <TCommand, TEvent, TEntity
 
             try
             {
-                result = _channel.BasicGet(typeof(TCommand).Name, true);
+                result = _channel.BasicGet(typeof(TEvent).Name, true);
 
                 if(result == null)
                     continue;
 
                 var bytes = result.Body.ToArray();
 
-                var message = await _serializer.DeserializeAsync<TCommand>(bytes, stoppingToken);
+                var message = await _serializer.DeserializeAsync<TEvent>(bytes, stoppingToken);
 
                 if(message != null)
                 {
-                    var entity = await CommandToEntityAsync(message, _serializer, stoppingToken);
+                    var entity = await EventToEntityAsync(message, stoppingToken);
 
                     await HandlerAsync(entity, stoppingToken);
-
-                    var @event = await CommandToEventAsync(message, stoppingToken);
-
-                    await _publisher.PublishEventAsync(@event, stoppingToken);
                 }
             }
             catch (Exception ex)
@@ -74,7 +64,5 @@ public abstract class HandlerCommandBackgroundService <TCommand, TEvent, TEntity
 
     protected abstract Task HandlerAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-    protected abstract Task<TEntity> CommandToEntityAsync(TCommand message, ISerializer serializer, CancellationToken cancellationToken = default);
-
-    protected abstract Task<TEvent> CommandToEventAsync(TCommand message, CancellationToken cancellationToken = default);
+    protected abstract Task<TEntity> EventToEntityAsync(TEvent message, CancellationToken cancellationToken = default);
 }

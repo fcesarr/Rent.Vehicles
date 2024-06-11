@@ -13,61 +13,63 @@ using Rent.Vehicles.Services.Repositories;
 using Npgsql;
 using System.Reflection;
 using System.Text;
+using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Producers.RabbitMQ;
 
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton<IModel>(service => {
-    var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
-    var connection = factory.CreateConnection();
-    return connection.CreateModel();
-});
-
-builder.Services.AddSingleton<IRepository<Entity>, Repository<Entity>>(service =>
-{
-    var logger = service.GetRequiredService<ILogger<Repository<Entity>>>();
-
-    var configuration = service.GetRequiredService<IConfiguration>();
-
-    var connectionString = configuration.GetConnectionString("Database");
-
-    var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
-
-    var assembly = Assembly.GetExecutingAssembly();
-    var resourceNames = assembly.GetManifestResourceNames();
-    var sqlScripts = new Dictionary<string, string>();
-
-    foreach (var resourceName in resourceNames)
+        var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
+        var connection = factory.CreateConnection();
+        return connection.CreateModel();
+    })
+    .AddSingleton<IRepository<Command>, Repository<Command>>(service =>
     {
-        if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+        var logger = service.GetRequiredService<ILogger<Repository<Command>>>();
+
+        var configuration = service.GetRequiredService<IConfiguration>();
+
+        var connectionString = configuration.GetConnectionString("Database") ?? string.Empty;
+
+        var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
+
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceNames = assembly.GetManifestResourceNames();
+        var sqlScripts = new Dictionary<string, string>();
+
+        string namespacePrefix = $"{assembly.GetName().Name}.Scripts.";
+
+        foreach (var resourceName in resourceNames)
         {
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var reader = new StreamReader(stream, Encoding.UTF8))
+            if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
             {
-                var sqlScript = reader.ReadToEnd();
-                sqlScripts.Add(resourceName, sqlScript);
+                using (var stream = assembly.GetManifestResourceStream(resourceName))
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    var sqlScript = reader.ReadToEnd();
+                    sqlScripts.Add(resourceName.Replace(namespacePrefix, ""), sqlScript);
+                }
             }
         }
-    }
 
-    return new Repository<Entity>(logger, sqlScripts, connectionFactory);
-});
+        return new Repository<Command>(logger, sqlScripts, connectionFactory);
+    })
+    .AddSingleton<IDeleteService<Command>, SqlService<Command>>()
+    .AddSingleton<ICreateService<Command>, SqlService<Command>>()
+    .AddSingleton<ICreateService<Vehicle>, NoSqlService<Vehicle>>()
+    .AddSingleton<IService<Command>, SqlService<Command>>()
+    .AddTransient<IPeriodicTimer>(service => {
 
-builder.Services.AddSingleton<ICreateService<Entity>, Service<Entity>>();
+        var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
 
-builder.Services.AddSingleton<IDeleteService<Entity>, Service<Entity>>();
-
-builder.Services.AddHostedService<CreateVehiclesBackgroundService>();
-
-builder.Services.AddHostedService<DeleteVehiclesBackgroundService>();
-
-builder.Services.AddSingleton<IPeriodicTimer>(service => {
-
-    var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
-
-    return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
-});
-
-builder.Services.AddSingleton<ISerializer, MessagePackSerializer>();
+        return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
+    })
+    .AddSingleton<IPublisher, Publisher>()
+    .AddSingleton<ISerializer, MessagePackSerializer>()
+    .AddHostedService<CreateVehiclesCommandBackgroundService>()
+    .AddHostedService<DeleteVehiclesBackgroundService>()
+    .AddHostedService<CreateVehiclesYearEventBackgroundService>()
+    .AddHostedService<CreateVehiclesEventBackgroundService>();
 
 var host = builder.Build();
 host.Run();

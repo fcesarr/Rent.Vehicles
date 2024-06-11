@@ -8,13 +8,13 @@ using Rent.Vehicles.Services.Repositories.Interfaces;
 
 namespace Rent.Vehicles.Services;
 
-public sealed class Service<T> : IService<T> where T : Entity
+public sealed class SqlService<T> : IService<T> where T : Entity
 {
-    private readonly ILogger<Service<T>> _logger;
+    private readonly ILogger<NoSqlService<T>> _logger;
 
     private readonly IRepository<T> _repository;
 
-    public Service(ILogger<Service<T>> logger, IRepository<T> repository)
+    public SqlService(ILogger<NoSqlService<T>> logger, IRepository<T> repository)
     {
         _logger = logger;
         _repository = repository;

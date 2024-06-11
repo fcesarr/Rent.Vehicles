@@ -79,14 +79,25 @@ public class ConsumerFixture<TBackgroundService, TCommand, TEntity> : IDisposabl
             body: bytes);
     }
 
-    public uint QueueCount(string queueName)
-    {
-        return _model?.QueueDeclarePassive(queueName).MessageCount ?? default;
-    }
-
     public async Task<TEntity?> GetCommandAsync(string sql, IDictionary<string, dynamic> parameters)
     {
         return await _service!.GetAsync(sql, parameters);
+    }
+
+    public async Task StartWorkerEventAsync<T>(CancellationToken cancellationToken) where T : BackgroundService
+    {
+        var backgroundService = _serviceProfile?.GetRequiredService<T>();
+
+        if (backgroundService != null)
+            await backgroundService.StartAsync(cancellationToken);
+    }
+
+    public async Task StopWorkerEventAsync<T>(CancellationToken cancellationToken) where T : BackgroundService
+    {
+        var backgroundService = _serviceProfile?.GetRequiredService<T>();
+
+        if (backgroundService != null)
+            await backgroundService.StopAsync(cancellationToken);
     }
 
     public void Dispose()

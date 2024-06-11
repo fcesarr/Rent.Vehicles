@@ -65,19 +65,22 @@ public static class ServiceExtensions
 
                     return new Repository<Command>(logger, sqlScripts, connectionFactory);
                 })
-                .AddSingleton<IDeleteService<Command>, Service<Command>>()
-                .AddSingleton<ICreateService<Command>, Service<Command>>()
-                .AddSingleton<IService<Command>, Service<Command>>()
-                .AddSingleton<IPeriodicTimer>(service => {
+                .AddSingleton<IDeleteService<Command>, SqlService<Command>>()
+                .AddSingleton<ICreateService<Command>, SqlService<Command>>()
+                .AddSingleton<ICreateService<Vehicle>, NoSqlService<Vehicle>>()
+                .AddSingleton<IService<Command>, SqlService<Command>>()
+                .AddTransient<IPeriodicTimer>(service => {
 
                     var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
 
                     return new Utils.PeriodicTimer(periodicTimer);
                 })
                 .AddSingleton<IPublisher, Publisher>()
-                .AddSingleton<CreateVehiclesBackgroundService>()
+                .AddSingleton<ISerializer, MessagePackSerializer>()
+                .AddSingleton<CreateVehiclesCommandBackgroundService>()
                 .AddSingleton<DeleteVehiclesBackgroundService>()
-                .AddSingleton<ISerializer, MessagePackSerializer>();
+                .AddSingleton<CreateVehiclesEventBackgroundService>()
+                .AddSingleton<CreateVehiclesYearEventBackgroundService>();
 
 
     
