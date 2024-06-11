@@ -19,10 +19,18 @@ public class Publisher : IPublisher
         _serializer = serializer;
     }
 
-    public async Task PublishAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default) where TMessage : Message
+    public async Task PublishCommandAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default) where TMessage : Message
     {
         _channel.BasicPublish(exchange: string.Empty,
             routingKey: typeof(TMessage).Name,
+            basicProperties: null,
+            body: await _serializer.SerializeAsync(message, cancellationToken));
+    }
+
+    public async Task PublishEventAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default) where TMessage : Message
+    {
+        _channel.BasicPublish(exchange: typeof(TMessage).Name,
+            routingKey: string.Empty,
             basicProperties: null,
             body: await _serializer.SerializeAsync(message, cancellationToken));
     }

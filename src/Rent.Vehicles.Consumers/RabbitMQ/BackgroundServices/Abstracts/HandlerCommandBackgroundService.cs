@@ -59,7 +59,7 @@ public abstract class HandlerCommandBackgroundService <TCommand, TEvent, TEntity
 
                     var @event = await CommandToEventAsync(message, stoppingToken);
 
-                    await _publisher.PublishAsync(@event, stoppingToken);
+                    await _publisher.PublishEventAsync(@event, stoppingToken);
                 }
             }
             catch (Exception ex)
