@@ -73,7 +73,21 @@
             "arguments": {}
         },
         {
+            "name": "CreateVehiclesEvent",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        },
+        {
             "name": "DeleteVehiclesCommand",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        },
+        {
+            "name": "DeleteVehiclesEvent",
             "vhost": "/",
             "durable": true,
             "auto_delete": false,

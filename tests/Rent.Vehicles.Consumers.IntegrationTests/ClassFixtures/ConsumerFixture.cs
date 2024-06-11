@@ -16,9 +16,9 @@ using Xunit.Abstractions;
 namespace Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 
 [ExcludeFromCodeCoverage]
-public class ConsumerFixture<TBackgroundService, TMessage, TEntity> : IDisposable 
+public class ConsumerFixture<TBackgroundService, TCommand, TEntity> : IDisposable 
     where TBackgroundService : BackgroundService 
-    where TMessage : Messages.Command
+    where TCommand : Messages.Command
     where TEntity : Entities.Command
 {
     private TBackgroundService? _backgroundService;
@@ -69,12 +69,12 @@ public class ConsumerFixture<TBackgroundService, TMessage, TEntity> : IDisposabl
         _started = false;
     }
 
-    public async Task SendCommandAsync(TMessage message, CancellationToken cancellationToken)
+    public async Task SendCommandAsync(TCommand message, CancellationToken cancellationToken)
     {
         var bytes = await _serializer!.SerializeAsync(message, cancellationToken);
 
         _model?.BasicPublish(exchange: string.Empty,
-            routingKey: typeof(TMessage).Name,
+            routingKey: typeof(TCommand).Name,
             basicProperties: null,
             body: bytes);
     }

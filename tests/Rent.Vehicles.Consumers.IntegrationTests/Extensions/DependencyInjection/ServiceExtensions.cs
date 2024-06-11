@@ -18,6 +18,8 @@ using Npgsql;
 using System.Text;
 using System.Reflection;
 using Rent.Vehicles.Services.Factories;
+using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Producers.RabbitMQ;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 
@@ -66,14 +68,15 @@ public static class ServiceExtensions
                 .AddSingleton<IDeleteService<Command>, Service<Command>>()
                 .AddSingleton<ICreateService<Command>, Service<Command>>()
                 .AddSingleton<IService<Command>, Service<Command>>()
-                .AddSingleton<CreateVehiclesBackgroundService>()
-                .AddSingleton<DeleteVehiclesBackgroundService>()
                 .AddSingleton<IPeriodicTimer>(service => {
 
                     var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
 
-                    return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
+                    return new Utils.PeriodicTimer(periodicTimer);
                 })
+                .AddSingleton<IPublisher, Publisher>()
+                .AddSingleton<CreateVehiclesBackgroundService>()
+                .AddSingleton<DeleteVehiclesBackgroundService>()
                 .AddSingleton<ISerializer, MessagePackSerializer>();
 
 

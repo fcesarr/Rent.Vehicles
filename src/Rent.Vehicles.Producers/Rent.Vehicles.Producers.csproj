@@ -10,4 +10,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rent.Vehicles.Lib\Rent.Vehicles.Lib.csproj" />
+    <ProjectReference Include="..\Rent.Vehicles.Messages\Rent.Vehicles.Messages.csproj" />
+  </ItemGroup>
 </Project>
