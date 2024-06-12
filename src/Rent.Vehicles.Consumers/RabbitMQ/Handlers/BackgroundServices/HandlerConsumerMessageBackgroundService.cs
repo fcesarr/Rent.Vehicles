@@ -3,7 +3,7 @@ using RabbitMQ.Client;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 
-namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices.Abstracts;
+namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
 public abstract class HandlerConsumerMessageBackgroundService<TMessage> : BackgroundService 
     where TMessage : Messages.Message

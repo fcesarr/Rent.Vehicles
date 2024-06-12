@@ -1,5 +1,4 @@
-using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
-using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
+using Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Messages.Commands;
 

@@ -4,7 +4,7 @@ using RabbitMQ.Client;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 
-namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices.Abstracts;
+namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
 public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEntity> : HandlerConsumerMessageBackgroundService<TEvent> 
     where TEvent : Messages.Event

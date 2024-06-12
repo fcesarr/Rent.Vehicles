@@ -3,7 +3,6 @@ using AutoFixture;
 using FluentAssertions;
 
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures.RabbitMQ.CollectionFixtures;
-using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 using Rent.Vehicles.Messages.Commands;
 
 using Xunit.Abstractions;

@@ -5,7 +5,6 @@ using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Factories;
 using Rent.Vehicles.Services;
-using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 using RabbitMQ.Client;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Repositories.Interfaces;
@@ -15,6 +14,8 @@ using System.Reflection;
 using System.Text;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
+using Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
+using Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
 var builder = Host.CreateApplicationBuilder(args);
 

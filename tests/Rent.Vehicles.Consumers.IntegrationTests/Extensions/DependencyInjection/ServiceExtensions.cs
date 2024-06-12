@@ -7,7 +7,6 @@ using RabbitMQ.Client;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Services;
-using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib.Serializers;
@@ -20,6 +19,8 @@ using System.Reflection;
 using Rent.Vehicles.Services.Factories;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
+using Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
+using Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 

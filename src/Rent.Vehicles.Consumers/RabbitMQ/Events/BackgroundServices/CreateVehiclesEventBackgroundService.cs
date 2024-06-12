@@ -3,10 +3,10 @@ using RabbitMQ.Client;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices.Abstracts;
+using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 
-namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
+namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
 public class CreateVehiclesEventBackgroundService : HandlerConsumerEventToEntityBackgroundService<CreateVehiclesEvent, Vehicle>
 {

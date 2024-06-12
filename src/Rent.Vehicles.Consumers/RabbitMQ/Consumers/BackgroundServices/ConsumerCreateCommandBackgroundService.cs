@@ -1,12 +1,14 @@
 
 
 using RabbitMQ.Client;
+
+using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 
-namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices.Abstracts;
+namespace Rent.Vehicles.Consumers.RabbitMQ.Consumers.BackgroundServices;
 
 public abstract class ConsumerCreateCommandBackgroundService<TCommand, TEvent, TEntity> : HandlerConsumerCommandToEntityBackgroundService<TCommand, TEvent, TEntity>
     where TCommand : Messages.Command

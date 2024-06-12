@@ -5,7 +5,7 @@ using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Producers.Interfaces;
 
-namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices.Abstracts;
+namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
 public abstract class HandlerConsumerCommandToEntityBackgroundService<TCommand, TEvent, TEntity> : HandlerConsumerMessageBackgroundService<TCommand> 
     where TCommand : Messages.Command
