@@ -65,7 +65,7 @@ public static class ServiceExtensions
 
                     return new Repository<Command>(logger, sqlScripts, connectionFactory);
                 })
-                .AddSingleton<IDeleteService<Command>, SqlService<Command>>()
+                .AddSingleton<IDeleteService<Vehicle>, NoSqlService<Vehicle>>()
                 .AddSingleton<ICreateService<Command>, SqlService<Command>>()
                 .AddSingleton<ICreateService<Vehicle>, NoSqlService<Vehicle>>()
                 .AddSingleton<IService<Command>, SqlService<Command>>()
@@ -79,8 +79,9 @@ public static class ServiceExtensions
                 .AddSingleton<ISerializer, MessagePackSerializer>()
                 .AddSingleton<CreateVehiclesCommandBackgroundService>()
                 .AddSingleton<DeleteVehiclesCommandBackgroundService>()
+                .AddSingleton<CreateVehiclesYearEventBackgroundService>()
                 .AddSingleton<CreateVehiclesEventBackgroundService>()
-                .AddSingleton<CreateVehiclesYearEventBackgroundService>();
+                .AddSingleton<DeleteVehiclesEventBackgroundService>();
 
 
     

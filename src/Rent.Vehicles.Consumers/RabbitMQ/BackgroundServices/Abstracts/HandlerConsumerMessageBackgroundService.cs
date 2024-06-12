@@ -5,21 +5,20 @@ using Rent.Vehicles.Lib.Serializers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices.Abstracts;
 
-public abstract class HandlerConsumerEventBackgroundService<TEvent, TEntity> : BackgroundService 
-    where TEvent : Messages.Event
-    where TEntity : Entities.Entity
+public abstract class HandlerConsumerMessageBackgroundService<TMessage> : BackgroundService 
+    where TMessage : Messages.Message
 {
-    protected readonly ILogger<HandlerConsumerEventBackgroundService<TEvent, TEntity>> _logger;
+    protected readonly ILogger<HandlerConsumerMessageBackgroundService<TMessage>> _logger;
 
     private readonly IModel _channel;
 
     private readonly IPeriodicTimer _periodicTimer;
 
-    private readonly ISerializer _serializer;
+    protected readonly ISerializer _serializer;
 
     private readonly string _queueName;
 
-    protected HandlerConsumerEventBackgroundService(ILogger<HandlerConsumerEventBackgroundService<TEvent, TEntity>> logger,
+    protected HandlerConsumerMessageBackgroundService(ILogger<HandlerConsumerMessageBackgroundService<TMessage>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -47,7 +46,7 @@ public abstract class HandlerConsumerEventBackgroundService<TEvent, TEntity> : B
 
                 var bytes = result.Body.ToArray();
 
-                var message = await _serializer.DeserializeAsync<TEvent>(bytes, stoppingToken);
+                var message = await _serializer.DeserializeAsync<TMessage>(bytes, stoppingToken);
 
                 if(message != null)
                 {
@@ -64,5 +63,5 @@ public abstract class HandlerConsumerEventBackgroundService<TEvent, TEntity> : B
         }
     }
 
-    protected abstract Task HandlerAsync(TEvent @event, CancellationToken cancellationToken = default);
+    protected abstract Task HandlerAsync(TMessage message, CancellationToken cancellationToken = default);
 }

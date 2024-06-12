@@ -1,5 +1,6 @@
 
 
+
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
@@ -24,12 +25,9 @@ public sealed class NoSqlService<T> : IService<T> where T : Entity
         await Task.Run(() => _logger.LogInformation("Create {obj}", entity.Id), cancellationToken);
     }
 
-    public async Task DeleteAsync(T? entity, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        if(entity == null)
-            return;
-
-        await Task.Run(() => _logger.LogInformation("Delete {obj}", entity.Id), cancellationToken);
+        await Task.Run(() => _logger.LogInformation("Delete {obj}", id), cancellationToken);
     }
 
     public async Task<T?> GetAsync(string sql,

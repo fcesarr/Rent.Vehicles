@@ -17,7 +17,7 @@ public class CreateVehiclesCommandBackgroundService : ConsumerCreateCommandBackg
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        ICreateService<Command> createService) : base(logger, channel, periodicTimer, serializer, publisher, createService)
+        ICreateService<Command> createService) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesCommand", publisher, createService)
     {
     }
 
@@ -54,10 +54,5 @@ public class CreateVehiclesCommandBackgroundService : ConsumerCreateCommandBackg
                 SagaId = message.SagaId
             };
         }, cancellationToken);
-    }
-
-    protected override async Task HandlerAsync(Command entity, CancellationToken cancellationToken = default)
-    {
-        await _createService.CreateAsync(entity, cancellationToken);
     }
 }

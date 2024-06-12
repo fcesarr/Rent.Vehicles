@@ -10,14 +10,14 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 
-public class DeleteVehiclesCommandBackgroundService : ConsumerDeleteCommandBackgroundService<DeleteVehiclesCommand, DeleteVehiclesEvent, Command>
+public class DeleteVehiclesCommandBackgroundService : ConsumerCreateCommandBackgroundService<DeleteVehiclesCommand, DeleteVehiclesEvent, Command>
 {
     public DeleteVehiclesCommandBackgroundService(ILogger<DeleteVehiclesCommandBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IDeleteService<Command> deleteService) : base(logger, channel, periodicTimer, serializer, publisher, deleteService)
+        ICreateService<Command> createService) : base(logger, channel, periodicTimer, serializer, "DeleteVehiclesCommand", publisher, createService)
     {
     }
 
@@ -46,10 +46,5 @@ public class DeleteVehiclesCommandBackgroundService : ConsumerDeleteCommandBackg
                 SagaId = message.SagaId
             };
         }, cancellationToken);
-    }
-
-    protected override async Task HandlerAsync(Command entity, CancellationToken cancellationToken = default)
-    {
-        await _deleteService.DeleteAsync(entity, cancellationToken);
     }
 }

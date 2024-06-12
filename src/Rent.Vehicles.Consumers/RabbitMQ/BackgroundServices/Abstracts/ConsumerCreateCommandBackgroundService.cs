@@ -15,13 +15,19 @@ public abstract class ConsumerCreateCommandBackgroundService<TCommand, TEvent, T
 {
     protected readonly ICreateService<TEntity> _createService;
 
-    protected ConsumerCreateCommandBackgroundService(ILogger<HandlerConsumerCommandToEntityBackgroundService<TCommand, TEvent, TEntity>> logger,
+    protected ConsumerCreateCommandBackgroundService(ILogger<ConsumerCreateCommandBackgroundService<TCommand, TEvent, TEntity>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
+        string queueName,
         IPublisher publisher,
-        ICreateService<TEntity> createService) : base(logger, channel, periodicTimer, serializer, publisher)
+        ICreateService<TEntity> createService) : base(logger, channel, periodicTimer, serializer, queueName, publisher)
     {
         _createService = createService;
+    }
+
+    protected override async Task HandlerAsync(TEntity entity, CancellationToken cancellationToken = default)
+    {
+        await _createService.CreateAsync(entity, cancellationToken);
     }
 }

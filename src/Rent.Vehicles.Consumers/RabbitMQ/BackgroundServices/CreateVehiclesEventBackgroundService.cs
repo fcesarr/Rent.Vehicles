@@ -32,10 +32,8 @@ public class CreateVehiclesEventBackgroundService : HandlerConsumerEventToEntity
         }, cancellationToken);
     }
 
-    protected override async Task HandlerAsync(CreateVehiclesEvent message, CancellationToken cancellationToken = default)
+    protected override async Task HandlerAsync(Vehicle entity, CancellationToken cancellationToken = default)
     {
-        var entity = await EventToEntityAsync(message, cancellationToken);
-
         await _createService.CreateAsync(entity, cancellationToken);
     }
 }

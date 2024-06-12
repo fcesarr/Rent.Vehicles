@@ -1,5 +1,6 @@
 
 
+
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
@@ -28,12 +29,9 @@ public sealed class SqlService<T> : IService<T> where T : Entity
         await _repository.CreateAsync(entity, cancellationToken);
     }
 
-    public async Task DeleteAsync(T? entity, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        if(entity == null)
-            return;
-
-        await _repository.CreateAsync(entity, cancellationToken);
+        throw new NotImplementedException();
     }
 
     public async Task<T?> GetAsync(string sql,

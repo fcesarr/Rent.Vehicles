@@ -54,7 +54,7 @@ builder.Services.AddSingleton<IModel>(service => {
 
         return new Repository<Command>(logger, sqlScripts, connectionFactory);
     })
-    .AddSingleton<IDeleteService<Command>, SqlService<Command>>()
+    .AddSingleton<IDeleteService<Vehicle>, NoSqlService<Vehicle>>()
     .AddSingleton<ICreateService<Command>, SqlService<Command>>()
     .AddSingleton<ICreateService<Vehicle>, NoSqlService<Vehicle>>()
     .AddSingleton<IService<Command>, SqlService<Command>>()
@@ -69,7 +69,8 @@ builder.Services.AddSingleton<IModel>(service => {
     .AddHostedService<CreateVehiclesCommandBackgroundService>()
     .AddHostedService<DeleteVehiclesCommandBackgroundService>()
     .AddHostedService<CreateVehiclesYearEventBackgroundService>()
-    .AddHostedService<CreateVehiclesEventBackgroundService>();
+    .AddHostedService<CreateVehiclesEventBackgroundService>()
+    .AddHostedService<DeleteVehiclesEventBackgroundService>();
 
 var host = builder.Build();
 host.Run();

@@ -6,7 +6,7 @@ using Rent.Vehicles.Lib.Serializers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices.Abstracts;
 
-public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEntity> : HandlerConsumerEventBackgroundService<TEvent, TEntity> 
+public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEntity> : HandlerConsumerMessageBackgroundService<TEvent> 
     where TEvent : Messages.Event
     where TEntity : Entities.Entity
 {
@@ -18,5 +18,14 @@ public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEnt
     {
     }
 
-    protected abstract Task<TEntity> EventToEntityAsync(TEvent message, CancellationToken cancellationToken = default);
+    protected abstract Task<TEntity> EventToEntityAsync(TEvent @event, CancellationToken cancellationToken = default);
+
+    protected override async Task HandlerAsync(TEvent @event, CancellationToken cancellationToken = default)
+    {
+        var entity = await EventToEntityAsync(@event, cancellationToken);
+
+        await HandlerAsync(entity, cancellationToken);
+    }
+
+    protected abstract Task HandlerAsync(TEntity entity, CancellationToken cancellationToken = default);
 }

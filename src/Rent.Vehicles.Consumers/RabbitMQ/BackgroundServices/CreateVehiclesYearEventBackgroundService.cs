@@ -8,7 +8,7 @@ using Rent.Vehicles.Messages.Events;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.BackgroundServices;
 
-public class CreateVehiclesYearEventBackgroundService : HandlerConsumerEventBackgroundService<CreateVehiclesEvent, Vehicle>
+public class CreateVehiclesYearEventBackgroundService : HandlerConsumerMessageBackgroundService<CreateVehiclesEvent>
 {
     public CreateVehiclesYearEventBackgroundService(ILogger<CreateVehiclesYearEventBackgroundService> logger,
         IModel channel,
