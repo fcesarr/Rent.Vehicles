@@ -80,9 +80,10 @@ builder.Services.AddSingleton<IModel>(service => {
     .AddSingleton<ISerializer, MessagePackSerializer>()
     .AddHostedService<CreateVehiclesCommandBackgroundService>()
     .AddHostedService<DeleteVehiclesCommandBackgroundService>()
-    .AddHostedService<CreateVehiclesYearEventBackgroundService>()
+    .AddHostedService<VehiclesYearEventBackgroundService>()
     .AddHostedService<CreateVehiclesEventBackgroundService>()
-    .AddHostedService<DeleteVehiclesEventBackgroundService>();
+    .AddHostedService<DeleteVehiclesEventBackgroundService>()
+    .AddHostedService<CreateVehiclesYearEventBackgroundService>();
 
 var host = builder.Build();
 host.Run();

@@ -1,3 +1,6 @@
+
+using System.Text.Json.Serialization;
+
 using MessagePack;
 
 using Rent.Vehicles.Entities.Types;
@@ -8,9 +11,11 @@ namespace Rent.Vehicles.Messages.Commands;
 public record CreateVehiclesCommand : Command
 {
     [Key(1)]
-    public required Guid Id { get; init; } = Guid.NewGuid();
+    [JsonIgnore]
+    public Guid Id { get; set; }
 
     [Key(2)]
+    [System.ComponentModel.DataAnnotations.Range(2020, 2025, ErrorMessage = "Year should be between 2020 and 2025")]
     public required int Year { get; init; }
 
     [Key(3)]

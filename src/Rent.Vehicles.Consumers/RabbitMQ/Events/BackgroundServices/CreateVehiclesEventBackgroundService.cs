@@ -25,6 +25,7 @@ public class CreateVehiclesEventBackgroundService : HandlerConsumerEventToEntity
     {
         return await Task.Run(() => new Vehicle
         {
+            Id = message.Id,
             Year = message.Year,
             Model = message.Model,
             LicensePlate = message.LicensePlate,

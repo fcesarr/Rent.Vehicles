@@ -19,19 +19,27 @@ public class Publisher : IPublisher
         _serializer = serializer;
     }
 
-    public async Task PublishCommandAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default) where TMessage : Message
+    public async Task PublishCommandAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default) where TCommand : Command
     {
         _channel.BasicPublish(exchange: string.Empty,
-            routingKey: typeof(TMessage).Name,
+            routingKey:  command.GetType().Name,
             basicProperties: null,
-            body: await _serializer.SerializeAsync(message, cancellationToken));
+            body: await _serializer.SerializeAsync(command, cancellationToken));
     }
 
-    public async Task PublishEventAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default) where TMessage : Message
+    public async Task PublishEventAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : Event
     {
-        _channel.BasicPublish(exchange: typeof(TMessage).Name,
+        _channel.BasicPublish(exchange: @event.GetType().Name,
             routingKey: string.Empty,
             basicProperties: null,
-            body: await _serializer.SerializeAsync(message, cancellationToken));
+            body: await _serializer.SerializeAsync(@event, cancellationToken));
+    }
+
+    public async Task PublishSingleEventAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : Event
+    {
+        _channel.BasicPublish(exchange: string.Empty,
+            routingKey: @event.GetType().Name,
+            basicProperties: null,
+            body: await _serializer.SerializeAsync(@event, cancellationToken));
     }
 }

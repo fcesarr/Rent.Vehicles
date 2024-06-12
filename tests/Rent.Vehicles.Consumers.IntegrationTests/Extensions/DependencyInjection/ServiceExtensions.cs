@@ -91,7 +91,7 @@ public static class ServiceExtensions
                 .AddSingleton<ISerializer, MessagePackSerializer>()
                 .AddSingleton<CreateVehiclesCommandBackgroundService>()
                 .AddSingleton<DeleteVehiclesCommandBackgroundService>()
-                .AddSingleton<CreateVehiclesYearEventBackgroundService>()
+                .AddSingleton<VehiclesYearEventBackgroundService>()
                 .AddSingleton<CreateVehiclesEventBackgroundService>()
                 .AddSingleton<DeleteVehiclesEventBackgroundService>();
 

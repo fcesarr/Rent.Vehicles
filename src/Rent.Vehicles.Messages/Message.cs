@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 using MessagePack;
 
 namespace Rent.Vehicles.Messages;
@@ -6,5 +8,6 @@ namespace Rent.Vehicles.Messages;
 public abstract record Message
 {
     [Key(0)]
-    public required Guid SagaId { get; set; }
+    [JsonIgnore]
+    public Guid SagaId { get; set; }
 }

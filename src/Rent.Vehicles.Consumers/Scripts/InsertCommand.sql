@@ -1,2 +1,2 @@
-INSERT INTO Command (Id, SagaId, Type, Data, Created, SerializerType)
-    VALUES (@Id, @SagaId, @Type, @Data, @Created, @SerializerType)
+INSERT INTO Commands (Id, SagaId, ActionType, SerializerType, EntityType, Data, Created)
+    VALUES (@Id, @SagaId, @ActionType, @SerializerType, @EntityType, @Data, @Created)

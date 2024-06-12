@@ -33,8 +33,14 @@ public class CreateVehiclesBackgroundServiceTests : IDisposable
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
 
-        var command = _fixture.GetFixture()
-            .Create<CreateVehiclesCommand>();
+        var command = _fixture
+            .GetFixture()
+            .Build<CreateVehiclesCommand>()
+            .With(x => x.Year, () => {
+                var random = new Random();
+                return random.Next(2024, 2024);
+            })
+            .Create();
 
         await _fixture.SendCommandAsync(command, cancellationTokenSource.Token);
 

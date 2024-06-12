@@ -1,21 +1,24 @@
-using MongoDB.Bson.Serialization.Attributes;
+using MessagePack;
 
 using Rent.Vehicles.Entities.Types;
 
-namespace Rent.Vehicles.Entities;
+namespace Rent.Vehicles.Messages.Events;
 
-public class Vehicle : Entity
+[MessagePackObject]
+public record VehiclesYearEvent : Event
 {
+    [Key(1)]
+    public required Guid Id { get; init; }
 
-    [BsonElement("Year")]
+    [Key(2)]
     public required int Year { get; init; }
-    
-    [BsonElement("Model")]
+
+    [Key(3)]
     public required string Model { get; init; }
 
-    [BsonElement("LicensePlate")]
+    [Key(4)]
     public required string LicensePlate { get; init; }
 
-    [BsonElement("Type")]
+    [Key(5)]
     public required VehicleType Type { get; init; }
 }
