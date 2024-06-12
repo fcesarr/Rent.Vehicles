@@ -5,16 +5,21 @@ using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Repositories.Interfaces;
 
 namespace Rent.Vehicles.Services;
 
 public sealed class NoSqlService<T> : IService<T> where T : Entity
 {
-    private readonly ILogger<NoSqlService<T>> _logger;
+    private readonly ILogger<NoSqlService<T>> _logger; 
 
-    public NoSqlService(ILogger<NoSqlService<T>> logger)
+    private readonly IMongoRepository<T> _mongoRepository;
+
+    public NoSqlService(ILogger<NoSqlService<T>> logger,
+        IMongoRepository<T> mongoRepository)
     {
         _logger = logger;
+        _mongoRepository = mongoRepository;
     }
 
     public async Task CreateAsync(T? entity, CancellationToken cancellationToken = default)
@@ -22,7 +27,7 @@ public sealed class NoSqlService<T> : IService<T> where T : Entity
         if(entity == null)
             return;
 
-        await Task.Run(() => _logger.LogInformation("Create {obj}", entity.Id), cancellationToken);
+        await _mongoRepository.CreateAsync(entity, cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)

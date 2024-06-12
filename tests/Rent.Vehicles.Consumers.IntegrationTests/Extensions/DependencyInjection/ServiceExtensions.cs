@@ -21,6 +21,7 @@ using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
 using Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
+using MongoDB.Driver;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 
@@ -35,13 +36,23 @@ public static class ServiceExtensions
                     var connection = factory.CreateConnection();
                     return connection.CreateModel();
                 })
+                .AddSingleton<IMongoDatabase>(service => {
+                    var configuration = service.GetRequiredService<IConfiguration>();
+
+                    var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
+
+                    var client = new MongoClient(connectionString);
+
+                    return client.GetDatabase("rent");
+                })
+                .AddSingleton<IMongoRepository<Vehicle>, MongoRepository<Vehicle>>()
                 .AddSingleton<IRepository<Command>, Repository<Command>>(service =>
                 {
                     var logger = service.GetRequiredService<ILogger<Repository<Command>>>();
 
                     var configuration = service.GetRequiredService<IConfiguration>();
 
-                    var connectionString = configuration.GetConnectionString("Database") ?? string.Empty;
+                    var connectionString = configuration.GetConnectionString("Sql") ?? string.Empty;
 
                     var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
 
