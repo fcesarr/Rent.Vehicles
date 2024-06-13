@@ -5,7 +5,7 @@ using Rent.Vehicles.Entities.Types;
 namespace Rent.Vehicles.Messages.Events;
 
 [MessagePackObject]
-public record VehiclesYearEvent : Event
+public record CreateVehiclesForSpecificYearEvent : Event
 {
     [Key(1)]
     public required Guid Id { get; init; }

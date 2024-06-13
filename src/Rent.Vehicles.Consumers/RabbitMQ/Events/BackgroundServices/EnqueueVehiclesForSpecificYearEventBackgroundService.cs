@@ -9,15 +9,15 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesYearEventBackgroundService : HandlerConsumerMessageBackgroundService<CreateVehiclesEvent>
+public class EnqueueVehiclesForSpecificYearEventBackgroundService : HandlerConsumerMessageBackgroundService<CreateVehiclesEvent>
 {
     private readonly IPublisher _publisher;
 
-    public CreateVehiclesYearEventBackgroundService(ILogger<CreateVehiclesYearEventBackgroundService> logger,
+    public EnqueueVehiclesForSpecificYearEventBackgroundService(ILogger<EnqueueVehiclesForSpecificYearEventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IPublisher publisher) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesYearEvent")
+        IPublisher publisher) : base(logger, channel, periodicTimer, serializer, "EnqueueVehiclesYearEvent")
     {
         _publisher = publisher;
     }
@@ -27,7 +27,7 @@ public class CreateVehiclesYearEventBackgroundService : HandlerConsumerMessageBa
         if(@event.Year != 2024)
             return;
 
-        await _publisher.PublishSingleEventAsync(new VehiclesYearEvent
+        await _publisher.PublishSingleEventAsync(new CreateVehiclesForSpecificYearEvent
             {
                 Id = @event.Id, 
                 Year = @event.Year,
