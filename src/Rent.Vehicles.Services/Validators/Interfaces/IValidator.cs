@@ -1,10 +1,11 @@
+using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Exceptions;
 
 namespace Rent.Vehicles.Services.Validators.Interfaces;
 
-public interface IValidator<T>
+public interface IValidator<TEntity> where TEntity : Entity
 {
-	Task<ValidationResult> ValidateAsync(T instance,
+	Task<ValidationResult> ValidateAsync(TEntity? instance,
 		CancellationToken cancellationToken = default);
 }
 

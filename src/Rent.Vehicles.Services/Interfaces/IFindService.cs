@@ -1,8 +1,10 @@
+using System.Linq.Expressions;
+
 using Rent.Vehicles.Entities;
 
 namespace Rent.Vehicles.Services.Interfaces;
 
-public interface IFindService<T> where T : Entity
+public interface IFindService<TEntity> where TEntity : Entity
 {
-    Task<IEnumerable<T>> FindAsync(Guid sagaId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 }

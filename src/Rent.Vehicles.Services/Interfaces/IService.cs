@@ -9,6 +9,5 @@ public interface IService<T> :
     IGetService<T>,
     IFindService<T> where T : Entity
 {
-    Task<T?> GetAsync(Guid sagaId,
-        CancellationToken cancellationToken = default);
+
 }

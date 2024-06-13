@@ -20,6 +20,8 @@ using Rent.Vehicles.Services.Factories;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories;
 using Rent.Vehicles.Services.Repositories.Interfaces;
+using Rent.Vehicles.Services.Validators;
+using Rent.Vehicles.Services.Validators.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,39 +41,11 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
 
         return client.GetDatabase("rent");
     })
-    .AddSingleton<IRepository<Event>, Repository<Event>>(service =>
-    {
-        var logger = service.GetRequiredService<ILogger<Repository<Event>>>();
-
-        var configuration = service.GetRequiredService<IConfiguration>();
-
-        var connectionString = configuration.GetConnectionString("Sql") ?? string.Empty;
-
-        var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
-
-        var assembly = Assembly.GetExecutingAssembly();
-        var resourceNames = assembly.GetManifestResourceNames();
-        var sqlScripts = new Dictionary<string, string>();
-
-        string namespacePrefix = $"{assembly.GetName().Name}.Scripts.";
-
-        foreach (var resourceName in resourceNames)
-        {
-            if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
-            {
-                using (var stream = assembly.GetManifestResourceStream(resourceName))
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
-                {
-                    var sqlScript = reader.ReadToEnd();
-                    sqlScripts.Add(resourceName.Replace(namespacePrefix, ""), sqlScript);
-                }
-            }
-        }
-
-        return new Repository<Event>(logger, sqlScripts, connectionFactory);
-    })
-    .AddSingleton<IFindService<Event>, SqlService<Event>>()
-    .AddSingleton<IMongoRepository<Vehicle>, MongoRepository<Vehicle>>()
+    .AddSingleton<IValidator<Event>,  EventValidator>()
+    .AddSingleton<IRepository<Event>, MongoRepository<Event>>()
+    .AddSingleton<IFindService<Event>, NoSqlService<Event>>()
+    .AddSingleton<IValidator<Vehicle>, VehicleValidator>()
+    .AddSingleton<IRepository<Vehicle>, MongoRepository<Vehicle>>()
     .AddSingleton<IGetService<Vehicle>, NoSqlService<Vehicle>>();
 
 // Add services to the container.
@@ -141,7 +115,7 @@ app.MapGet("/Vehicles/{Id}", async ([FromQuery]Guid id,
     IGetService<Vehicle> getService,
     CancellationToken cancellationToken = default) =>
 {
-    var entity = await getService.GetAsync(id, cancellationToken);
+    var entity = await getService.GetAsync(x => x.Id == id, cancellationToken);
 
     if(entity == null)
         return Results.NotFound();
@@ -155,7 +129,7 @@ app.MapGet("/Vehicles/Status/{SagaId}", async ([FromQuery]Guid sagaId,
     IFindService<Event> findService,
     CancellationToken cancellationToken = default) =>
 {
-    var entities = await findService.FindAsync(sagaId, cancellationToken);
+    var entities = await findService.FindAsync(x => x.SagaId == sagaId, cancellationToken);
 
     if(!entities.Any())
         return Results.NoContent();

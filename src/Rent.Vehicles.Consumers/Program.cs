@@ -36,9 +36,9 @@ builder.Services.AddSingleton<IModel>(service => {
     })
     .AddSingleton<IMongoRepository<Vehicle>, MongoRepository<Vehicle>>()
     .AddSingleton<IMongoRepository<VehiclesForSpecificYear>, MongoRepository<VehiclesForSpecificYear>>()
-    .AddSingleton<IRepository<Command>, Repository<Command>>(service =>
+    .AddSingleton<IRepository<Command>, EntityFrameworkRepository<Command>>(service =>
     {
-        var logger = service.GetRequiredService<ILogger<Repository<Command>>>();
+        var logger = service.GetRequiredService<ILogger<EntityFrameworkRepository<Command>>>();
 
         var configuration = service.GetRequiredService<IConfiguration>();
 
@@ -65,12 +65,12 @@ builder.Services.AddSingleton<IModel>(service => {
             }
         }
 
-        return new Repository<Command>(logger, sqlScripts, connectionFactory);
+        return new EntityFrameworkRepository<Command>(logger, sqlScripts, connectionFactory);
     })
     .AddSingleton<ICreateService<Command>, SqlService<Command>>()
-    .AddSingleton<IRepository<Event>, Repository<Event>>(service =>
+    .AddSingleton<IRepository<Event>, EntityFrameworkRepository<Event>>(service =>
     {
-        var logger = service.GetRequiredService<ILogger<Repository<Event>>>();
+        var logger = service.GetRequiredService<ILogger<EntityFrameworkRepository<Event>>>();
 
         var configuration = service.GetRequiredService<IConfiguration>();
 
@@ -97,7 +97,7 @@ builder.Services.AddSingleton<IModel>(service => {
             }
         }
 
-        return new Repository<Event>(logger, sqlScripts, connectionFactory);
+        return new EntityFrameworkRepository<Event>(logger, sqlScripts, connectionFactory);
     })
     .AddSingleton<ICreateService<Event>, SqlService<Event>>()
     .AddSingleton<IDeleteService<Vehicle>, NoSqlService<Vehicle>>()

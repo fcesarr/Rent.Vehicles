@@ -2,7 +2,7 @@ using Rent.Vehicles.Entities;
 
 namespace Rent.Vehicles.Services.Interfaces;
 
-public interface ICreateService<T> where T : Entity
+public interface ICreateService<TEntity> where TEntity : Entity
 {
-    Task CreateAsync(T? entity, CancellationToken cancellationToken = default);
+    Task CreateAsync(TEntity? entity, CancellationToken cancellationToken = default);    
 }

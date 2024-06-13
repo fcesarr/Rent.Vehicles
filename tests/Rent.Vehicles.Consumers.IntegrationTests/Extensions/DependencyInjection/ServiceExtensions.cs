@@ -46,9 +46,9 @@ public static class ServiceExtensions
                     return client.GetDatabase("rent");
                 })
                 .AddSingleton<IMongoRepository<Vehicle>, MongoRepository<Vehicle>>()
-                .AddSingleton<IRepository<Command>, Repository<Command>>(service =>
+                .AddSingleton<IRepository<Command>, EntityFrameworkRepository<Command>>(service =>
                 {
-                    var logger = service.GetRequiredService<ILogger<Repository<Command>>>();
+                    var logger = service.GetRequiredService<ILogger<EntityFrameworkRepository<Command>>>();
 
                     var configuration = service.GetRequiredService<IConfiguration>();
 
@@ -75,7 +75,7 @@ public static class ServiceExtensions
                         }
                     }
 
-                    return new Repository<Command>(logger, sqlScripts, connectionFactory);
+                    return new EntityFrameworkRepository<Command>(logger, sqlScripts, connectionFactory);
                 })
                 .AddSingleton<IDeleteService<Vehicle>, NoSqlService<Vehicle>>()
                 .AddSingleton<ICreateService<Command>, SqlService<Command>>()

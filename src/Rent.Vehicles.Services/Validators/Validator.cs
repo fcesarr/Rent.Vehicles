@@ -1,17 +1,28 @@
 
 using FluentValidation;
 
+using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
 using ValidationException = Rent.Vehicles.Services.Exceptions.ValidationException;
 
 namespace Rent.Vehicles.Services.Validators;
 
-public abstract class Validator<T> : AbstractValidator<T>, Interfaces.IValidator<T>
+public abstract class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValidator<TEntity> where TEntity : Entity
 {
-	async Task<ValidationResult> Interfaces.IValidator<T>.ValidateAsync(T instance, CancellationToken cancellationToken)
+	async Task<ValidationResult> Interfaces.IValidator<TEntity>.ValidateAsync(TEntity? instance, CancellationToken cancellationToken)
 	{
-		var validationResult = new ValidationResult();
+		var validationResult = new ValidationResult
+        {
+            IsValid = false
+        };
+
+        if(instance is null)
+        {
+            validationResult.Exception = new ValidationException($"Error on Validate {typeof(TEntity).Name}",
+                new Dictionary<string, string[]>());
+            return validationResult;
+        }
 
 		var result = await base.ValidateAsync(instance,
 			cancellationToken);
@@ -21,7 +32,7 @@ public abstract class Validator<T> : AbstractValidator<T>, Interfaces.IValidator
 		if (!result.IsValid)
 		{
 			validationResult.Exception =
-				new ValidationException($"Error on Validate {typeof(T).Name}", result.ToDictionary());
+				new ValidationException($"Error on Validate {typeof(TEntity).Name}", result.ToDictionary());
 		}
 
 		return validationResult;

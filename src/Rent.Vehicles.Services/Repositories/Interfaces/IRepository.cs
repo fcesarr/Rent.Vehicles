@@ -1,14 +1,18 @@
+using System.Linq.Expressions;
+
 using Rent.Vehicles.Entities;
 
 namespace Rent.Vehicles.Services.Repositories.Interfaces;
 
-public interface IRepository<T> where T : Entity
+public interface IRepository<TEntity> where TEntity : Entity
 {
-    Task CreateAsync(T entity, CancellationToken cancellationToken = default);
+    Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-    Task<T?> GetAsync(Guid sagaId,
-        CancellationToken cancellationToken = default);
+    Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<T>> FindAsync(Guid sagaId,
-        CancellationToken cancellationToken = default);
+    Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
+
+    Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 }
