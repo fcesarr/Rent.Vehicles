@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
@@ -10,12 +11,16 @@ public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEnt
     where TEvent : Messages.Event
     where TEntity : Entities.Entity
 {
+    private readonly ICreateService<Entities.Event> _createEventService;
+
     protected HandlerConsumerEventToEntityBackgroundService(ILogger<HandlerConsumerEventToEntityBackgroundService<TEvent, TEntity>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        string queueName) : base(logger, channel, periodicTimer, serializer, queueName)
+        string queueName,
+        ICreateService<Entities.Event> createEventService) : base(logger, channel, periodicTimer, serializer, queueName)
     {
+        _createEventService = createEventService;
     }
 
     protected abstract Task<TEntity> EventToEntityAsync(TEvent @event, CancellationToken cancellationToken = default);
@@ -24,7 +29,24 @@ public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEnt
     {
         var entity = await EventToEntityAsync(@event, cancellationToken);
 
-        await HandlerAsync(entity, cancellationToken);
+        try
+        {
+            await HandlerAsync(entity, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            await _createEventService.CreateAsync(new Entities.Event{
+                SagaId = @event.SagaId,
+                StatusType = Entities.StatusType.Fail,
+                Message = ex.Message
+            }, cancellationToken);
+        }
+
+        await _createEventService.CreateAsync(new Entities.Event{
+                SagaId = @event.SagaId,
+                StatusType = Entities.StatusType.Success,
+                Message = string.Empty
+            }, cancellationToken);
     }
 
     protected abstract Task HandlerAsync(TEntity entity, CancellationToken cancellationToken = default);

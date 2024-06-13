@@ -1,0 +1,9 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE Events (
+    Id UUID PRIMARY KEY,
+    SagaId UUID NOT NULL,
+    StatusType VARCHAR(255) NOT null,
+    Message VARCHAR(255) NOT null,
+    Created TIMESTAMPTZ NOT NULL
+);

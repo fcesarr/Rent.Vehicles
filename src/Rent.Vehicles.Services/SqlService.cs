@@ -40,5 +40,10 @@ public sealed class SqlService<T> : IService<T> where T : Entity
     {
        return await _repository.GetAsync(sql, parameters, cancellationToken);
     }
+
+    public Task UpdateAsync(T? entity, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
 

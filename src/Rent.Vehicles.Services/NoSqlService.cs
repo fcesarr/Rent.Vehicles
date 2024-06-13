@@ -41,5 +41,10 @@ public sealed class NoSqlService<T> : IService<T> where T : Entity
     {
        return await Task.Run(() => default(T), cancellationToken);
     }
+
+    public Task UpdateAsync(T? entity, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }
 

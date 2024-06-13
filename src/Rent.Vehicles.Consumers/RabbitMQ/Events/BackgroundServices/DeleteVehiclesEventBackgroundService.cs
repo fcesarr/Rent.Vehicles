@@ -8,7 +8,7 @@ using Rent.Vehicles.Messages.Events;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class DeleteVehiclesEventBackgroundService : HandlerConsumerMessageBackgroundService<DeleteVehiclesEvent>
+public class DeleteVehiclesEventBackgroundService : HandlerConsumerEventToEntityBackgroundService<DeleteVehiclesEvent, Vehicle>
 {
     protected readonly IDeleteService<Vehicle> _deleteService;
 
@@ -16,13 +16,22 @@ public class DeleteVehiclesEventBackgroundService : HandlerConsumerMessageBackgr
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IDeleteService<Vehicle> deleteService) : base(logger, channel, periodicTimer, serializer, "DeleteVehiclesEvent")
+        IDeleteService<Vehicle> deleteService,
+        ICreateService<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "DeleteVehiclesEvent", createEventService)
     {
         _deleteService = deleteService;
     }
 
-    protected override async Task HandlerAsync(DeleteVehiclesEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<Vehicle> EventToEntityAsync(DeleteVehiclesEvent message, CancellationToken cancellationToken = default)
     {
-        await _deleteService.DeleteAsync(@event.Id, cancellationToken);
+        return await Task.Run(() => new Vehicle
+        {
+            Id = message.Id
+        }, cancellationToken);
+    }
+
+    protected override async Task HandlerAsync(Vehicle entity, CancellationToken cancellationToken = default)
+    {
+        await _deleteService.DeleteAsync(entity.Id, cancellationToken);
     }
 }

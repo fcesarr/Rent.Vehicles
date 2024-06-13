@@ -35,6 +35,7 @@ builder.Services.AddSingleton<IModel>(service => {
         return client.GetDatabase("rent");
     })
     .AddSingleton<IMongoRepository<Vehicle>, MongoRepository<Vehicle>>()
+    .AddSingleton<IMongoRepository<VehiclesForSpecificYear>, MongoRepository<VehiclesForSpecificYear>>()
     .AddSingleton<IRepository<Command>, Repository<Command>>(service =>
     {
         var logger = service.GetRequiredService<ILogger<Repository<Command>>>();
@@ -66,10 +67,43 @@ builder.Services.AddSingleton<IModel>(service => {
 
         return new Repository<Command>(logger, sqlScripts, connectionFactory);
     })
-    .AddSingleton<IDeleteService<Vehicle>, NoSqlService<Vehicle>>()
     .AddSingleton<ICreateService<Command>, SqlService<Command>>()
+    .AddSingleton<IRepository<Event>, Repository<Event>>(service =>
+    {
+        var logger = service.GetRequiredService<ILogger<Repository<Event>>>();
+
+        var configuration = service.GetRequiredService<IConfiguration>();
+
+        var connectionString = configuration.GetConnectionString("Sql") ?? string.Empty;
+
+        var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
+
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceNames = assembly.GetManifestResourceNames();
+        var sqlScripts = new Dictionary<string, string>();
+
+        string namespacePrefix = $"{assembly.GetName().Name}.Scripts.";
+
+        foreach (var resourceName in resourceNames)
+        {
+            if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+            {
+                using (var stream = assembly.GetManifestResourceStream(resourceName))
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    var sqlScript = reader.ReadToEnd();
+                    sqlScripts.Add(resourceName.Replace(namespacePrefix, ""), sqlScript);
+                }
+            }
+        }
+
+        return new Repository<Event>(logger, sqlScripts, connectionFactory);
+    })
+    .AddSingleton<ICreateService<Event>, SqlService<Event>>()
+    .AddSingleton<IDeleteService<Vehicle>, NoSqlService<Vehicle>>()
     .AddSingleton<ICreateService<Vehicle>, NoSqlService<Vehicle>>()
-    .AddSingleton<IService<Command>, SqlService<Command>>()
+    .AddSingleton<IUpdateService<Vehicle>, NoSqlService<Vehicle>>()
+    .AddSingleton<ICreateService<VehiclesForSpecificYear>, NoSqlService<VehiclesForSpecificYear>>()
     .AddTransient<IPeriodicTimer>(service => {
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
@@ -83,7 +117,8 @@ builder.Services.AddSingleton<IModel>(service => {
     .AddHostedService<CreateVehiclesForSpecificYearEventBackgroundService>()
     .AddHostedService<CreateVehiclesEventBackgroundService>()
     .AddHostedService<DeleteVehiclesEventBackgroundService>()
-    .AddHostedService<EnqueueVehiclesForSpecificYearEventBackgroundService>();
+    .AddHostedService<EnqueueVehiclesForSpecificYearEventBackgroundService>()
+    .AddHostedService<UpdateVehiclesCommandBackgroundService>();
 
 var host = builder.Build();
 host.Run();

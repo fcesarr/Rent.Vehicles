@@ -16,7 +16,8 @@ public class CreateVehiclesEventBackgroundService : HandlerConsumerEventToEntity
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        ICreateService<Vehicle> createService) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesEvent")
+        ICreateService<Vehicle> createService,
+        ICreateService<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesEvent", createEventService)
     {
         _createService = createService;
     }

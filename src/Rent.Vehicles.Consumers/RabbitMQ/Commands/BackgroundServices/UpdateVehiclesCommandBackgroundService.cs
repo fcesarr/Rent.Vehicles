@@ -10,47 +10,41 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
 
-public class CreateVehiclesCommandBackgroundService : ConsumerCreateCommandPublisherBackgroundService<CreateVehiclesCommand, CreateVehiclesEvent, Command>
+public class UpdateVehiclesCommandBackgroundService : ConsumerCreateCommandPublisherBackgroundService<UpdateVehiclesCommand, UpdateVehiclesEvent, Command>
 {
-    public CreateVehiclesCommandBackgroundService(ILogger<CreateVehiclesCommandBackgroundService> logger,
+    public UpdateVehiclesCommandBackgroundService(ILogger<UpdateVehiclesCommandBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        ICreateService<Command> createService) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesCommand", publisher, createService)
+        ICreateService<Command> createService) : base(logger, channel, periodicTimer, serializer, "UpdateVehiclesCommand", publisher, createService)
     {
     }
 
-    protected override async Task<Command> CommandToEntityAsync(CreateVehiclesCommand message,
+    protected override async Task<Command> CommandToEntityAsync(UpdateVehiclesCommand message,
         ISerializer serializer,
         CancellationToken cancellationToken = default)
     {
         return new Command
         {
             SagaId = message.SagaId,
-            ActionType = Entities.Types.ActionType.Create,
+            ActionType = Entities.Types.ActionType.Update,
             SerializerType = Lib.Types.SerializerType.MessagePack,
             EntityType = Entities.Types.EntityType.Vehicles,
             Data = await serializer.SerializeAsync(new { 
-                Id = message.Id, 
-                Year = message.Year,
-                Model = message.Model,
-                LicensePlate = message.LicensePlate,
-                Type = message.Type
+                Id = message.Id,
+                LicensePlate = message.LicensePlate
             })
         };
     }
 
-    protected override async Task<CreateVehiclesEvent> CommandToEventAsync(CreateVehiclesCommand message, CancellationToken cancellationToken = default)
+    protected override async Task<UpdateVehiclesEvent> CommandToEventAsync(UpdateVehiclesCommand message, CancellationToken cancellationToken = default)
     {
         return await Task.Run(() => {
-            return new CreateVehiclesEvent
+            return new UpdateVehiclesEvent
             {
-                Id = message.Id, 
-                Year = message.Year,
-                Model = message.Model,
+                Id = message.Id,
                 LicensePlate = message.LicensePlate,
-                Type = message.Type,
                 SagaId = message.SagaId
             };
         }, cancellationToken);

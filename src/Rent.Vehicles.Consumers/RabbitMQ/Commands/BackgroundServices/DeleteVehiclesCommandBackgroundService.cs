@@ -10,7 +10,7 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
 
-public class DeleteVehiclesCommandBackgroundService : ConsumerCreateCommandBackgroundService<DeleteVehiclesCommand, DeleteVehiclesEvent, Command>
+public class DeleteVehiclesCommandBackgroundService : ConsumerCreateCommandPublisherBackgroundService<DeleteVehiclesCommand, DeleteVehiclesEvent, Command>
 {
     public DeleteVehiclesCommandBackgroundService(ILogger<DeleteVehiclesCommandBackgroundService> logger,
         IModel channel,
@@ -28,7 +28,7 @@ public class DeleteVehiclesCommandBackgroundService : ConsumerCreateCommandBackg
         return new Command
         {
             SagaId = message.SagaId,
-            ActionType = Entities.Types.ActionType.Create,
+            ActionType = Entities.Types.ActionType.Delete,
             SerializerType = Lib.Types.SerializerType.MessagePack,
             EntityType = Entities.Types.EntityType.Vehicles,
             Data = await serializer.SerializeAsync(new { 

@@ -35,17 +35,68 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 
-app.MapPost("/CreateVehiclesCommand", async (IPublisher publisher, ISerializer serializer, [FromBody]CreateVehiclesCommand command, CancellationToken cancellationToken = default) =>
+app.MapPost("/Vehicles", async ([FromBody]CreateVehiclesCommand command,
+    IPublisher publisher,
+    CancellationToken cancellationToken = default) =>
 {
     command.Id = Guid.NewGuid();
     command.SagaId = Guid.NewGuid();
 
+    await publisher.PublishCommandAsync(command, cancellationToken);
+
+    string locationUri = $"/vehicles/status/{command.SagaId}";
+
+    return Results.Accepted(locationUri, new { Id = command.Id });
+})
+.WithName("VehiclesPost")
+.WithOpenApi();
+
+app.MapPut("/Vehicles", async ([FromBody]UpdateVehiclesCommand command,
+    IPublisher publisher,
+    CancellationToken cancellationToken = default) =>
+{
+    command.SagaId = Guid.NewGuid();
+
+    await publisher.PublishCommandAsync(command, cancellationToken);
+
+    string locationUri = $"/vehicles/status/{command.SagaId}";
+
+    return Results.Accepted(locationUri);
+})
+.WithName("VehiclesPut")
+.WithOpenApi();
+
+app.MapDelete("/Vehicles", async ([FromBody]DeleteVehiclesCommand command,
+    IPublisher publisher,
+    CancellationToken cancellationToken = default) =>
+{
+    command.SagaId = Guid.NewGuid();
+
     await publisher.PublishCommandAsync(command!, cancellationToken);
 
-    return new { Id = command?.Id, SagaId = command?.SagaId };
+    string locationUri = $"/vehicles/status/{command.SagaId}";
+
+    return Results.Accepted(locationUri);
 })
-.WithName("GetWeatherForecast")
+.WithName("VehiclesDelete")
 .WithOpenApi();
+
+app.MapGet("/Vehicles/{Id}", ([FromQuery]Guid id,
+    CancellationToken cancellationToken = default) =>
+{
+    return Results.Ok(new { id, status = "Processing" });
+})
+.WithName("VehiclesGet")
+.WithOpenApi();
+
+app.MapGet("/Vehicles/Status/{SagaId}", ([FromQuery]Guid sagaId,
+    CancellationToken cancellationToken = default) =>
+{
+    return Results.Ok(new { sagaId, status = "Processing" });
+})
+.WithName("VehiclesStatus")
+.WithOpenApi();
+
 
 app.Run();
 

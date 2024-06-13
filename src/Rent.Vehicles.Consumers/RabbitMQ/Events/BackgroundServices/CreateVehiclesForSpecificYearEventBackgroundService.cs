@@ -4,26 +4,39 @@ using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Entities;
+using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerConsumerMessageBackgroundService<CreateVehiclesForSpecificYearEvent>
+public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerConsumerEventToEntityBackgroundService<CreateVehiclesForSpecificYearEvent, VehiclesForSpecificYear>
 {
-    private readonly IPublisher _publisher;
+    protected readonly ICreateService<VehiclesForSpecificYear> _createService;
 
     public CreateVehiclesForSpecificYearEventBackgroundService(ILogger<CreateVehiclesForSpecificYearEventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IPublisher publisher) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesForSpecificYearEvent")
+        ICreateService<VehiclesForSpecificYear> createService,
+        ICreateService<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesForSpecificYearEvent", createEventService)
     {
-        _publisher = publisher;
+        _createService = createService;
     }
 
-    protected override async Task HandlerAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<VehiclesForSpecificYear> EventToEntityAsync(CreateVehiclesForSpecificYearEvent message, CancellationToken cancellationToken = default)
     {
-        await Task.Run(() => {
-            _logger.LogInformation("CreateVehiclesForSpecificYearEvent {id}", @event.Id);
+        return await Task.Run(() => new VehiclesForSpecificYear
+        {
+            Id = message.Id,
+            Year = message.Year,
+            Model = message.Model,
+            LicensePlate = message.LicensePlate,
+            Type = message.Type
         }, cancellationToken);
+    }
+
+    protected override async Task HandlerAsync(VehiclesForSpecificYear entity, CancellationToken cancellationToken = default)
+    {
+        await _createService.CreateAsync(entity, cancellationToken);
     }
 }

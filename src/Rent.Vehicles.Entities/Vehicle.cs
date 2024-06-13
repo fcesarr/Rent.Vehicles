@@ -8,14 +8,14 @@ public class Vehicle : Entity
 {
 
     [BsonElement("Year")]
-    public required int Year { get; init; }
+    public int Year { get; init; }
     
     [BsonElement("Model")]
-    public required string Model { get; init; }
+    public string Model { get; init; }
 
     [BsonElement("LicensePlate")]
-    public required string LicensePlate { get; init; }
+    public string LicensePlate { get; init; }
 
     [BsonElement("Type")]
-    public required VehicleType Type { get; init; }
+    public VehicleType Type { get; init; }
 }

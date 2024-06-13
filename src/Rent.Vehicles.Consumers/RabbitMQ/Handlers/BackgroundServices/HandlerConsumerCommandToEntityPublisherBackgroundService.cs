@@ -7,14 +7,14 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
-public abstract class HandlerConsumerCommandToEntityBackgroundService<TCommand, TEvent, TEntity> : HandlerConsumerMessageBackgroundService<TCommand> 
+public abstract class HandlerConsumerCommandToEntityPublisherBackgroundService<TCommand, TEvent, TEntity> : HandlerConsumerMessageBackgroundService<TCommand> 
     where TCommand : Messages.Command
     where TEvent : Messages.Event
     where TEntity : Entities.Command
 {
     protected readonly IPublisher _publisher;
 
-    protected HandlerConsumerCommandToEntityBackgroundService(ILogger<HandlerConsumerCommandToEntityBackgroundService<TCommand, TEvent, TEntity>> logger,
+    protected HandlerConsumerCommandToEntityPublisherBackgroundService(ILogger<HandlerConsumerCommandToEntityPublisherBackgroundService<TCommand, TEvent, TEntity>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,

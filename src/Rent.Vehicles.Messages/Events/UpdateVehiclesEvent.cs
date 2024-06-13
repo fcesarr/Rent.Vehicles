@@ -1,0 +1,15 @@
+using MessagePack;
+
+using Rent.Vehicles.Entities.Types;
+
+namespace Rent.Vehicles.Messages.Events;
+
+[MessagePackObject]
+public record UpdateVehiclesEvent : Event
+{
+    [Key(1)]
+    public required Guid Id { get; init; }
+
+    [Key(2)]
+    public required string LicensePlate { get; init; }
+}
