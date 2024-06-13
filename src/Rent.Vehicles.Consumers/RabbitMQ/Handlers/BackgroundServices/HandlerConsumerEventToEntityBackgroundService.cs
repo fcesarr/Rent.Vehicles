@@ -37,6 +37,7 @@ public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEnt
         {
             await _createEventService.CreateAsync(new Entities.Event{
                 SagaId = @event.SagaId,
+                Name = typeof(TEvent).Name,
                 StatusType = Entities.StatusType.Fail,
                 Message = ex.Message
             }, cancellationToken);
@@ -44,6 +45,7 @@ public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEnt
 
         await _createEventService.CreateAsync(new Entities.Event{
                 SagaId = @event.SagaId,
+                Name = typeof(TEvent).Name,
                 StatusType = Entities.StatusType.Success,
                 Message = string.Empty
             }, cancellationToken);

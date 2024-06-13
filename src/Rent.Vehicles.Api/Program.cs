@@ -1,12 +1,25 @@
+using System.Reflection;
+using System.Text;
+
 using Microsoft.AspNetCore.Mvc;
+
+using MongoDB.Driver;
+
+using Npgsql;
 
 using RabbitMQ.Client;
 
+using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
+using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.Factories;
+using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Repositories;
+using Rent.Vehicles.Services.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +29,50 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
         var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
         var connection = factory.CreateConnection();
         return connection.CreateModel();
-    });
+    })
+    .AddSingleton<IMongoDatabase>(service => {
+        var configuration = service.GetRequiredService<IConfiguration>();
+
+        var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
+
+        var client = new MongoClient(connectionString);
+
+        return client.GetDatabase("rent");
+    })
+    .AddSingleton<IRepository<Event>, Repository<Event>>(service =>
+    {
+        var logger = service.GetRequiredService<ILogger<Repository<Event>>>();
+
+        var configuration = service.GetRequiredService<IConfiguration>();
+
+        var connectionString = configuration.GetConnectionString("Sql") ?? string.Empty;
+
+        var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
+
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceNames = assembly.GetManifestResourceNames();
+        var sqlScripts = new Dictionary<string, string>();
+
+        string namespacePrefix = $"{assembly.GetName().Name}.Scripts.";
+
+        foreach (var resourceName in resourceNames)
+        {
+            if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+            {
+                using (var stream = assembly.GetManifestResourceStream(resourceName))
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    var sqlScript = reader.ReadToEnd();
+                    sqlScripts.Add(resourceName.Replace(namespacePrefix, ""), sqlScript);
+                }
+            }
+        }
+
+        return new Repository<Event>(logger, sqlScripts, connectionFactory);
+    })
+    .AddSingleton<IFindService<Event>, SqlService<Event>>()
+    .AddSingleton<IMongoRepository<Vehicle>, MongoRepository<Vehicle>>()
+    .AddSingleton<IGetService<Vehicle>, NoSqlService<Vehicle>>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -81,18 +137,30 @@ app.MapDelete("/Vehicles", async ([FromBody]DeleteVehiclesCommand command,
 .WithName("VehiclesDelete")
 .WithOpenApi();
 
-app.MapGet("/Vehicles/{Id}", ([FromQuery]Guid id,
+app.MapGet("/Vehicles/{Id}", async ([FromQuery]Guid id,
+    IGetService<Vehicle> getService,
     CancellationToken cancellationToken = default) =>
 {
-    return Results.Ok(new { id, status = "Processing" });
+    var entity = await getService.GetAsync(id, cancellationToken);
+
+    if(entity == null)
+        return Results.NotFound();
+
+    return Results.Ok(entity);
 })
 .WithName("VehiclesGet")
 .WithOpenApi();
 
-app.MapGet("/Vehicles/Status/{SagaId}", ([FromQuery]Guid sagaId,
+app.MapGet("/Vehicles/Status/{SagaId}", async ([FromQuery]Guid sagaId,
+    IFindService<Event> findService,
     CancellationToken cancellationToken = default) =>
 {
-    return Results.Ok(new { sagaId, status = "Processing" });
+    var entities = await findService.FindAsync(sagaId, cancellationToken);
+
+    if(!entities.Any())
+        return Results.NoContent();
+
+    return Results.Ok(entities);
 })
 .WithName("VehiclesStatus")
 .WithOpenApi();

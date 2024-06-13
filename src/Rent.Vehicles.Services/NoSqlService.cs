@@ -32,7 +32,18 @@ public sealed class NoSqlService<T> : IService<T> where T : Entity
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await Task.Run(() => _logger.LogInformation("Delete {obj}", id), cancellationToken);
+        await _mongoRepository.DeleteAsync(id, cancellationToken);
+    }
+
+    public Task<IEnumerable<T>> FindAsync(Guid sagaId,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<T?> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _mongoRepository.GetAsync(id, cancellationToken);
     }
 
     public async Task<T?> GetAsync(string sql,
@@ -42,9 +53,12 @@ public sealed class NoSqlService<T> : IService<T> where T : Entity
        return await Task.Run(() => default(T), cancellationToken);
     }
 
-    public Task UpdateAsync(T? entity, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(T? entity, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        if(entity == null)
+            return;
+
+        await _mongoRepository.UpdateAsync(entity, cancellationToken);
     }
 }
 

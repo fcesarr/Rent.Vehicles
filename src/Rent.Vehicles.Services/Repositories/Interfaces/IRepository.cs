@@ -6,7 +6,9 @@ public interface IRepository<T> where T : Entity
 {
     Task CreateAsync(T entity, CancellationToken cancellationToken = default);
 
-    Task<T?> GetAsync(string sql,
-        IDictionary<string, dynamic> parameters,
+    Task<T?> GetAsync(Guid sagaId,
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<T>> FindAsync(Guid sagaId,
         CancellationToken cancellationToken = default);
 }

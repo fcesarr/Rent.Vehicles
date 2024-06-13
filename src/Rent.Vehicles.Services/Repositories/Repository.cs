@@ -46,20 +46,51 @@ public sealed class Repository<T> : IRepository<T> where T : Entity
 
     }
 
-    public async Task<T?> GetAsync(string sql,
-        IDictionary<string, dynamic> parameters,
+    public async Task<IEnumerable<T>> FindAsync(Guid sagaId,
         CancellationToken cancellationToken = default)
-    {   
-        var connection = await _connectionFactory.GetConnectionAsync(cancellationToken);
+    {
+        if(_sqls.TryGetValue($"Select{typeof(T).Name}.sql", out string? sql))
+        {
+            var connection = await _connectionFactory.GetConnectionAsync(cancellationToken);
 
-        connection.Open();
+            connection.Open();
 
-        var dynamicParameters = new DynamicParameters(parameters);
+            var dynamicParameters = new DynamicParameters(new Dictionary<string, dynamic>
+            {
+                { "@SagaId", sagaId }
+            });
 
-        var entity = await connection.QueryFirstOrDefaultAsync<T>(sql, dynamicParameters);
+            var entities = await connection.QueryAsync<T>(sql, dynamicParameters);
 
-        connection.Close();
+            connection.Close();
 
-        return entity;
+            return entities;
+        }
+
+        return [];
+    }
+
+    public async Task<T?> GetAsync(Guid sagaId,
+        CancellationToken cancellationToken = default)
+    {
+        if(_sqls.TryGetValue($"Select{typeof(T).Name}.sql", out string? sql))
+        {
+            var connection = await _connectionFactory.GetConnectionAsync(cancellationToken);
+
+            connection.Open();
+
+            var dynamicParameters = new DynamicParameters(new Dictionary<string, dynamic>
+            {
+                { "@SagaId", sagaId }
+            });
+
+            var entity = await connection.QueryFirstOrDefaultAsync<T>(sql, dynamicParameters);
+
+            connection.Close();
+
+            return entity;
+        }
+
+        return default;
     }
 }

@@ -34,11 +34,15 @@ public sealed class SqlService<T> : IService<T> where T : Entity
         throw new NotImplementedException();
     }
 
-    public async Task<T?> GetAsync(string sql,
-        IDictionary<string, dynamic> parameters,
+    public async Task<IEnumerable<T>> FindAsync(Guid sagaId, CancellationToken cancellationToken = default)
+    {
+        return await _repository.FindAsync(sagaId, cancellationToken);
+    }
+
+    public async Task<T?> GetAsync(Guid sagaId,
         CancellationToken cancellationToken = default)
     {
-       return await _repository.GetAsync(sql, parameters, cancellationToken);
+       return await _repository.GetAsync(sagaId, cancellationToken);
     }
 
     public Task UpdateAsync(T? entity, CancellationToken cancellationToken = default)

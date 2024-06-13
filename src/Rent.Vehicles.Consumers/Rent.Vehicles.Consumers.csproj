@@ -10,11 +10,13 @@
   <ItemGroup>
     <None Remove="Scripts/InsertCommand.sql" />
     <None Remove="Scripts/InsertEvent.sql" />
+    <None Remove="Scripts/SelectEvent.sql" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Scripts/InsertCommand.sql" />
     <EmbeddedResource Include="Scripts/InsertEvent.sql" />
+    <EmbeddedResource Include="Scripts/SelectEvent.sql" />
   </ItemGroup>
 
   <ItemGroup>

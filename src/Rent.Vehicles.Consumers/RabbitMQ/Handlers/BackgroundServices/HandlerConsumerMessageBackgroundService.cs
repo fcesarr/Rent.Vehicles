@@ -39,7 +39,7 @@ public abstract class HandlerConsumerMessageBackgroundService<TMessage> : Backgr
 
             try
             {
-                result = _channel.BasicGet(_queueName, false);
+                result = _channel.BasicGet(_queueName, true);
 
                 if(result == null)
                     continue;
@@ -52,8 +52,6 @@ public abstract class HandlerConsumerMessageBackgroundService<TMessage> : Backgr
                 {
                     await HandlerAsync(message, stoppingToken);
                 }
-
-                _channel.BasicAck(result.DeliveryTag, false);
             }
             catch (Exception ex)
             {

@@ -7,12 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Scripts/InsertCommand.sql" />
+    <None Remove="Scripts/InsertEvent.sql" />
+    <None Remove="Scripts/SelectEvent.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts/InsertCommand.sql" />
+    <EmbeddedResource Include="Scripts/InsertEvent.sql" />
+    <EmbeddedResource Include="Scripts/SelectEvent.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.5" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Rent.Vehicles.Producers\Rent.Vehicles.Producers.csproj" />
+    <ProjectReference Include="..\Rent.Vehicles.Services\Rent.Vehicles.Services.csproj" />
   </ItemGroup>
 
 </Project>
