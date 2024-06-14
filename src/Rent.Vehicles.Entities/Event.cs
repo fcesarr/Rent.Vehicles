@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -17,12 +19,14 @@ public class Event : Entity
 
     [BsonElement("StatusType")]
     [BsonRepresentation(BsonType.String)]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public required StatusType StatusType { get; set; }
 
     [BsonElement("Message")]
     public required string Message { get; set; }
 
     [BsonIgnore]
+    [JsonIgnore]
     public virtual Command Command { get; set; }
 }
 

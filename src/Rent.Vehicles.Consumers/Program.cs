@@ -38,8 +38,8 @@ builder.Services
 
         return client.GetDatabase("rent");
     })
-    .AddCreateService<Command>()
-    .AddCreateService<Event>()
+    .AddCreateSqlService<Command>()
+    .AddCreateBothService<Event>()
     .AddSingleton<IValidator<VehiclesForSpecificYear>, Validator<VehiclesForSpecificYear>>()
     .AddSingleton<IValidator<Vehicle>, VehicleValidator>()
     .AddSingleton<IRepository<Vehicle>, MongoRepository<Vehicle>>()

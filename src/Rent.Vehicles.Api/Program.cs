@@ -73,7 +73,6 @@ BsonClassMap.RegisterClassMap<Event>(
     {
         map.AutoMap();
         map.MapProperty(x => x.SagaId).SetSerializer(new GuidSerializer(BsonType.String));
-        map.MapProperty(x => x.StatusType).SetSerializer(new EnumSerializer<StatusType>(BsonType.String));
     });
 
 app.MapPost("/Vehicles", async ([FromBody]CreateVehiclesCommand command,
