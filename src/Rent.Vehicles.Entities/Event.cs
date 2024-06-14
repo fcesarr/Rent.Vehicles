@@ -16,6 +16,7 @@ public class Event : Entity
     public required string Name { get; set; }
 
     [BsonElement("StatusType")]
+    [BsonRepresentation(BsonType.String)]
     public required StatusType StatusType { get; set; }
 
     [BsonElement("Message")]

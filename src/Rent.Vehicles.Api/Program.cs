@@ -3,6 +3,10 @@ using System.Text;
 
 using Microsoft.AspNetCore.Mvc;
 
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 using Npgsql;
@@ -64,6 +68,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+BsonClassMap.RegisterClassMap<Event>(
+    map =>
+    {
+        map.AutoMap();
+        map.MapProperty(x => x.SagaId).SetSerializer(new GuidSerializer(BsonType.String));
+        map.MapProperty(x => x.StatusType).SetSerializer(new EnumSerializer<StatusType>(BsonType.String));
+    });
 
 app.MapPost("/Vehicles", async ([FromBody]CreateVehiclesCommand command,
     IPublisher publisher,
