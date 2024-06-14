@@ -18,7 +18,7 @@ public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerConsum
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         ICreateService<VehiclesForSpecificYear> createService,
-        ICreateService<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesForSpecificYearEvent", createEventService)
+        IBothServices<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesForSpecificYearEvent", createEventService)
     {
         _createService = createService;
     }

@@ -17,7 +17,7 @@ public class DeleteVehiclesEventBackgroundService : HandlerConsumerEventToEntity
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IDeleteService<Vehicle> deleteService,
-        ICreateService<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "DeleteVehiclesEvent", createEventService)
+        IBothServices<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "DeleteVehiclesEvent", createEventService)
     {
         _deleteService = deleteService;
     }

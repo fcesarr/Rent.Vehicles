@@ -17,7 +17,7 @@ public class UpdateVehiclesEventBackgroundService : HandlerConsumerEventToEntity
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IUpdateService<Vehicle> updateService,
-        ICreateService<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "UpdateVehiclesEvent", createEventService)
+        IBothServices<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "UpdateVehiclesEvent", createEventService)
     {
         _updateService = updateService;
     }

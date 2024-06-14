@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Rent.Vehicles.Entities;
@@ -8,6 +9,7 @@ namespace Rent.Vehicles.Entities;
 public class Event : Entity
 {
     [BsonElement("SagaId")]
+    [BsonRepresentation(BsonType.String)]
     public required Guid SagaId { get; set; }
 
     [BsonElement("Name")]
@@ -19,7 +21,7 @@ public class Event : Entity
     [BsonElement("Message")]
     public required string Message { get; set; }
 
-    [BsonElement("Command")]
+    [BsonIgnore]
     public virtual Command Command { get; set; }
 }
 

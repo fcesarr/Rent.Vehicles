@@ -11,14 +11,14 @@ public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEnt
     where TEvent : Messages.Event
     where TEntity : Entities.Entity
 {
-    private readonly ICreateService<Entities.Event> _createEventService;
+    private readonly IBothServices<Entities.Event> _createEventService;
 
     protected HandlerConsumerEventToEntityBackgroundService(ILogger<HandlerConsumerEventToEntityBackgroundService<TEvent, TEntity>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         string queueName,
-        ICreateService<Entities.Event> createEventService) : base(logger, channel, periodicTimer, serializer, queueName)
+        IBothServices<Entities.Event> createEventService) : base(logger, channel, periodicTimer, serializer, queueName)
     {
         _createEventService = createEventService;
     }

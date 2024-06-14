@@ -13,6 +13,9 @@ public static class ServiceExtension
 {
     public static IServiceCollection AddCreateService<TEntity>(this IServiceCollection services) where TEntity : Entity
         => services.AddSingleton<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
+            .AddSingleton<ISqlRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
+            .AddSingleton<INoSqlRepository<TEntity>, MongoRepository<TEntity>>()
             .AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
-            .AddSingleton<ICreateService<TEntity>, SqlService<TEntity>>();
+            .AddSingleton<ICreateService<TEntity>, SqlService<TEntity>>()
+            .AddSingleton<IBothServices<TEntity>, BothServices<TEntity>>();
 }
