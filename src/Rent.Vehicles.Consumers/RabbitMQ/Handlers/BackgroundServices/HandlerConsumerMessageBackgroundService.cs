@@ -16,19 +16,15 @@ public abstract class HandlerConsumerMessageBackgroundService<TMessage> : Backgr
 
     protected readonly ISerializer _serializer;
 
-    private readonly string _queueName;
-
     protected HandlerConsumerMessageBackgroundService(ILogger<HandlerConsumerMessageBackgroundService<TMessage>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
-        ISerializer serializer,
-        string queueName)
+        ISerializer serializer)
     {
         _logger = logger;
         _channel = channel;
         _periodicTimer = periodicTimer;
         _serializer = serializer;
-        _queueName = queueName;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -39,7 +35,7 @@ public abstract class HandlerConsumerMessageBackgroundService<TMessage> : Backgr
 
             try
             {
-                result = _channel.BasicGet(_queueName, true);
+                result = _channel.BasicGet(typeof(TMessage).Name, true);
 
                 if(result == null)
                     continue;

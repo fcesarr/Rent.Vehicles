@@ -34,22 +34,17 @@ public abstract class Service<TEntity> : IService<TEntity> where TEntity : Entit
         if(!result.IsValid)
             throw result.Exception ?? new Exception();
 
-        await _repository.CreateAsync(entity!, cancellationToken);
+        await _repository.CreateAsync(result.Instance, cancellationToken);
     }
 
-    public Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(TEntity? entity, CancellationToken cancellationToken = default)
     {
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if(!result.IsValid)
             throw result.Exception ?? new Exception();
 
-        await _repository.DeleteAsync(entity, cancellationToken);
+        await _repository.DeleteAsync(result.Instance, cancellationToken);
     }
 
     public Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
@@ -69,10 +64,14 @@ public abstract class Service<TEntity> : IService<TEntity> where TEntity : Entit
         if(!result.IsValid)
             throw result.Exception ?? new Exception();
 
-        await _repository.UpdateAsync(entity!, cancellationToken);
+        await _repository.UpdateAsync(result.Instance, cancellationToken);
     }
 
-    public virtual Task UpdateAsync<TField>(TField field, CancellationToken cancellationToken = default)
-        => Task.CompletedTask;
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var entity = await GetAsync(x => x.Id == id, cancellationToken);
+
+        await DeleteAsync(entity, cancellationToken);
+    }
 }
 

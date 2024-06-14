@@ -48,16 +48,11 @@ builder.Services
 
         return client.GetDatabase("rent");
     })
-    .AddCreateSqlService<Command>()
-    .AddCreateBothService<Event>()
-    .AddSingleton<IValidator<VehiclesForSpecificYear>, Validator<VehiclesForSpecificYear>>()
-    .AddSingleton<IValidator<Vehicle>, VehicleValidator>()
-    .AddSingleton<IRepository<Vehicle>, MongoRepository<Vehicle>>()
-    .AddSingleton<IRepository<VehiclesForSpecificYear>, MongoRepository<VehiclesForSpecificYear>>()
-    .AddSingleton<IDeleteService<Vehicle>, NoSqlService<Vehicle>>()
-    .AddSingleton<ICreateService<Vehicle>, NoSqlService<Vehicle>>()
-    .AddSingleton<IUpdateService<Vehicle>, NoSqlService<Vehicle>>()
-    .AddSingleton<ICreateService<VehiclesForSpecificYear>, NoSqlService<VehiclesForSpecificYear>>()
+    .AddSqlService<Command>()
+    .AddSqlService<Vehicle, VehicleValidator>()
+    .AddSingleton<IVehicleService, VehicleService>()
+    .AddNoSqlService<Event>()
+    .AddNoSqlService<VehiclesForSpecificYear>()
     .AddTransient<IPeriodicTimer>(service => {
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
@@ -68,12 +63,10 @@ builder.Services
     .AddSingleton<ISerializer, MessagePackSerializer>()
     .AddHostedService<CreateVehiclesCommandBackgroundService>()
     .AddHostedService<DeleteVehiclesCommandBackgroundService>()
+    .AddHostedService<UpdateVehiclesCommandBackgroundService>()
     .AddHostedService<CreateVehiclesForSpecificYearEventBackgroundService>()
     .AddHostedService<CreateVehiclesEventBackgroundService>()
     .AddHostedService<DeleteVehiclesEventBackgroundService>()
-    .AddHostedService<EnqueueVehiclesForSpecificYearEventBackgroundService>()
-    .AddHostedService<UpdateVehiclesCommandBackgroundService>()
-    .AddSingleton<IVehicleService, VehicleService>()
     .AddHostedService<UpdateVehiclesEventBackgroundService>();
 
 var host = builder.Build();

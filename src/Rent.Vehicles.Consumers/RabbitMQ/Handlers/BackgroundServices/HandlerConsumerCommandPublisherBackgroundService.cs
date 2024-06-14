@@ -2,29 +2,33 @@
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Utils.Interfaces;
+using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
-public abstract class HandlerConsumerCommandToEntityPublisherBackgroundService<TCommand, TEvent, TEntity> : HandlerConsumerMessageBackgroundService<TCommand> 
+public abstract class HandlerConsumerCommandPublisherBackgroundService<TCommand, TEvent> : HandlerConsumerMessageBackgroundService<TCommand> 
     where TCommand : Messages.Command
     where TEvent : Messages.Event
-    where TEntity : Entities.Command
 {
     protected readonly IPublisher _publisher;
 
-    protected HandlerConsumerCommandToEntityPublisherBackgroundService(ILogger<HandlerConsumerCommandToEntityPublisherBackgroundService<TCommand, TEvent, TEntity>> logger,
+    protected readonly ICreateService<Command> _createService;
+
+    protected HandlerConsumerCommandPublisherBackgroundService(ILogger<HandlerConsumerCommandPublisherBackgroundService<TCommand, TEvent>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        string queueName,
-        IPublisher publisher) : base(logger, channel, periodicTimer, serializer, queueName)
+        IPublisher publisher,
+        ICreateService<Command> createService) : base(logger, channel, periodicTimer, serializer)
     {
         _publisher = publisher;
+        _createService = createService;
     }
 
-    protected abstract Task<TEntity> CommandToEntityAsync(TCommand message, ISerializer serializer, CancellationToken cancellationToken = default);
+    protected abstract Task<Command> CommandToEntityAsync(TCommand message, ISerializer serializer, CancellationToken cancellationToken = default);
 
     protected abstract Task<TEvent> CommandToEventAsync(TCommand message, CancellationToken cancellationToken = default);
 
@@ -39,5 +43,8 @@ public abstract class HandlerConsumerCommandToEntityPublisherBackgroundService<T
         await _publisher.PublishEventAsync(@event, cancellationToken);
     }
 
-    protected abstract Task HandlerAsync(TEntity entity, CancellationToken cancellationToken = default);
+    private async Task HandlerAsync(Command entity, CancellationToken cancellationToken = default)
+    {
+        await _createService.CreateAsync(entity, cancellationToken);
+    }
 }

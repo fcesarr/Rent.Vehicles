@@ -10,9 +10,9 @@ namespace Rent.Vehicles.Services.Validators;
 
 public class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValidator<TEntity> where TEntity : Entity
 {
-	async Task<ValidationResult> Interfaces.IValidator<TEntity>.ValidateAsync(TEntity? instance, CancellationToken cancellationToken)
+	async Task<ValidationResult<TEntity>> Interfaces.IValidator<TEntity>.ValidateAsync(TEntity? instance, CancellationToken cancellationToken)
 	{
-		var validationResult = new ValidationResult
+		var validationResult = new ValidationResult<TEntity>
         {
             IsValid = false
         };
@@ -34,6 +34,8 @@ public class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValida
 			validationResult.Exception =
 				new ValidationException($"Error on Validate {typeof(TEntity).Name}", result.ToDictionary());
 		}
+
+        validationResult.Instance = instance;
 
 		return validationResult;
 	}

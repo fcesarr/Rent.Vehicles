@@ -24,10 +24,6 @@ public class Event : Entity
 
     [BsonElement("Message")]
     public required string Message { get; set; }
-
-    [BsonIgnore]
-    [JsonIgnore]
-    public virtual Command Command { get; set; }
 }
 
 public enum StatusType

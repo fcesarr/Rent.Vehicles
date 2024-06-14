@@ -12,7 +12,7 @@ using Rent.Vehicles.Entities.Contexts;
 namespace Rent.Vehicles.Entities.Migrations
 {
     [DbContext(typeof(RentVehiclesContext))]
-    [Migration("20240614065603_InitDatabase")]
+    [Migration("20240614141349_InitDatabase")]
     partial class InitDatabase
     {
         /// <inheritdoc />
@@ -56,47 +56,15 @@ namespace Rent.Vehicles.Entities.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("serializer_type");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
                     b.HasKey("Id")
                         .HasName("pk_commands");
 
-                    b.HasAlternateKey("SagaId")
-                        .HasName("ak_commands_saga_id");
-
                     b.ToTable("commands", "events");
-                });
-
-            modelBuilder.Entity("Rent.Vehicles.Entities.Event", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("message");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<Guid>("SagaId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("saga_id");
-
-                    b.Property<int>("StatusType")
-                        .HasColumnType("integer")
-                        .HasColumnName("status_type");
-
-                    b.HasKey("Id")
-                        .HasName("pk_events");
-
-                    b.HasIndex("SagaId")
-                        .HasDatabaseName("ix_events_saga_id");
-
-                    b.ToTable("events", "events");
                 });
 
             modelBuilder.Entity("Rent.Vehicles.Entities.Vehicle", b =>
@@ -124,46 +92,10 @@ namespace Rent.Vehicles.Entities.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("year");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_vehicles");
 
                     b.ToTable("vehicles", "vehicles");
-
-                    b.UseTptMappingStrategy();
-                });
-
-            modelBuilder.Entity("Rent.Vehicles.Entities.VehiclesForSpecificYear", b =>
-                {
-                    b.HasBaseType("Rent.Vehicles.Entities.Vehicle");
-
-                    b.ToTable("vehiclesForSpecificYear", "vehicles");
-                });
-
-            modelBuilder.Entity("Rent.Vehicles.Entities.Event", b =>
-                {
-                    b.HasOne("Rent.Vehicles.Entities.Command", "Command")
-                        .WithMany("Events")
-                        .HasForeignKey("SagaId")
-                        .HasPrincipalKey("SagaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_events_commands_saga_id");
-
-                    b.Navigation("Command");
-                });
-
-            modelBuilder.Entity("Rent.Vehicles.Entities.VehiclesForSpecificYear", b =>
-                {
-                    b.HasOne("Rent.Vehicles.Entities.Vehicle", null)
-                        .WithOne()
-                        .HasForeignKey("Rent.Vehicles.Entities.VehiclesForSpecificYear", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_vehicles_for_specific_year_vehicles_id");
-                });
-
-            modelBuilder.Entity("Rent.Vehicles.Entities.Command", b =>
-                {
-                    b.Navigation("Events");
                 });
 #pragma warning restore 612, 618
         }

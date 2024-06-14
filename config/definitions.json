@@ -80,13 +80,6 @@
             "arguments": {}
         },
         {
-            "name": "EnqueueVehiclesYearEvent",
-            "vhost": "/",
-            "durable": true,
-            "auto_delete": false,
-            "arguments": {}
-        },
-        {
             "name": "CreateVehiclesForSpecificYearEvent",
             "vhost": "/",
             "durable": true,
@@ -181,14 +174,6 @@
             "source": "CreateVehiclesEvent",
             "vhost": "/",
             "destination": "CreateVehiclesEvent",
-            "destination_type": "queue",
-            "routing_key": "",
-            "arguments": {}
-        },
-        {
-            "source": "CreateVehiclesEvent",
-            "vhost": "/",
-            "destination": "EnqueueVehiclesYearEvent",
             "destination_type": "queue",
             "routing_key": "",
             "arguments": {}

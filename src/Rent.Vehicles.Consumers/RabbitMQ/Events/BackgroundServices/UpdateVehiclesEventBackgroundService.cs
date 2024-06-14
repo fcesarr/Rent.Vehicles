@@ -9,7 +9,7 @@ using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class UpdateVehiclesEventBackgroundService : HandlerConsumerEventToEntityBackgroundService<UpdateVehiclesEvent, VehicleUpdate>
+public class UpdateVehiclesEventBackgroundService : HandlerConsumerEventBackgroundService<UpdateVehiclesEvent>
 {
     protected readonly IVehicleService _updateService;
 
@@ -18,25 +18,16 @@ public class UpdateVehiclesEventBackgroundService : HandlerConsumerEventToEntity
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IVehicleService updateService,
-        IBothServices<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "UpdateVehiclesEvent", createEventService)
+        ICreateService<Event> createEventService) : base(logger, channel, periodicTimer, serializer, createEventService)
     {
         _updateService = updateService;
     }
 
-    protected override async Task<VehicleUpdate> EventToEntityAsync(UpdateVehiclesEvent message, CancellationToken cancellationToken = default)
+    protected override async Task HandlerEventAsync(UpdateVehiclesEvent @event, CancellationToken cancellationToken = default)
     {
-        return await Task.Run(() => new VehicleUpdate
-        {
-            Id = message.Id,
-            LicensePlate = message.LicensePlate,
-        }, cancellationToken);
-    }
-
-    protected override async Task HandlerAsync(VehicleUpdate entity, CancellationToken cancellationToken = default)
-    {
-        await _updateService.UpdateAsync(entity.Id, entity.LicensePlate, cancellationToken);
-
-        await _updateService.UpdateAsync(entity, cancellationToken);
+        await _updateService.UpdateAsync(@event.Id,
+            @event.LicensePlate,
+            cancellationToken);
     }
 }
 

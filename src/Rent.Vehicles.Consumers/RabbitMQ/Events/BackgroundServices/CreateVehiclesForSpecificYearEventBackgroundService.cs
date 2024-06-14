@@ -9,7 +9,7 @@ using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerConsumerEventToEntityBackgroundService<CreateVehiclesForSpecificYearEvent, VehiclesForSpecificYear>
+public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerConsumerEventBackgroundService<CreateVehiclesForSpecificYearEvent>
 {
     protected readonly ICreateService<VehiclesForSpecificYear> _createService;
 
@@ -18,25 +18,20 @@ public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerConsum
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         ICreateService<VehiclesForSpecificYear> createService,
-        IBothServices<Event> createEventService) : base(logger, channel, periodicTimer, serializer, "CreateVehiclesForSpecificYearEvent", createEventService)
+        ICreateService<Event> createEventService) : base(logger, channel, periodicTimer, serializer, createEventService)
     {
         _createService = createService;
     }
 
-    protected override async Task<VehiclesForSpecificYear> EventToEntityAsync(CreateVehiclesForSpecificYearEvent message, CancellationToken cancellationToken = default)
+    protected override async Task HandlerEventAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
     {
-        return await Task.Run(() => new VehiclesForSpecificYear
+        await _createService.CreateAsync(new VehiclesForSpecificYear
         {
-            Id = message.Id,
-            Year = message.Year,
-            Model = message.Model,
-            LicensePlate = message.LicensePlate,
-            Type = message.Type
+            Id = @event.Id,
+            Year = @event.Year,
+            Model = @event.Model,
+            LicensePlate = @event.LicensePlate,
+            Type = @event.Type
         }, cancellationToken);
-    }
-
-    protected override async Task HandlerAsync(VehiclesForSpecificYear entity, CancellationToken cancellationToken = default)
-    {
-        await _createService.CreateAsync(entity, cancellationToken);
     }
 }
