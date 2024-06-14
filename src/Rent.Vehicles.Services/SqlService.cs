@@ -7,7 +7,7 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services;
 
-public sealed class SqlService<TEntity> : Service<TEntity> where TEntity : Entity
+public class SqlService<TEntity> : Service<TEntity> where TEntity : Entity
 {
     public SqlService(ILogger<Service<TEntity>> logger,
         IValidator<TEntity> validator,

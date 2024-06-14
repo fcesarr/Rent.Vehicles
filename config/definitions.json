@@ -133,6 +133,15 @@
             "arguments": {}
         },
         {
+            "name": "UpdateVehiclesEvent",
+            "vhost": "/",
+            "type": "fanout",
+            "durable": true,
+            "auto_delete": false,
+            "internal": false,
+            "arguments": {}
+        },
+        {
             "name": "CreateVehiclesEvent",
             "vhost": "/",
             "type": "fanout",
@@ -156,6 +165,14 @@
             "source": "example-exchange",
             "vhost": "example-vhost",
             "destination": "example-queue",
+            "destination_type": "queue",
+            "routing_key": "",
+            "arguments": {}
+        },
+        {
+            "source": "UpdateVehiclesEvent",
+            "vhost": "/",
+            "destination": "UpdateVehiclesEvent",
             "destination_type": "queue",
             "routing_key": "",
             "arguments": {}

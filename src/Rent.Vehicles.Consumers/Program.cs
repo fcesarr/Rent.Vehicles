@@ -19,8 +19,18 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Consumers.Extensions;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Bson;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+// BsonClassMap.RegisterClassMap<Vehicle>(
+//     map =>
+//     {
+//         map.AutoMap();
+//         map.MapIdProperty("Id");
+//     });
 
 builder.Services
     .AddSingleton<IModel>(service => {
@@ -62,7 +72,9 @@ builder.Services
     .AddHostedService<CreateVehiclesEventBackgroundService>()
     .AddHostedService<DeleteVehiclesEventBackgroundService>()
     .AddHostedService<EnqueueVehiclesForSpecificYearEventBackgroundService>()
-    .AddHostedService<UpdateVehiclesCommandBackgroundService>();
+    .AddHostedService<UpdateVehiclesCommandBackgroundService>()
+    .AddSingleton<IVehicleService, VehicleService>()
+    .AddHostedService<UpdateVehiclesEventBackgroundService>();
 
 var host = builder.Build();
 host.Run();

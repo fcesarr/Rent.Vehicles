@@ -7,7 +7,7 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services;
 
-public sealed class NoSqlService<TEntity> : Service<TEntity> where TEntity : Entity
+public class NoSqlService<TEntity> : Service<TEntity> where TEntity : Entity
 {
     public NoSqlService(ILogger<Service<TEntity>> logger,
         IValidator<TEntity> validator,

@@ -9,7 +9,7 @@ namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
 public abstract class HandlerConsumerEventToEntityBackgroundService<TEvent, TEntity> : HandlerConsumerMessageBackgroundService<TEvent> 
     where TEvent : Messages.Event
-    where TEntity : Entities.Entity
+    where TEntity : class
 {
     private readonly IBothServices<Entities.Event> _createEventService;
 

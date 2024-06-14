@@ -12,11 +12,11 @@ namespace Rent.Vehicles.Services;
 
 public abstract class Service<TEntity> : IService<TEntity> where TEntity : Entity
 {
-    private readonly ILogger<Service<TEntity>> _logger; 
+    protected readonly ILogger<Service<TEntity>> _logger; 
 
     private readonly IValidator<TEntity> _validator;
 
-    private readonly IRepository<TEntity> _repository;
+    protected readonly IRepository<TEntity> _repository;
 
     public Service(ILogger<Service<TEntity>> logger,
         IValidator<TEntity> validator,
@@ -71,5 +71,8 @@ public abstract class Service<TEntity> : IService<TEntity> where TEntity : Entit
 
         await _repository.UpdateAsync(entity!, cancellationToken);
     }
+
+    public virtual Task UpdateAsync<TField>(TField field, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 }
 

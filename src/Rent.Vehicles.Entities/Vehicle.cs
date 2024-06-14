@@ -17,7 +17,7 @@ public class Vehicle : Entity
     public string Model { get; init; }
 
     [BsonElement("LicensePlate")]
-    public string LicensePlate { get; init; }
+    public string LicensePlate { get; set; }
 
     [BsonElement("Type")]
     public VehicleType Type { get; init; }

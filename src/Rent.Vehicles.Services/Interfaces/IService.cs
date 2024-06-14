@@ -12,4 +12,4 @@ public interface IService<TEntity> :
 
 }
 
-public interface IBothServices<TEntity> : IService<TEntity> where TEntity : Entity;
+public interface IBothServices<TEntity> : ICreateService<TEntity> where TEntity : Entity;

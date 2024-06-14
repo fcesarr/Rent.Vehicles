@@ -1,5 +1,7 @@
 using System.Linq.Expressions;
 
+using Microsoft.Extensions.Logging;
+
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 
@@ -10,10 +12,14 @@ namespace Rent.Vehicles.Services.Repositories;
 
 public sealed class MongoRepository<TEntity> : INoSqlRepository<TEntity> where TEntity : Entity
 {
+    private readonly ILogger<MongoRepository<TEntity>> _logger;
+
     private readonly IMongoCollection<TEntity> _mongoCollection;
 
-    public MongoRepository(IMongoDatabase mongoDatabase)
+    public MongoRepository(ILogger<MongoRepository<TEntity>> logger,
+        IMongoDatabase mongoDatabase)
     {
+        _logger = logger;
         _mongoCollection = mongoDatabase
             .GetCollection<TEntity>($"{typeof(TEntity).Name.ToLower()}s");
     }
@@ -56,14 +62,25 @@ public sealed class MongoRepository<TEntity> : INoSqlRepository<TEntity> where T
 
     public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        var filter = Builders<TEntity>.Filter
-            .Where(predicate);
-        
-        var cursor =  await _mongoCollection
-            .FindAsync(filter, cancellationToken: cancellationToken);
+        try
+        {
+            
+            var filter = Builders<TEntity>.Filter
+                .Where(predicate);
+            
+            var cursor =  await _mongoCollection
+                .FindAsync(filter, cancellationToken: cancellationToken);
+    
+            return await cursor
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            
+            _logger.LogError(ex.Message, ex);
+        }
 
-        return await cursor
-            .FirstOrDefaultAsync(cancellationToken);
+        return await Task.FromResult(default(TEntity));
     }
 
     public async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -73,10 +90,7 @@ public sealed class MongoRepository<TEntity> : INoSqlRepository<TEntity> where T
         var filter = Builders<TEntity>
             .Filter
             .Where(x => x.Id == entity.Id);
-        
-        var update = Builders<TEntity>.Update
-            .Set(t => t, entity);
     
-        await _mongoCollection.UpdateOneAsync(filter, update, options, cancellationToken);
+        await Task.Run(async () => await _mongoCollection.ReplaceOneAsync(filter, entity) , cancellationToken);
     }
 }

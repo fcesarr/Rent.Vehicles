@@ -40,24 +40,4 @@ public class BothServices<TEntity> : IBothServices<TEntity> where TEntity : Enti
         await _sqlRepository.CreateAsync(entity!, cancellationToken);
         await _noSqlRepository.CreateAsync(entity!, cancellationToken);
     }
-
-    public Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
 }
