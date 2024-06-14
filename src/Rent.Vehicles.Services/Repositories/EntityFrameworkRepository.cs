@@ -26,6 +26,8 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository<TEntity> wh
         var dbSet = context.Set<TEntity>();
 
         _ = await dbSet.AddAsync(entity, cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
@@ -40,6 +42,8 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository<TEntity> wh
             .ToListAsync(cancellationToken);
 
         await Task.Run(() => dbSet.RemoveRange(entities), cancellationToken);
+        
+        await context.SaveChangesAsync(cancellationToken);    
     }
 
     public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -50,6 +54,8 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository<TEntity> wh
         var dbSet = context.Set<TEntity>();
 
         await Task.Run(() => dbSet.Remove(entity), cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
@@ -84,5 +90,7 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository<TEntity> wh
         var dbSet = context.Set<TEntity>();
 
         await Task.Run(() => dbSet.Update(entity), cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

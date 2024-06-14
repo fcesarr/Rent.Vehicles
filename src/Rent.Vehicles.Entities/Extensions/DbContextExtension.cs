@@ -11,9 +11,9 @@ namespace Rent.Vehicles.Entities.Extensions;
 
 public static class DbContextExtension
 {
-    public static IServiceCollection AddDbContext<TInterface, TImplementation>(this IServiceCollection services, string connectionString)
+    public static IServiceCollection AddDbContextDependencies<TInterface, TImplementation>(this IServiceCollection services, string connectionString)
         where TInterface : class, IDbContext
-		where TImplementation : VehiclesContext, TInterface
+		where TImplementation : RentVehiclesContext, TInterface
     {
         return services.AddDbContextFactory<TImplementation>((service, options) =>
 			{
@@ -26,6 +26,13 @@ public static class DbContextExtension
 				var implementation = service.GetRequiredService<IDbContextFactory<TImplementation>>();
 
 				return new DbContextFactory<TImplementation>(implementation);
+			})
+            .AddScoped<TInterface, TImplementation>(service =>
+			{
+				var factory = service.GetRequiredService<IDbContextFactory<TImplementation>>();
+				var context = factory.CreateDbContext();
+
+				return context;
 			});
     }
 }

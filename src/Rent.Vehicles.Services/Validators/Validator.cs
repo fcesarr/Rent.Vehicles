@@ -8,7 +8,7 @@ using ValidationException = Rent.Vehicles.Services.Exceptions.ValidationExceptio
 
 namespace Rent.Vehicles.Services.Validators;
 
-public abstract class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValidator<TEntity> where TEntity : Entity
+public class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValidator<TEntity> where TEntity : Entity
 {
 	async Task<ValidationResult> Interfaces.IValidator<TEntity>.ValidateAsync(TEntity? instance, CancellationToken cancellationToken)
 	{

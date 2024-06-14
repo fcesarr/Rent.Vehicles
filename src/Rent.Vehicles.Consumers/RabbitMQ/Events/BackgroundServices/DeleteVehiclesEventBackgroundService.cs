@@ -32,6 +32,6 @@ public class DeleteVehiclesEventBackgroundService : HandlerConsumerEventToEntity
 
     protected override async Task HandlerAsync(Vehicle entity, CancellationToken cancellationToken = default)
     {
-        await _deleteService.DeleteAsync(entity.Id, cancellationToken);
+        await _deleteService.DeleteAsync(entity, cancellationToken);
     }
 }

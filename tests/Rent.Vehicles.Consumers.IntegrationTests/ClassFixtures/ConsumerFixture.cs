@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 
 using AutoFixture;
 
@@ -79,9 +80,10 @@ public class ConsumerFixture<TBackgroundService, TCommand, TEntity> : IDisposabl
             body: bytes);
     }
 
-    public async Task<TEntity?> GetCommandAsync(string sql, IDictionary<string, dynamic> parameters)
+    public async Task<TEntity?> GetCommandAsync(Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default)
     {
-        return await _service!.GetAsync(sql, parameters);
+        return await _service!.GetAsync(predicate, cancellationToken);
     }
 
     public async Task StartWorkerEventAsync<T>(CancellationToken cancellationToken) where T : BackgroundService

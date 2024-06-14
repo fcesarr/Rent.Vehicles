@@ -45,38 +45,8 @@ public static class ServiceExtensions
 
                     return client.GetDatabase("rent");
                 })
-                .AddSingleton<IMongoRepository<Vehicle>, MongoRepository<Vehicle>>()
-                .AddSingleton<IRepository<Command>, EntityFrameworkRepository<Command>>(service =>
-                {
-                    var logger = service.GetRequiredService<ILogger<EntityFrameworkRepository<Command>>>();
-
-                    var configuration = service.GetRequiredService<IConfiguration>();
-
-                    var connectionString = configuration.GetConnectionString("Sql") ?? string.Empty;
-
-                    var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
-
-                    var assembly = Assembly.GetExecutingAssembly();
-                    var resourceNames = assembly.GetManifestResourceNames();
-                    var sqlScripts = new Dictionary<string, string>();
-
-                    string namespacePrefix = $"{assembly.GetName().Name}.Scripts.";
-
-                    foreach (var resourceName in resourceNames)
-                    {
-                        if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
-                        {
-                            using (var stream = assembly.GetManifestResourceStream(resourceName))
-                            using (var reader = new StreamReader(stream, Encoding.UTF8))
-                            {
-                                var sqlScript = reader.ReadToEnd();
-                                sqlScripts.Add(resourceName.Replace(namespacePrefix, ""), sqlScript);
-                            }
-                        }
-                    }
-
-                    return new EntityFrameworkRepository<Command>(logger, sqlScripts, connectionFactory);
-                })
+                .AddSingleton<IRepository<Vehicle>, MongoRepository<Vehicle>>()
+                .AddSingleton<IRepository<Command>, EntityFrameworkRepository<Command>>()
                 .AddSingleton<IDeleteService<Vehicle>, NoSqlService<Vehicle>>()
                 .AddSingleton<ICreateService<Command>, SqlService<Command>>()
                 .AddSingleton<ICreateService<Vehicle>, NoSqlService<Vehicle>>()

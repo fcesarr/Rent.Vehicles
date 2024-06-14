@@ -1,9 +1,12 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 using MongoDB.Bson.Serialization.Attributes;
 
 using Rent.Vehicles.Entities.Types;
 
 namespace Rent.Vehicles.Entities;
 
+[Table("vehicles", Schema = "vehicles")]
 public class Vehicle : Entity
 {
 

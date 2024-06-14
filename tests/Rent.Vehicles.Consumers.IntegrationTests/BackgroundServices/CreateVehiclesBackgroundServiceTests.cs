@@ -54,11 +54,7 @@ public class CreateVehiclesBackgroundServiceTests : IDisposable
 
         do
         {
-            found = await _fixture.GetCommandAsync(@"SELECT * FROM Commands WHERE SagaId = @SagaId",
-                new Dictionary<string, dynamic>{
-                    { "@SagaId", command.SagaId }
-                }
-            ) != null;
+            found = await _fixture.GetCommandAsync(x => x.SagaId == command.SagaId) != null;
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
 

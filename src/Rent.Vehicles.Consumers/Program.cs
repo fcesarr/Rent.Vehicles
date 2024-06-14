@@ -1,30 +1,34 @@
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib.Serializers;
-using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Services.Factories;
 using Rent.Vehicles.Services;
 using RabbitMQ.Client;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Repositories;
-using Npgsql;
-using System.Reflection;
-using System.Text;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
 using Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 using MongoDB.Driver;
+using Rent.Vehicles.Entities.Contexts;
+using Rent.Vehicles.Entities.Extensions;
+using Rent.Vehicles.Entities.Contexts.Interfaces;
+using Rent.Vehicles.Services.Validators.Interfaces;
+using System.ComponentModel.DataAnnotations;
+using Rent.Vehicles.Services.Validators;
+using Rent.Vehicles.Consumers.Extensions;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddSingleton<IModel>(service => {
+builder.Services
+    .AddSingleton<IModel>(service => {
         var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
         var connection = factory.CreateConnection();
         return connection.CreateModel();
     })
+    .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
     .AddSingleton<IMongoDatabase>(service => {
         var configuration = service.GetRequiredService<IConfiguration>();
 
@@ -34,72 +38,12 @@ builder.Services.AddSingleton<IModel>(service => {
 
         return client.GetDatabase("rent");
     })
-    .AddSingleton<IMongoRepository<Vehicle>, MongoRepository<Vehicle>>()
-    .AddSingleton<IMongoRepository<VehiclesForSpecificYear>, MongoRepository<VehiclesForSpecificYear>>()
-    .AddSingleton<IRepository<Command>, EntityFrameworkRepository<Command>>(service =>
-    {
-        var logger = service.GetRequiredService<ILogger<EntityFrameworkRepository<Command>>>();
-
-        var configuration = service.GetRequiredService<IConfiguration>();
-
-        var connectionString = configuration.GetConnectionString("Sql") ?? string.Empty;
-
-        var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
-
-        var assembly = Assembly.GetExecutingAssembly();
-        var resourceNames = assembly.GetManifestResourceNames();
-        var sqlScripts = new Dictionary<string, string>();
-
-        string namespacePrefix = $"{assembly.GetName().Name}.Scripts.";
-
-        foreach (var resourceName in resourceNames)
-        {
-            if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
-            {
-                using (var stream = assembly.GetManifestResourceStream(resourceName))
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
-                {
-                    var sqlScript = reader.ReadToEnd();
-                    sqlScripts.Add(resourceName.Replace(namespacePrefix, ""), sqlScript);
-                }
-            }
-        }
-
-        return new EntityFrameworkRepository<Command>(logger, sqlScripts, connectionFactory);
-    })
-    .AddSingleton<ICreateService<Command>, SqlService<Command>>()
-    .AddSingleton<IRepository<Event>, EntityFrameworkRepository<Event>>(service =>
-    {
-        var logger = service.GetRequiredService<ILogger<EntityFrameworkRepository<Event>>>();
-
-        var configuration = service.GetRequiredService<IConfiguration>();
-
-        var connectionString = configuration.GetConnectionString("Sql") ?? string.Empty;
-
-        var connectionFactory = new ConnectionFactory<NpgsqlConnection>(connectionString);
-
-        var assembly = Assembly.GetExecutingAssembly();
-        var resourceNames = assembly.GetManifestResourceNames();
-        var sqlScripts = new Dictionary<string, string>();
-
-        string namespacePrefix = $"{assembly.GetName().Name}.Scripts.";
-
-        foreach (var resourceName in resourceNames)
-        {
-            if (resourceName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
-            {
-                using (var stream = assembly.GetManifestResourceStream(resourceName))
-                using (var reader = new StreamReader(stream, Encoding.UTF8))
-                {
-                    var sqlScript = reader.ReadToEnd();
-                    sqlScripts.Add(resourceName.Replace(namespacePrefix, ""), sqlScript);
-                }
-            }
-        }
-
-        return new EntityFrameworkRepository<Event>(logger, sqlScripts, connectionFactory);
-    })
-    .AddSingleton<ICreateService<Event>, SqlService<Event>>()
+    .AddCreateService<Command>()
+    .AddCreateService<Event>()
+    .AddSingleton<IValidator<VehiclesForSpecificYear>, Validator<VehiclesForSpecificYear>>()
+    .AddSingleton<IValidator<Vehicle>, VehicleValidator>()
+    .AddSingleton<IRepository<Vehicle>, MongoRepository<Vehicle>>()
+    .AddSingleton<IRepository<VehiclesForSpecificYear>, MongoRepository<VehiclesForSpecificYear>>()
     .AddSingleton<IDeleteService<Vehicle>, NoSqlService<Vehicle>>()
     .AddSingleton<ICreateService<Vehicle>, NoSqlService<Vehicle>>()
     .AddSingleton<IUpdateService<Vehicle>, NoSqlService<Vehicle>>()
