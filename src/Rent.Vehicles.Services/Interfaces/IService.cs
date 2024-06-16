@@ -12,4 +12,6 @@ public interface IService<TEntity> :
 
 }
 
-public interface IBothServices<TEntity> : ICreateService<TEntity> where TEntity : Entity;
+public interface ISqlService<TEntity> : IService<TEntity> where TEntity : Entity;
+
+public interface INoSqlService<TEntity> : IService<TEntity> where TEntity : Entity;

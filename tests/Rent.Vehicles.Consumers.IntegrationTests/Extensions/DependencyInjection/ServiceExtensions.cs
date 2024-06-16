@@ -59,11 +59,11 @@ public static class ServiceExtensions
                 })
                 .AddSingleton<IPublisher, Publisher>()
                 .AddSingleton<ISerializer, MessagePackSerializer>()
-                .AddSingleton<CreateVehiclesCommandBackgroundService>()
-                .AddSingleton<DeleteVehiclesCommandBackgroundService>()
-                .AddSingleton<CreateVehiclesForSpecificYearEventBackgroundService>()
-                .AddSingleton<CreateVehiclesEventBackgroundService>()
-                .AddSingleton<DeleteVehiclesEventBackgroundService>();
+                .AddSingleton<CreateVehiclesSqlBackgroundService>()
+                .AddSingleton<DeleteVehiclesCommandSqlBackgroundService>()
+                .AddSingleton<CreateVehiclesForSpecificYearEventNoSqlBackgroundService>()
+                .AddSingleton<CreateVehiclesSuccessEventNoSqlBackgroundService>()
+                .AddSingleton<DeleteVehiclesEventSqlBackgroundService>();
 
 
     

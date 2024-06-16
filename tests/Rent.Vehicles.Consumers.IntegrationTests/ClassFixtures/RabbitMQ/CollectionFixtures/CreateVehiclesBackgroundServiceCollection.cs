@@ -12,7 +12,7 @@ public class CreateVehiclesBackgroundServiceCollection :
 
 }
 
-public class CreateVehiclesBackgroundServiceFixture : ConsumerFixture<CreateVehiclesCommandBackgroundService, CreateVehiclesCommand, Command>
+public class CreateVehiclesBackgroundServiceFixture : ConsumerFixture<CreateVehiclesSqlBackgroundService, CreateVehiclesCommand, Command>
 {
 
 }

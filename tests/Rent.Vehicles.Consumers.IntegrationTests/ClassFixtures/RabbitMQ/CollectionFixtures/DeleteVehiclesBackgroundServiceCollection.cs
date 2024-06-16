@@ -12,7 +12,7 @@ public class DeleteVehiclesBackgroundServiceCollection :
 
 }
 
-public class DeleteVehiclesBackgroundServiceFixture : ConsumerFixture<DeleteVehiclesCommandBackgroundService, DeleteVehiclesCommand, Command>
+public class DeleteVehiclesBackgroundServiceFixture : ConsumerFixture<DeleteVehiclesCommandSqlBackgroundService, DeleteVehiclesCommand, Command>
 {
 
 }

@@ -46,10 +46,10 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
         return client.GetDatabase("rent");
     })
     .AddSingleton<IValidator<Event>,  EventValidator>()
-    .AddSingleton<IRepository<Event>, MongoRepository<Event>>()
+    .AddSingleton<INoSqlRepository<Event>, MongoRepository<Event>>()
     .AddSingleton<IFindService<Event>, NoSqlService<Event>>()
     .AddSingleton<IValidator<Vehicle>, VehicleValidator>()
-    .AddSingleton<IRepository<Vehicle>, MongoRepository<Vehicle>>()
+    .AddSingleton<INoSqlRepository<Vehicle>, MongoRepository<Vehicle>>()
     .AddSingleton<IGetService<Vehicle>, NoSqlService<Vehicle>>();
 
 // Add services to the container.

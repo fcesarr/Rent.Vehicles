@@ -5,20 +5,13 @@ using Rent.Vehicles.Entities.Types;
 namespace Rent.Vehicles.Messages.Events;
 
 [MessagePackObject]
-public record CreateVehiclesForSpecificYearEvent : Event
-{
-    [Key(1)]
-    public required Guid Id { get; init; }
+public record CreateVehiclesForSpecificYearEvent : CreateVehiclesEvent;
 
-    [Key(2)]
-    public required int Year { get; init; }
+[MessagePackObject]
+public record CreateVehiclesSuccessEvent : CreateVehiclesEvent;
 
-    [Key(3)]
-    public required string Model { get; init; }
+[MessagePackObject]
+public record DeleteVehiclesSuccessEvent : DeleteVehiclesEvent;
 
-    [Key(4)]
-    public required string LicensePlate { get; init; }
-
-    [Key(5)]
-    public required VehicleType Type { get; init; }
-}
+[MessagePackObject]
+public record UpdateVehiclesSuccessEvent : UpdateVehiclesEvent;

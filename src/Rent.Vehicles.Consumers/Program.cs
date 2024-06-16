@@ -22,6 +22,7 @@ using Rent.Vehicles.Consumers.Extensions;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson;
+using Rent.Vehicles.Messages.Events;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -36,7 +37,24 @@ builder.Services
     .AddSingleton<IModel>(service => {
         var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
         var connection = factory.CreateConnection();
-        return connection.CreateModel();
+        var channel = connection.CreateModel();
+
+        channel.ExchangeDeclare(exchange: typeof(CreateVehiclesEvent).Name,
+            type: "fanout",
+            durable: true,
+            autoDelete: false);
+
+        channel.ExchangeDeclare(exchange: typeof(DeleteVehiclesEvent).Name,
+            type: "fanout",
+            durable: true,
+            autoDelete: false);
+
+        channel.ExchangeDeclare(exchange: typeof(UpdateVehiclesEvent).Name,
+            type: "fanout",
+            durable: true,
+            autoDelete: false);
+
+        return channel;
     })
     .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
     .AddSingleton<IMongoDatabase>(service => {
@@ -48,26 +66,36 @@ builder.Services
 
         return client.GetDatabase("rent");
     })
-    .AddSqlService<Command>()
-    .AddSqlService<Vehicle, VehicleValidator>()
-    .AddSingleton<IVehicleService, VehicleService>()
-    .AddNoSqlService<Event>()
-    .AddNoSqlService<VehiclesForSpecificYear>()
     .AddTransient<IPeriodicTimer>(service => {
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
 
         return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
     })
+    .AddSingleton<IValidator<Command>, Validator<Command>>()
+    .AddSingleton<ISqlRepository<Command>, EntityFrameworkRepository<Command>>()
+    .AddSingleton<ISqlService<Command>, SqlService<Command>>()
+    .AddSingleton<IValidator<Vehicle>, Validator<Vehicle>>()
+    .AddSingleton<ISqlRepository<Vehicle>, EntityFrameworkRepository<Vehicle>>()
+    .AddSingleton<ISqlService<Vehicle>, SqlService<Vehicle>>()
+    .AddSingleton<INoSqlRepository<Vehicle>, MongoRepository<Vehicle>>()
+    .AddSingleton<INoSqlService<Vehicle>, NoSqlService<Vehicle>>()
+    .AddSingleton<IValidator<VehiclesForSpecificYear>, Validator<VehiclesForSpecificYear>>()
+    .AddSingleton<INoSqlRepository<VehiclesForSpecificYear>, MongoRepository<VehiclesForSpecificYear>>()
+    .AddSingleton<INoSqlService<VehiclesForSpecificYear>, NoSqlService<VehiclesForSpecificYear>>()
     .AddSingleton<IPublisher, Publisher>()
     .AddSingleton<ISerializer, MessagePackSerializer>()
-    .AddHostedService<CreateVehiclesCommandBackgroundService>()
-    .AddHostedService<DeleteVehiclesCommandBackgroundService>()
-    .AddHostedService<UpdateVehiclesCommandBackgroundService>()
-    .AddHostedService<CreateVehiclesForSpecificYearEventBackgroundService>()
-    .AddHostedService<CreateVehiclesEventBackgroundService>()
-    .AddHostedService<DeleteVehiclesEventBackgroundService>()
-    .AddHostedService<UpdateVehiclesEventBackgroundService>();
+    .AddHostedService<CreateVehiclesCommandSqlBackgroundService>()
+    .AddHostedService<CreateVehiclesEventSqlBackgroundService>()
+    .AddHostedService<CreateVehiclesForSpecificYearEventNoSqlBackgroundService>()
+    .AddHostedService<CreateVehiclesSuccessEventNoSqlBackgroundService>()
+    .AddHostedService<CreateVehiclesSuccessEventSpecificYearBackgroundService>()
+    .AddHostedService<DeleteVehiclesCommandSqlBackgroundService>()
+    .AddHostedService<DeleteVehiclesEventSqlBackgroundService>()
+    .AddHostedService<DeleteVehiclesSuccessEventNoSqlBackgroundService>()
+    .AddHostedService<UpdateVehiclesCommandSqlBackgroundService>()
+    .AddHostedService<UpdateVehiclesEventSqlBackgroundService>()
+    .AddHostedService<UpdateVehiclesSuccessEventNoSqlBackgroundService>();
 
 var host = builder.Build();
 host.Run();
