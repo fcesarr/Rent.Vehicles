@@ -53,9 +53,4 @@ public class CreateVehiclesSuccessEventSpecificYearBackgroundService : HandlerEv
         
         return Task.CompletedTask;
     }
-
-    protected override Task PublishAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
 }
