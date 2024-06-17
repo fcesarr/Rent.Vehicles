@@ -9,11 +9,12 @@ using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerEntityNoSqlBackgroundService<
+public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerEntityBackgroundService<
     CreateVehiclesForSpecificYearEvent,
-    VehiclesForSpecificYear>
+    VehiclesForSpecificYear,
+    INoSqlService<VehiclesForSpecificYear>>
 {
-    public CreateVehiclesForSpecificYearEventNoSqlBackgroundService(ILogger<HandlerEntityNoSqlBackgroundService<CreateVehiclesForSpecificYearEvent, VehiclesForSpecificYear>> logger,
+    public CreateVehiclesForSpecificYearEventNoSqlBackgroundService(ILogger<CreateVehiclesForSpecificYearEventNoSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,

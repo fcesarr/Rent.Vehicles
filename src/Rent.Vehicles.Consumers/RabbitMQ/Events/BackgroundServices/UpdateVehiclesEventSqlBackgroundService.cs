@@ -10,12 +10,19 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class UpdateVehiclesEventSqlBackgroundService : HandlerEntitySqlPublisherBackgroundService<
+public class UpdateVehiclesEventSqlBackgroundService : HandlerServiceMessageAndPublisherBackgroundService<
     UpdateVehiclesEvent,
     UpdateVehiclesSuccessEvent,
-    Vehicle>
+    Vehicle,
+    IVehiclesService>
 {
-    public UpdateVehiclesEventSqlBackgroundService(ILogger<UpdateVehiclesEventSqlBackgroundService> logger, IModel channel, IPeriodicTimer periodicTimer, ISerializer serializer, IPublisher publisher, ISqlService<Vehicle> service, bool singleEvent = false) : base(logger, channel, periodicTimer, serializer, publisher, service, singleEvent)
+    public UpdateVehiclesEventSqlBackgroundService(ILogger<UpdateVehiclesEventSqlBackgroundService> logger,
+        IModel channel,
+        IPeriodicTimer periodicTimer,
+        ISerializer serializer,
+        IPublisher publisher,
+        IVehiclesService service,
+        bool singleEvent = false) : base(logger, channel, periodicTimer, serializer, publisher, service, singleEvent)
     {
     }
 
@@ -31,14 +38,7 @@ public class UpdateVehiclesEventSqlBackgroundService : HandlerEntitySqlPublisher
 
     protected override async Task HandlerMessageAsync(UpdateVehiclesEvent @event, CancellationToken cancellationToken = default)
     {
-        var entity = await _service.GetAsync(x => x.Id == @event.Id, cancellationToken);
-
-        if(entity == null)
-            return;
-        
-        entity.LicensePlate = @event.LicensePlate;
-
-        await _service.UpdateAsync(entity, cancellationToken);
+        await _service.UpdateAsync(@event.Id, @event.LicensePlate, cancellationToken);
     }
 }
 

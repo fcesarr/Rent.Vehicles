@@ -8,15 +8,16 @@ using Rent.Vehicles.Messages.Events;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class DeleteVehiclesSuccessEventNoSqlBackgroundService : HandlerEntityNoSqlBackgroundService<
+public class DeleteVehiclesSuccessEventNoSqlBackgroundService : HandlerEntityBackgroundService<
     DeleteVehiclesSuccessEvent,
-    Vehicle>
+    Vehicle,
+    IVehiclesService>
 {
     public DeleteVehiclesSuccessEventNoSqlBackgroundService(ILogger<DeleteVehiclesSuccessEventNoSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        INoSqlService<Vehicle> service) : base(logger, channel, periodicTimer, serializer, service)
+        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, service)
     {
     }
 

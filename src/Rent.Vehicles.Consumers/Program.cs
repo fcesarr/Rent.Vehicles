@@ -2,7 +2,6 @@ using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Services;
 using RabbitMQ.Client;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Repositories.Interfaces;
@@ -16,22 +15,12 @@ using Rent.Vehicles.Entities.Contexts;
 using Rent.Vehicles.Entities.Extensions;
 using Rent.Vehicles.Entities.Contexts.Interfaces;
 using Rent.Vehicles.Services.Validators.Interfaces;
-using System.ComponentModel.DataAnnotations;
 using Rent.Vehicles.Services.Validators;
-using Rent.Vehicles.Consumers.Extensions;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Bson;
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// BsonClassMap.RegisterClassMap<Vehicle>(
-//     map =>
-//     {
-//         map.AutoMap();
-//         map.MapIdProperty("Id");
-//     });
 
 builder.Services
     .AddSingleton<IModel>(service => {
@@ -74,28 +63,123 @@ builder.Services
     })
     .AddSingleton<IValidator<Command>, Validator<Command>>()
     .AddSingleton<ISqlRepository<Command>, EntityFrameworkRepository<Command>>()
-    .AddSingleton<ISqlService<Command>, SqlService<Command>>()
+    .AddSingleton<ISqlService<Command>, Service<Command>>()
     .AddSingleton<IValidator<Vehicle>, Validator<Vehicle>>()
     .AddSingleton<ISqlRepository<Vehicle>, EntityFrameworkRepository<Vehicle>>()
-    .AddSingleton<ISqlService<Vehicle>, SqlService<Vehicle>>()
+    .AddSingleton<ISqlService<Vehicle>, VehiclesService>(service => {
+        var logger = service.GetRequiredService<ILogger<Service<Vehicle>>>();
+
+        var validator = service.GetRequiredService<IValidator<Vehicle>>();
+        
+        var repository = service.GetRequiredService<ISqlRepository<Vehicle>>();
+
+        return new VehiclesService(logger, validator, repository);
+    })
     .AddSingleton<INoSqlRepository<Vehicle>, MongoRepository<Vehicle>>()
-    .AddSingleton<INoSqlService<Vehicle>, NoSqlService<Vehicle>>()
+    .AddSingleton<INoSqlService<Vehicle>, VehiclesService>(service => {
+        var logger = service.GetRequiredService<ILogger<Service<Vehicle>>>();
+
+        var validator = service.GetRequiredService<IValidator<Vehicle>>();
+        
+        var repository = service.GetRequiredService<INoSqlRepository<Vehicle>>();
+
+        return new VehiclesService(logger, validator, repository);
+    }
+    )
     .AddSingleton<IValidator<VehiclesForSpecificYear>, Validator<VehiclesForSpecificYear>>()
     .AddSingleton<INoSqlRepository<VehiclesForSpecificYear>, MongoRepository<VehiclesForSpecificYear>>()
-    .AddSingleton<INoSqlService<VehiclesForSpecificYear>, NoSqlService<VehiclesForSpecificYear>>()
+    .AddSingleton<INoSqlService<VehiclesForSpecificYear>, Service<VehiclesForSpecificYear>>()
     .AddSingleton<IPublisher, Publisher>()
     .AddSingleton<ISerializer, MessagePackSerializer>()
     .AddHostedService<CreateVehiclesCommandSqlBackgroundService>()
-    .AddHostedService<CreateVehiclesEventSqlBackgroundService>()
+    .AddHostedService<CreateVehiclesEventSqlBackgroundService>(service => {
+        var logger = service.GetRequiredService<ILogger<CreateVehiclesEventSqlBackgroundService>>();
+
+        var channel = service.GetRequiredService<IModel>();
+
+        var periodicTimer = service.GetRequiredService<IPeriodicTimer>();
+
+        var serializer = service.GetRequiredService<ISerializer>();
+
+        var publisher = service.GetRequiredService<IPublisher>();
+
+        var sqlService = service.GetRequiredService<ISqlService<Vehicle>>();
+
+        return new(logger, channel, periodicTimer, serializer, publisher, (IVehiclesService)sqlService);
+    })
     .AddHostedService<CreateVehiclesForSpecificYearEventNoSqlBackgroundService>()
-    .AddHostedService<CreateVehiclesSuccessEventNoSqlBackgroundService>()
+    .AddHostedService<CreateVehiclesSuccessEventNoSqlBackgroundService>(service => {
+        var logger = service.GetRequiredService<ILogger<CreateVehiclesSuccessEventNoSqlBackgroundService>>();
+
+        var channel = service.GetRequiredService<IModel>();
+
+        var periodicTimer = service.GetRequiredService<IPeriodicTimer>();
+
+        var serializer = service.GetRequiredService<ISerializer>();
+
+        var sqlService = service.GetRequiredService<INoSqlService<Vehicle>>();
+
+        return new(logger, channel, periodicTimer, serializer, (IVehiclesService)sqlService);
+    })
     .AddHostedService<CreateVehiclesSuccessEventSpecificYearBackgroundService>()
     .AddHostedService<DeleteVehiclesCommandSqlBackgroundService>()
-    .AddHostedService<DeleteVehiclesEventSqlBackgroundService>()
-    .AddHostedService<DeleteVehiclesSuccessEventNoSqlBackgroundService>()
+    .AddHostedService<DeleteVehiclesEventSqlBackgroundService>(service => {
+        var logger = service.GetRequiredService<ILogger<DeleteVehiclesEventSqlBackgroundService>>();
+
+        var channel = service.GetRequiredService<IModel>();
+
+        var periodicTimer = service.GetRequiredService<IPeriodicTimer>();
+
+        var serializer = service.GetRequiredService<ISerializer>();
+
+        var publisher = service.GetRequiredService<IPublisher>();
+
+        var sqlService = service.GetRequiredService<ISqlService<Vehicle>>();
+
+        return new(logger, channel, periodicTimer, serializer, publisher, (IVehiclesService)sqlService);
+    })
+    .AddHostedService<DeleteVehiclesSuccessEventNoSqlBackgroundService>(service => {
+        var logger = service.GetRequiredService<ILogger<DeleteVehiclesSuccessEventNoSqlBackgroundService>>();
+
+        var channel = service.GetRequiredService<IModel>();
+
+        var periodicTimer = service.GetRequiredService<IPeriodicTimer>();
+
+        var serializer = service.GetRequiredService<ISerializer>();
+
+        var sqlService = service.GetRequiredService<INoSqlService<Vehicle>>();
+
+        return new(logger, channel, periodicTimer, serializer, (IVehiclesService)sqlService);
+    })
     .AddHostedService<UpdateVehiclesCommandSqlBackgroundService>()
-    .AddHostedService<UpdateVehiclesEventSqlBackgroundService>()
-    .AddHostedService<UpdateVehiclesSuccessEventNoSqlBackgroundService>();
+    .AddHostedService<UpdateVehiclesEventSqlBackgroundService>(service => {
+        var logger = service.GetRequiredService<ILogger<UpdateVehiclesEventSqlBackgroundService>>();
+
+        var channel = service.GetRequiredService<IModel>();
+
+        var periodicTimer = service.GetRequiredService<IPeriodicTimer>();
+
+        var serializer = service.GetRequiredService<ISerializer>();
+
+        var publisher = service.GetRequiredService<IPublisher>();
+
+        var sqlService = service.GetRequiredService<ISqlService<Vehicle>>();
+
+        return new(logger, channel, periodicTimer, serializer, publisher, (IVehiclesService)sqlService);
+    })
+    .AddHostedService<UpdateVehiclesSuccessEventNoSqlBackgroundService>(service => {
+        var logger = service.GetRequiredService<ILogger<UpdateVehiclesSuccessEventNoSqlBackgroundService>>();
+
+        var channel = service.GetRequiredService<IModel>();
+
+        var periodicTimer = service.GetRequiredService<IPeriodicTimer>();
+
+        var serializer = service.GetRequiredService<ISerializer>();
+
+        var sqlService = service.GetRequiredService<INoSqlService<Vehicle>>();
+
+        return new(logger, channel, periodicTimer, serializer, (IVehiclesService)sqlService);
+    });
 
 var host = builder.Build();
 host.Run();

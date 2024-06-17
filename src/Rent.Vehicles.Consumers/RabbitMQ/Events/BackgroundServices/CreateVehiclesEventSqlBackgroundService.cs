@@ -9,17 +9,18 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesEventSqlBackgroundService : HandlerEntitySqlPublisherBackgroundService<
+public class CreateVehiclesEventSqlBackgroundService : HandlerServiceMessageAndPublisherBackgroundService<
     CreateVehiclesEvent,
     CreateVehiclesSuccessEvent,
-    Vehicle>
+    Vehicle,
+    IVehiclesService>
 {
     public CreateVehiclesEventSqlBackgroundService(ILogger<CreateVehiclesEventSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        ISqlService<Vehicle> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 

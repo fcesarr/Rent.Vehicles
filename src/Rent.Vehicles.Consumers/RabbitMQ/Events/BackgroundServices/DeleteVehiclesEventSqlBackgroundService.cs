@@ -9,12 +9,19 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class DeleteVehiclesEventSqlBackgroundService : HandlerEntitySqlPublisherBackgroundService<
+public class DeleteVehiclesEventSqlBackgroundService : HandlerServiceMessageAndPublisherBackgroundService<
     DeleteVehiclesEvent,
     DeleteVehiclesSuccessEvent,
-    Vehicle>
+    Vehicle,
+    IVehiclesService>
 {
-    public DeleteVehiclesEventSqlBackgroundService(ILogger<DeleteVehiclesEventSqlBackgroundService> logger, IModel channel, IPeriodicTimer periodicTimer, ISerializer serializer, IPublisher publisher, ISqlService<Vehicle> service, bool singleEvent = false) : base(logger, channel, periodicTimer, serializer, publisher, service, singleEvent)
+    public DeleteVehiclesEventSqlBackgroundService(ILogger<DeleteVehiclesEventSqlBackgroundService> logger,
+        IModel channel,
+        IPeriodicTimer periodicTimer,
+        ISerializer serializer,
+        IPublisher publisher,
+        IVehiclesService service,
+        bool singleEvent = false) : base(logger, channel, periodicTimer, serializer, publisher, service, singleEvent)
     {
     }
 

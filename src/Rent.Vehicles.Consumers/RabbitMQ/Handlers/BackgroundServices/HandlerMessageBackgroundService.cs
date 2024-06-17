@@ -72,28 +72,28 @@ public abstract class HandlerMessageBackgroundService<TMessage> : BackgroundServ
             }
             catch(NoRetryException ex)
             {
-                _logger.LogError(ex.Message, ex);
+                _logger.LogError(ex, ex.Message);
             }
             catch (Exception ex)
             {   
                 if(result != null)
                 {
                     var hash = ComputeSha256Hash(result.Body.ToArray());
-                    var item = 0;
-                    if(_retry.TryGetValue(hash, out item))
+                    var count = 0;
+                    if(_retry.TryGetValue(hash, out count))
                     {
-                        _retry[hash] = ++item;
+                        _retry[hash] = ++count;
                     }
 
                     _ = _retry.TryAdd(hash, 0);
 
-                    if(item < 3)
+                    if(count < 3)
                         _channel.BasicNack(result.DeliveryTag, false, true);
                     else
                         _retry.Remove(hash);
                 }
                 
-                _logger.LogError(ex.Message, ex);
+                _logger.LogError(ex, ex.Message);
 
             }
         }

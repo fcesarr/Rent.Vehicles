@@ -19,14 +19,14 @@ public static class ServiceExtension
         where TValidator : Validator<TEntity>
         => services.AddSingleton<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
             .AddSingleton<IValidator<TEntity>, TValidator>()
-            .AddSingleton<ICreateService<TEntity>, SqlService<TEntity>>()
-            .AddSingleton<IDeleteService<TEntity>, SqlService<TEntity>>()
-            .AddSingleton<IUpdateService<TEntity>, SqlService<TEntity>>();
+            .AddSingleton<ICreateService<TEntity>, Service<TEntity>>()
+            .AddSingleton<IDeleteService<TEntity>, Service<TEntity>>()
+            .AddSingleton<IUpdateService<TEntity>, Service<TEntity>>();
     public static IServiceCollection AddNoSqlService<TEntity>(this IServiceCollection services) 
         where TEntity : Entity
         => services.AddSingleton<IRepository<TEntity>, MongoRepository<TEntity>>()
             .AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
-            .AddSingleton<ICreateService<TEntity>, NoSqlService<TEntity>>()
-            .AddSingleton<IDeleteService<TEntity>, NoSqlService<TEntity>>()
-            .AddSingleton<IUpdateService<TEntity>, NoSqlService<TEntity>>();
+            .AddSingleton<ICreateService<TEntity>, Service<TEntity>>()
+            .AddSingleton<IDeleteService<TEntity>, Service<TEntity>>()
+            .AddSingleton<IUpdateService<TEntity>, Service<TEntity>>();
 }

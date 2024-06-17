@@ -10,10 +10,11 @@ using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
 
-public class DeleteVehiclesCommandSqlBackgroundService : HandlerEntitySqlPublisherBackgroundService<
+public class DeleteVehiclesCommandSqlBackgroundService : HandlerServiceMessageAndPublisherBackgroundService<
     DeleteVehiclesCommand, 
     DeleteVehiclesEvent,
-    Command>
+    Command,
+    ISqlService<Command>>
 {
     public DeleteVehiclesCommandSqlBackgroundService(ILogger<DeleteVehiclesCommandSqlBackgroundService> logger,
         IModel channel,

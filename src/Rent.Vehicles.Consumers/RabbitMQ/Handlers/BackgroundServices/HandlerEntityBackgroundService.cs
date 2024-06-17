@@ -9,17 +9,18 @@ using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
-public abstract class HandlerEntityNoSqlBackgroundService<TEventToConsume, TEntity> : HandlerMessageBackgroundService<TEventToConsume> 
-    where TEventToConsume : Messages.Event
+public abstract class HandlerEntityBackgroundService<TMessageToConsume, TEntity, TService> : HandlerMessageBackgroundService<TMessageToConsume> 
+    where TMessageToConsume : Messages.Message
     where TEntity : Entity
+    where TService : IService<TEntity>
 {
-    protected readonly INoSqlService<TEntity> _service;
+    protected readonly TService _service;
 
-    protected HandlerEntityNoSqlBackgroundService(ILogger<HandlerEntityNoSqlBackgroundService<TEventToConsume, TEntity>> logger,
+    protected HandlerEntityBackgroundService(ILogger<HandlerEntityBackgroundService<TMessageToConsume, TEntity, TService>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        INoSqlService<TEntity> service) : base(logger, channel, periodicTimer, serializer)
+        TService service) : base(logger, channel, periodicTimer, serializer)
     {
         _service = service;
     }

@@ -10,7 +10,7 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services;
 
-public abstract class Service<TEntity> : IService<TEntity> where TEntity : Entity
+public class Service<TEntity> : ISqlService<TEntity>, INoSqlService<TEntity> where TEntity : Entity
 {
     protected readonly ILogger<Service<TEntity>> _logger; 
 
@@ -20,7 +20,16 @@ public abstract class Service<TEntity> : IService<TEntity> where TEntity : Entit
 
     public Service(ILogger<Service<TEntity>> logger,
         IValidator<TEntity> validator,
-        IRepository<TEntity> repository)
+        ISqlRepository<TEntity> repository)
+    {
+        _logger = logger;
+        _validator = validator;
+        _repository = repository;
+    }
+
+    public Service(ILogger<Service<TEntity>> logger,
+        IValidator<TEntity> validator,
+        INoSqlRepository<TEntity> repository)
     {
         _logger = logger;
         _validator = validator;
