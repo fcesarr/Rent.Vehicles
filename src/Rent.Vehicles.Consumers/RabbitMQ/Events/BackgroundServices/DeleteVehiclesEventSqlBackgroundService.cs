@@ -9,7 +9,7 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class DeleteVehiclesEventSqlBackgroundService : HandlerServiceMessageAndPublisherBackgroundService<
+public class DeleteVehiclesEventSqlBackgroundService : HandlerMessageAndActionAndPublisherBackgroundService<
     DeleteVehiclesEvent,
     DeleteVehiclesSuccessEvent,
     Vehicle,

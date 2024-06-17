@@ -10,7 +10,7 @@ using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
 
-public class CreateVehiclesCommandSqlBackgroundService : HandlerServiceMessageAndPublisherBackgroundService<
+public class CreateVehiclesCommandSqlBackgroundService : HandlerMessageAndActionAndPublisherBackgroundService<
     CreateVehiclesCommand,
     CreateVehiclesEvent,
     Command,

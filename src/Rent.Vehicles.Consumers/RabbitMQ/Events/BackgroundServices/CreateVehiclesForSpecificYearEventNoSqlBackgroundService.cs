@@ -9,7 +9,7 @@ using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerEntityBackgroundService<
+public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerMessageAndActionBackgroundService<
     CreateVehiclesForSpecificYearEvent,
     VehiclesForSpecificYear,
     INoSqlService<VehiclesForSpecificYear>>

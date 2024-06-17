@@ -8,7 +8,7 @@ using Rent.Vehicles.Messages.Events;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerEntityBackgroundService<
+public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerMessageAndActionBackgroundService<
     CreateVehiclesSuccessEvent,
     Vehicle,
     IVehiclesService>

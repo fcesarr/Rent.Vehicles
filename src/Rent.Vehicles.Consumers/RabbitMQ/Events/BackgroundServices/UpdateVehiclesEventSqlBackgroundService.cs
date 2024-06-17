@@ -10,7 +10,7 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class UpdateVehiclesEventSqlBackgroundService : HandlerServiceMessageAndPublisherBackgroundService<
+public class UpdateVehiclesEventSqlBackgroundService : HandlerMessageAndActionAndPublisherBackgroundService<
     UpdateVehiclesEvent,
     UpdateVehiclesSuccessEvent,
     Vehicle,
