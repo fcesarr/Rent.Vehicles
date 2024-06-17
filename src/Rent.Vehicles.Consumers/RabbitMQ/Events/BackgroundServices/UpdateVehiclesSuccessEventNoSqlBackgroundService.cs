@@ -12,14 +12,14 @@ namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 public class UpdateVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
     UpdateVehiclesSuccessEvent,
     Vehicle,
-    IVehiclesService>
+    INoSqlVehiclesService>
 {
     public UpdateVehiclesSuccessEventNoSqlBackgroundService(ILogger<UpdateVehiclesSuccessEventNoSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        INoSqlVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 
