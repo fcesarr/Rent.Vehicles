@@ -10,7 +10,7 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class UpdateVehiclesEventSqlBackgroundService : HandlerMessageAndActionAndPublisherBackgroundService<
+public class UpdateVehiclesEventSqlBackgroundService : HandlerEventServicePublishEventBackgroundService<
     UpdateVehiclesEvent,
     UpdateVehiclesSuccessEvent,
     Vehicle,
@@ -21,12 +21,11 @@ public class UpdateVehiclesEventSqlBackgroundService : HandlerMessageAndActionAn
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehiclesService service,
-        bool singleEvent = false) : base(logger, channel, periodicTimer, serializer, publisher, service, singleEvent)
+        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 
-    protected override UpdateVehiclesSuccessEvent CommandToEvent(UpdateVehiclesEvent @event)
+    protected override UpdateVehiclesSuccessEvent CreateEventToPublish(UpdateVehiclesEvent @event)
     {
         return new UpdateVehiclesSuccessEvent
         {

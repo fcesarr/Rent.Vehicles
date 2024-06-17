@@ -5,10 +5,11 @@ using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerMessageAndActionBackgroundService<
+public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
     CreateVehiclesSuccessEvent,
     Vehicle,
     IVehiclesService>
@@ -17,7 +18,8 @@ public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerMessageAn
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, service)
+        IPublisher publisher,
+        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
         QueueName = $"{typeof(CreateVehiclesSuccessEvent).Name}.One";
     }
@@ -32,7 +34,7 @@ public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerMessageAn
         return result;
     }
 
-    protected override async Task HandlerAsync(CreateVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task HandlerMessageAsync(CreateVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
     {
         await _service.CreateAsync(new Vehicle
         {

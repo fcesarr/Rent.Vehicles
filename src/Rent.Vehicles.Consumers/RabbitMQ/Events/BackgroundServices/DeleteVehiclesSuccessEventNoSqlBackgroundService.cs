@@ -5,10 +5,11 @@ using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class DeleteVehiclesSuccessEventNoSqlBackgroundService : HandlerMessageAndActionBackgroundService<
+public class DeleteVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
     DeleteVehiclesSuccessEvent,
     Vehicle,
     IVehiclesService>
@@ -17,21 +18,12 @@ public class DeleteVehiclesSuccessEventNoSqlBackgroundService : HandlerMessageAn
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, service)
+        IPublisher publisher,
+        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 
-    public override Task StartAsync(CancellationToken cancellationToken)
-    {
-        var result = base.StartAsync(cancellationToken);
-
-        _channel.QueueBind(queue: QueueName,
-            exchange: typeof(DeleteVehiclesSuccessEvent).Name, routingKey:"");
-        
-        return result;
-    }
-
-    protected override async Task HandlerAsync(DeleteVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task HandlerMessageAsync(DeleteVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
     {
         await _service.DeleteAsync(@event.Id, cancellationToken);
     }

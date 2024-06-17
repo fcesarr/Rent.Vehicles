@@ -10,15 +10,15 @@ using Rent.Vehicles.Consumers.Exceptions;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesSuccessEventSpecificYearBackgroundService : HandlerMessageAndPublisherBackgroundService<
+public class CreateVehiclesSuccessEventSpecificYearBackgroundService : HandlerEventPublishEventBackgroundService<
     CreateVehiclesSuccessEvent,
     CreateVehiclesForSpecificYearEvent>
 {
-    public CreateVehiclesSuccessEventSpecificYearBackgroundService(ILogger<HandlerMessageAndPublisherBackgroundService<CreateVehiclesSuccessEvent, CreateVehiclesForSpecificYearEvent>> logger,
+    public CreateVehiclesSuccessEventSpecificYearBackgroundService(ILogger<CreateVehiclesSuccessEventSpecificYearBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IPublisher publisher) : base(logger, channel, periodicTimer, serializer, publisher, true)
+        IPublisher publisher) : base(logger, channel, periodicTimer, serializer, publisher)
     {
         QueueName = $"{typeof(CreateVehiclesSuccessEvent).Name}.Two";
     }
@@ -32,9 +32,8 @@ public class CreateVehiclesSuccessEventSpecificYearBackgroundService : HandlerMe
         
         return result;
     }
-    
 
-    protected override CreateVehiclesForSpecificYearEvent CommandToEvent(CreateVehiclesSuccessEvent @event)
+    protected override CreateVehiclesForSpecificYearEvent CreateEventToPublish(CreateVehiclesSuccessEvent @event)
     {
         return new CreateVehiclesForSpecificYearEvent
         {
@@ -53,5 +52,10 @@ public class CreateVehiclesSuccessEventSpecificYearBackgroundService : HandlerMe
             throw new SpecificYearException();
         
         return Task.CompletedTask;
+    }
+
+    protected override Task PublishAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

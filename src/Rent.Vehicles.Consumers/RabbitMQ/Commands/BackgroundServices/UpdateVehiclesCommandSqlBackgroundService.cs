@@ -10,7 +10,7 @@ using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
 
-public class UpdateVehiclesCommandSqlBackgroundService : HandlerMessageAndActionAndPublisherBackgroundService<
+public class UpdateVehiclesCommandSqlBackgroundService : HandlerCommandServicePublishEventBackgroundService<
     UpdateVehiclesCommand,
     UpdateVehiclesEvent,
     Command,
@@ -25,7 +25,7 @@ public class UpdateVehiclesCommandSqlBackgroundService : HandlerMessageAndAction
     {
     }
 
-    protected override UpdateVehiclesEvent CommandToEvent(UpdateVehiclesCommand command)
+    protected override UpdateVehiclesEvent CreateEventToPublish(UpdateVehiclesCommand command)
     {
         return new UpdateVehiclesEvent
         {
@@ -44,7 +44,7 @@ public class UpdateVehiclesCommandSqlBackgroundService : HandlerMessageAndAction
             SerializerType = Lib.Types.SerializerType.MessagePack,
             EntityType = Entities.Types.EntityType.Vehicles,
             Type = typeof(DeleteVehiclesEvent).Name,
-            Data = await _serializer.SerializeAsync(CommandToEvent(command))
+            Data = await _serializer.SerializeAsync(CreateEventToPublish(command))
         };
 
         await _service.CreateAsync(entity, cancellationToken);

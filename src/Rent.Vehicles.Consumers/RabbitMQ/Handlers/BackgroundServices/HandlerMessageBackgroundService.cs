@@ -10,10 +10,10 @@ using Rent.Vehicles.Messages;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
-public abstract class HandlerMessageBackgroundService<TMessage> : BackgroundService 
-    where TMessage : Messages.Message
+public abstract class HandlerMessageBackgroundService<TEventToConsume> : BackgroundService 
+    where TEventToConsume : Message
 {
-    protected readonly ILogger<HandlerMessageBackgroundService<TMessage>> _logger;
+    protected readonly ILogger<HandlerMessageBackgroundService<TEventToConsume>> _logger;
 
     protected readonly IModel _channel;
 
@@ -23,7 +23,7 @@ public abstract class HandlerMessageBackgroundService<TMessage> : BackgroundServ
 
     private readonly IDictionary<string, int> _retry = new Dictionary<string, int>();
 
-    protected HandlerMessageBackgroundService(ILogger<HandlerMessageBackgroundService<TMessage>> logger,
+    protected HandlerMessageBackgroundService(ILogger<HandlerMessageBackgroundService<TEventToConsume>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer)
@@ -44,7 +44,7 @@ public abstract class HandlerMessageBackgroundService<TMessage> : BackgroundServ
         return base.StartAsync(cancellationToken);
     }
 
-    protected string QueueName { get; set; } = typeof(TMessage).Name;
+    protected string QueueName { get; set; } = typeof(TEventToConsume).Name;
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -54,21 +54,19 @@ public abstract class HandlerMessageBackgroundService<TMessage> : BackgroundServ
 
             try
             {
-                result = _channel.BasicGet(QueueName, false);
+                result = _channel.BasicGet(QueueName, true);
 
                 if(result == null)
                     continue;
 
                 var bytes = result.Body.ToArray();
 
-                var message = await _serializer.DeserializeAsync<TMessage>(bytes, cancellationToken);
+                var message = await _serializer.DeserializeAsync<TEventToConsume>(bytes, cancellationToken);
 
                 if(message != null)
                 {
                     await HandlerAsync(message, cancellationToken);
                 }
-
-                _channel.BasicAck(deliveryTag: result.DeliveryTag, multiple: false);
             }
             catch(NoRetryException ex)
             {
@@ -117,5 +115,5 @@ public abstract class HandlerMessageBackgroundService<TMessage> : BackgroundServ
     }
     
 
-    protected abstract Task HandlerAsync(TMessage message, CancellationToken cancellationToken = default);
+    protected abstract Task HandlerAsync(TEventToConsume message, CancellationToken cancellationToken = default);
 }

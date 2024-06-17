@@ -9,7 +9,7 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class DeleteVehiclesEventSqlBackgroundService : HandlerMessageAndActionAndPublisherBackgroundService<
+public class DeleteVehiclesEventSqlBackgroundService : HandlerEventServicePublishEventBackgroundService<
     DeleteVehiclesEvent,
     DeleteVehiclesSuccessEvent,
     Vehicle,
@@ -20,12 +20,11 @@ public class DeleteVehiclesEventSqlBackgroundService : HandlerMessageAndActionAn
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehiclesService service,
-        bool singleEvent = false) : base(logger, channel, periodicTimer, serializer, publisher, service, singleEvent)
+        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 
-    protected override DeleteVehiclesSuccessEvent CommandToEvent(DeleteVehiclesEvent @event)
+    protected override DeleteVehiclesSuccessEvent CreateEventToPublish(DeleteVehiclesEvent @event)
     {
         return new DeleteVehiclesSuccessEvent
         {

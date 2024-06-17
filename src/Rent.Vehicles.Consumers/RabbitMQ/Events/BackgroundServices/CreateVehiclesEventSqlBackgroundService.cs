@@ -9,7 +9,7 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesEventSqlBackgroundService : HandlerMessageAndActionAndPublisherBackgroundService<
+public class CreateVehiclesEventSqlBackgroundService : HandlerEventServicePublishEventBackgroundService<
     CreateVehiclesEvent,
     CreateVehiclesSuccessEvent,
     Vehicle,
@@ -24,7 +24,7 @@ public class CreateVehiclesEventSqlBackgroundService : HandlerMessageAndActionAn
     {
     }
 
-    protected override CreateVehiclesSuccessEvent CommandToEvent(CreateVehiclesEvent @event)
+    protected override CreateVehiclesSuccessEvent CreateEventToPublish(CreateVehiclesEvent @event)
     {
         return new CreateVehiclesSuccessEvent
         {
@@ -47,5 +47,10 @@ public class CreateVehiclesEventSqlBackgroundService : HandlerMessageAndActionAn
             LicensePlate = @event.LicensePlate,
             Type = @event.Type
         }, cancellationToken);
+    }
+
+    protected override async Task PublishAsync(CreateVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
+    {
+        await _publisher.PublishEventAsync(@event, cancellationToken);
     }
 }

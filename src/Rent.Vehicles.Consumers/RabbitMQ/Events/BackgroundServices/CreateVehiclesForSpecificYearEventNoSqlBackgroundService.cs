@@ -9,7 +9,7 @@ using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerMessageAndActionBackgroundService<
+public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
     CreateVehiclesForSpecificYearEvent,
     VehiclesForSpecificYear,
     INoSqlService<VehiclesForSpecificYear>>
@@ -18,11 +18,12 @@ public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerM
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        INoSqlService<VehiclesForSpecificYear> service) : base(logger, channel, periodicTimer, serializer, service)
+        IPublisher publisher,
+        INoSqlService<VehiclesForSpecificYear> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 
-    protected override async Task HandlerAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task HandlerMessageAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
     {
         await _service.CreateAsync(new VehiclesForSpecificYear
         {
