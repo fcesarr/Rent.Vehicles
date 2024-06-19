@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Text;
 
+using LanguageExt.Common;
+
 using Microsoft.AspNetCore.Mvc;
 
 using MongoDB.Bson;
@@ -20,6 +22,7 @@ using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
 using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Factories;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories;
@@ -127,10 +130,10 @@ app.MapGet("/Vehicles/{Id}", async ([FromQuery]Guid id,
 {
     var entity = await getService.GetAsync(x => x.Id == id, cancellationToken);
 
-    if(entity == null)
-        return Results.NotFound();
-
-    return Results.Ok(entity);
+    return entity.Match(entity => Results.Ok(entity), exception => exception switch{
+        NullException => Results.NotFound(),
+        _ => Results.StatusCode(500)
+    });
 })
 .WithName("VehiclesGet")
 .WithOpenApi();
@@ -141,10 +144,10 @@ app.MapGet("/Vehicles/Status/{SagaId}", async ([FromQuery]Guid sagaId,
 {
     var entities = await findService.FindAsync(x => x.SagaId == sagaId, cancellationToken);
 
-    if(!entities.Any())
-        return Results.NoContent();
-
-    return Results.Ok(entities);
+    return entities.Match(entity => Results.Ok(entity), exception => exception switch{
+        NullException => Results.NoContent(),
+        _ => Results.StatusCode(500)
+    });
 })
 .WithName("VehiclesStatus")
 .WithOpenApi();

@@ -1,3 +1,7 @@
+
+using LanguageExt;
+using LanguageExt.Common;
+
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Utils.Interfaces;
@@ -22,7 +26,7 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
         _publisher = publisher;
     }
 
-    protected override async Task HandlerAsync(TEventToConsume eventToPublish, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerAsync(TEventToConsume eventToPublish, CancellationToken cancellationToken = default)
     {
         var @event = new Event
         {
@@ -32,21 +36,39 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
             Message = string.Empty
         };
 
-        try
-        {
-            await base.HandlerAsync(eventToPublish, cancellationToken);
+        var result = await base.HandlerAsync(eventToPublish, cancellationToken);
 
-            await _publisher.PublishSingleEventAsync(@event, cancellationToken);
-        }
-        catch (Exception ex)
-        {   
-            @event = @event with { StatusType = Entities.StatusType.Fail, Message = ex.Message };
+        return result.Match(result => {
+            result
+                .GetAwaiter()
+                .GetResult();
 
-            await _publisher.PublishSingleEventAsync(@event, cancellationToken);
+            _publisher.PublishSingleEventAsync(@event, cancellationToken)
+                .GetAwaiter()
+                .GetResult();
 
-            _logger.LogError(ex, ex.Message);
+            return Task.CompletedTask;
+        }, exception => {
+             @event = @event with { StatusType = Entities.StatusType.Fail, Message = exception.Message };
 
-            throw;
-        }
+            _publisher.PublishSingleEventAsync(@event, cancellationToken)
+                .GetAwaiter()
+                .GetResult();
+
+            return new Result<Task>(exception);
+        });
+    }
+
+    private async Task<Result<Task>> TreatException(Event @event,
+        Exception exception,
+        CancellationToken cancellationToken = default)
+    {
+        @event = @event with { StatusType = Entities.StatusType.Fail, Message = exception.Message };
+
+        await _publisher.PublishSingleEventAsync(@event, cancellationToken);
+
+        // _logger.LogError(exception, exception.Message);
+
+        return Task.FromResult(new Result<Task>(new Exception()));
     }
 }

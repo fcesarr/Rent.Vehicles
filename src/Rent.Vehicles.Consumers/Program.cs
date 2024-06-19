@@ -57,7 +57,7 @@ builder.Services
     .AddSingleton<IValidator<Vehicle>, Validator<Vehicle>>()
     .AddSingleton<ISqlRepository<Vehicle>, EntityFrameworkRepository<Vehicle>>()
     .AddSingleton<ISqlVehiclesService, VehiclesService>(service => {
-        var logger = service.GetRequiredService<ILogger<Service<Vehicle>>>();
+        var logger = service.GetRequiredService<ILogger<VehiclesService>>();
 
         var validator = service.GetRequiredService<IValidator<Vehicle>>();
         
@@ -67,7 +67,7 @@ builder.Services
     })
     .AddSingleton<INoSqlRepository<Vehicle>, MongoRepository<Vehicle>>()
     .AddSingleton<INoSqlVehiclesService, VehiclesService>(service => {
-        var logger = service.GetRequiredService<ILogger<Service<Vehicle>>>();
+        var logger = service.GetRequiredService<ILogger<VehiclesService>>();
 
         var validator = service.GetRequiredService<IValidator<Vehicle>>();
         

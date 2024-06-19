@@ -6,6 +6,7 @@ using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
+using LanguageExt.Common;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
@@ -23,8 +24,10 @@ public class DeleteVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServ
     {
     }
 
-    protected override async Task HandlerMessageAsync(DeleteVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
     {
-        await _service.DeleteAsync(@event.Id, cancellationToken);
+        var entity =  await _service.DeleteAsync(@event.Id, cancellationToken);
+
+        return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
     }
 }

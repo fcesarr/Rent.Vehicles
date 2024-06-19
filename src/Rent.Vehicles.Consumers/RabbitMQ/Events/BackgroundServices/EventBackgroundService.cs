@@ -1,4 +1,6 @@
 
+using LanguageExt.Common;
+
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
@@ -28,14 +30,16 @@ public class EventBackgroundService : HandlerEventBackgroundService<Event>
         _service = service;
     }
 
-    protected override async Task HandlerMessageAsync(Event @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(Event @event, CancellationToken cancellationToken = default)
     {
-        await _service.CreateAsync(new Entities.Event
+        var entity = await _service.CreateAsync(new Entities.Event
         {
             SagaId = @event.SagaId,
             Name = @event.Name,
             StatusType = @event.StatusType,
             Message = @event.Message,
         }, cancellationToken);
+
+        return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
     }
 }

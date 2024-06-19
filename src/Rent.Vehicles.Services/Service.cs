@@ -1,9 +1,12 @@
 
 using System.Linq.Expressions;
 
+using LanguageExt.Common;
+
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators.Interfaces;
@@ -36,51 +39,71 @@ public class Service<TEntity> : ISqlService<TEntity>, INoSqlService<TEntity> whe
         _repository = repository;
     }
 
-    public async Task CreateAsync(TEntity? entity, CancellationToken cancellationToken = default)
+    public async Task<Result<TEntity>> CreateAsync(TEntity? entity, CancellationToken cancellationToken = default)
     {
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if(!result.IsValid)
-            throw result.Exception ?? new Exception();
+            return new Result<TEntity>(result.Exception);
 
         await _repository.CreateAsync(result.Instance, cancellationToken);
+
+        return result.Instance;
     }
 
-    public async Task DeleteAsync(TEntity? entity, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> DeleteAsync(TEntity? entity, CancellationToken cancellationToken = default)
     {
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if(!result.IsValid)
-            throw result.Exception ?? new Exception();
+            return new Result<bool>(result.Exception);
 
         await _repository.DeleteAsync(result.Instance, cancellationToken);
+
+        return true;
     }
 
-    public Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<TEntity>>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return _repository.FindAsync(predicate, cancellationToken);
+        var entities = await _repository.FindAsync(predicate, cancellationToken);
+    
+        if(!entities.Any())
+            return new Result<IEnumerable<TEntity>>(new EmptyException());
+
+        return entities
+            .ToList();
     }
 
-    public Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<Result<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        return _repository.GetAsync(predicate, cancellationToken);
+        var entity = await _repository.GetAsync(predicate, cancellationToken);
+
+        if(entity == null)
+            return new Result<TEntity>(new NullException());
+
+        return entity;
     }
 
-    public async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public async Task<Result<TEntity>> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if(!result.IsValid)
-            throw result.Exception ?? new Exception();
+            return new Result<TEntity>(result.Exception);
 
         await _repository.UpdateAsync(result.Instance, cancellationToken);
+
+        return entity;
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
-        await DeleteAsync(entity, cancellationToken);
+        return await entity.Match(async entity => 
+        {
+            return await DeleteAsync(entity, cancellationToken);
+        }, exception => Task.FromResult(new Result<bool>(exception)));
     }
 }
 

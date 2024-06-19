@@ -1,5 +1,9 @@
+using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Text;
+
+using LanguageExt;
+using LanguageExt.Common;
 
 using RabbitMQ.Client;
 
@@ -50,52 +54,75 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     {
         while(await _periodicTimer.WaitForNextTickAsync(cancellationToken))
         {
-            BasicGetResult? result = default;
+            BasicGetResult? basicGetResult = default;
 
             try
             {
-                result = _channel.BasicGet(QueueName, true);
+                basicGetResult = _channel.BasicGet(QueueName, false);
 
-                if(result == null)
+                if(basicGetResult == null)
                     continue;
 
-                var bytes = result.Body.ToArray();
+                var bytes = basicGetResult.Body.ToArray();
 
                 var message = await _serializer.DeserializeAsync<TEventToConsume>(bytes, cancellationToken);
 
-                if(message != null)
-                {
-                    await HandlerAsync(message, cancellationToken);
-                }
-            }
-            catch(NoRetryException ex)
-            {
-                _logger.LogError(ex, ex.Message);
+                if(message == null)
+                    continue;
+                
+                var result = await HandlerAsync(message, cancellationToken);
+
+                await result.Match(async result => {
+                        await result;
+
+                        _channel.BasicAck(basicGetResult.DeliveryTag, true);
+                    }, exception => exception switch
+                    {
+                        NoRetryException => TreatNoRetryException(exception),
+                        _ => TreatException(basicGetResult, _retry, _channel, exception) 
+                    });    
             }
             catch (Exception ex)
             {   
-                if(result != null)
-                {
-                    var hash = ComputeSha256Hash(result.Body.ToArray());
-                    var count = 0;
-                    if(_retry.TryGetValue(hash, out count))
-                    {
-                        _retry[hash] = ++count;
-                    }
-
-                    _ = _retry.TryAdd(hash, 0);
-
-                    if(count < 3)
-                        _channel.BasicNack(result.DeliveryTag, false, true);
-                    else
-                        _retry.Remove(hash);
-                }
-                
                 _logger.LogError(ex, ex.Message);
-
             }
         }
     }
+
+    private Task TreatNoRetryException(Exception exception)
+    {
+        _logger.LogError(exception, exception.Message);
+
+        return Task.CompletedTask;
+    }
+
+    private Task TreatException(BasicGetResult basicGetResult,
+        IDictionary<string, int> retry,
+        IModel channel, 
+        Exception exception)
+    {
+        if(basicGetResult != null)
+        {
+            var hash = ComputeSha256Hash(basicGetResult.Body.ToArray());
+
+            if (retry.TryGetValue(hash, out int count))
+            {
+                retry[hash] = ++count;
+            }
+
+            _ = retry.TryAdd(hash, 0);
+
+            if(count == 3)
+            {
+                channel.BasicReject(basicGetResult.DeliveryTag, false);
+            }
+        }
+        
+        _logger.LogError(exception, exception.Message);
+
+        return Task.CompletedTask;
+    }
+
     private string ComputeSha256Hash(byte[] inputBytes)
     {
         using (SHA256 sha256 = SHA256.Create())
@@ -115,5 +142,5 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     }
     
 
-    protected abstract Task HandlerAsync(TEventToConsume message, CancellationToken cancellationToken = default);
+    protected abstract Task<Result<Task>> HandlerAsync(TEventToConsume message, CancellationToken cancellationToken = default);
 }

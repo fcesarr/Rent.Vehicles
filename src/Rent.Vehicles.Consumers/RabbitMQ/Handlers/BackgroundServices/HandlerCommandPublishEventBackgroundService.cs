@@ -1,4 +1,6 @@
 
+using LanguageExt.Common;
+
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Utils.Interfaces;
@@ -19,13 +21,19 @@ public abstract class HandlerCommandPublishEventBackgroundService<TCommandToCons
     {
     }
 
-    protected override async Task HandlerAsync(TCommandToConsume @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerAsync(TCommandToConsume @event, CancellationToken cancellationToken = default)
     {
-        await base.HandlerAsync(@event, cancellationToken);
-
-        var eventToPublish = CreateEventToPublish(@event);
+        var result = await base.HandlerAsync(@event, cancellationToken);
         
-        await PublishAsync(eventToPublish, cancellationToken);
+        return result.Match(result => {
+            result.GetAwaiter().GetResult();
+
+            var eventToPublish = CreateEventToPublish(@event);
+        
+            PublishAsync(eventToPublish, cancellationToken).GetAwaiter().GetResult();
+
+            return Task.CompletedTask;
+        }, exception => new Result<Task>(exception));
     }
 
     protected abstract TEventToPublish CreateEventToPublish(TCommandToConsume @event);

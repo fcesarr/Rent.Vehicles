@@ -7,6 +7,8 @@ using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Consumers.Exceptions;
+using LanguageExt.Common;
+using LanguageExt;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
@@ -46,11 +48,12 @@ public class CreateVehiclesSuccessEventSpecificYearBackgroundService : HandlerEv
         };
     }
 
-    protected override Task HandlerMessageAsync(CreateVehiclesSuccessEvent command, CancellationToken cancellationToken = default)
+    protected override Task<Result<Task>> HandlerMessageAsync(CreateVehiclesSuccessEvent command, CancellationToken cancellationToken = default)
     {
+        var result = new Result<Task>(Task.CompletedTask);
         if(command.Year != 2024)
-            throw new SpecificYearException();
+            result = new Result<Task>(new SpecificYearException("Vasco"));
         
-        return Task.CompletedTask;
+        return Task.FromResult(result);
     }
 }

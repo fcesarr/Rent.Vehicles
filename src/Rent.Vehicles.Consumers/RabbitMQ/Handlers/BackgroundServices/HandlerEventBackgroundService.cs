@@ -1,3 +1,6 @@
+using LanguageExt;
+using LanguageExt.Common;
+
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Utils.Interfaces;
@@ -15,12 +18,10 @@ public abstract class HandlerEventBackgroundService<TEventToConsume> : HandlerMe
     {
     }
 
-    protected override async Task HandlerAsync(TEventToConsume eventToPublish, CancellationToken cancellationToken = default)
-    {
-        await HandlerMessageAsync(eventToPublish, cancellationToken);
-    }
+    protected override async Task<Result<Task>> HandlerAsync(TEventToConsume eventToPublish, CancellationToken cancellationToken = default)
+        => await HandlerMessageAsync(eventToPublish, cancellationToken);
 
-    protected abstract Task HandlerMessageAsync(TEventToConsume @event, CancellationToken cancellationToken = default);
+    protected abstract Task<Result<Task>> HandlerMessageAsync(TEventToConsume @event, CancellationToken cancellationToken = default);
 
     
 }
