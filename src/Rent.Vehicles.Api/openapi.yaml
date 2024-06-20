@@ -1,0 +1,184 @@
+openapi: 3.0.1
+info:
+  title: Rent.Vehicles.Api
+  version: '1.0'
+paths:
+  "/Vehicles":
+    post:
+      tags:
+      - Rent.Vehicles.Api
+      operationId: VehiclesPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateVehiclesCommand"
+        required: true
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+      - Rent.Vehicles.Api
+      operationId: VehiclesPut
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateVehiclesCommand"
+        required: true
+      responses:
+        '200':
+          description: OK
+    delete:
+      tags:
+      - Rent.Vehicles.Api
+      operationId: VehiclesDelete
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/DeleteVehiclesCommand"
+        required: true
+      responses:
+        '200':
+          description: OK
+  "/Vehicles/{Id}":
+    get:
+      tags:
+      - Rent.Vehicles.Api
+      operationId: VehiclesGet
+      parameters:
+      - name: Id
+        in: query
+        required: true
+        style: form
+      responses:
+        '200':
+          description: OK
+  "/Events/Status/{SagaId}":
+    get:
+      tags:
+      - Rent.Vehicles.Api
+      operationId: EventsStatus
+      parameters:
+      - name: SagaId
+        in: query
+        required: true
+        style: form
+      responses:
+        '200':
+          description: OK
+  "/Users":
+    post:
+      tags:
+      - Rent.Vehicles.Api
+      operationId: UsersPost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateUserCommand"
+        required: true
+      responses:
+        '200':
+          description: OK
+    put:
+      tags:
+      - Rent.Vehicles.Api
+      operationId: UsersPut
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateUserCommand"
+        required: true
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    CreateUserCommand:
+      required:
+      - birthday
+      - licenseNumber
+      - licenseType
+      - name
+      - number
+      type: object
+      properties:
+        name:
+          minLength: 1
+          type: string
+        number:
+          minLength: 1
+          type: string
+        birthday:
+          type: string
+          format: date-time
+        licenseNumber:
+          type: string
+          format: date-time
+        licenseType:
+          type: string
+          format: date-time
+        licenseImage:
+          type: string
+          nullable: true
+      additionalProperties: false
+    CreateVehiclesCommand:
+      required:
+      - licensePlate
+      - model
+      - type
+      type: object
+      properties:
+        year:
+          maximum: 2025
+          minimum: 2020
+          type: integer
+          format: int32
+        model:
+          minLength: 1
+          type: string
+        licensePlate:
+          minLength: 1
+          type: string
+        type:
+          enum:
+          - A
+          - B
+          - C
+          - D
+          - E
+          type: string
+      additionalProperties: false
+    DeleteVehiclesCommand:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+      additionalProperties: false
+    UpdateUserCommand:
+      type: object
+      properties:
+        licenseImage:
+          type: string
+          nullable: true
+      additionalProperties: false
+    UpdateVehiclesCommand:
+      required:
+      - id
+      - licensePlate
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        licensePlate:
+          minLength: 1
+          type: string
+      additionalProperties: false

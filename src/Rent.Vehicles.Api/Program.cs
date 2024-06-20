@@ -1,8 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
-using System.Text;
-
-using LanguageExt.Common;
+using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
@@ -10,11 +7,9 @@ using Microsoft.OpenApi.Models;
 
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
-using Npgsql;
 
 using RabbitMQ.Client;
 
@@ -24,11 +19,11 @@ using Rent.Vehicles.Entities.Types;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Commands;
+using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Exceptions;
-using Rent.Vehicles.Services.Factories;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories;
 using Rent.Vehicles.Services.Repositories.Interfaces;
@@ -64,6 +59,8 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Example API", Version = "v1" });
+
     c.MapType<VehicleType>(() => new OpenApiSchema
     {
         Type = "string",
@@ -72,6 +69,20 @@ builder.Services.AddSwaggerGen(c => {
             .Cast<IOpenApiAny>()
             .ToList()
     });
+    c.MapType<LicenseType>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Enum = Enum.GetNames(typeof(LicenseType))
+            .Select(name => new OpenApiString(name))
+            .Cast<IOpenApiAny>()
+            .ToList()
+    });
+});
+
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 var app = builder.Build();
@@ -79,9 +90,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
@@ -96,7 +110,6 @@ app.MapPost("/Vehicles", async ([FromBody]CreateVehiclesCommand command,
     IPublisher publisher,
     CancellationToken cancellationToken = default) =>
 {
-    command.Id = Guid.NewGuid();
     command.SagaId = Guid.NewGuid();
 
     var context = new ValidationContext(command);
@@ -111,7 +124,8 @@ app.MapPost("/Vehicles", async ([FromBody]CreateVehiclesCommand command,
 
     string locationUri = $"/Events/status/{command.SagaId}";
 
-    return Results.Accepted(locationUri, new { Id = command.Id });
+    return Results.Accepted(locationUri, new {
+        command.Id });
 })
 .WithName("VehiclesPost")
 .WithOpenApi();
@@ -121,6 +135,14 @@ app.MapPut("/Vehicles", async ([FromBody]UpdateVehiclesCommand command,
     CancellationToken cancellationToken = default) =>
 {
     command.SagaId = Guid.NewGuid();
+
+    var context = new ValidationContext(command);
+    var results = new List<ValidationResult>();
+
+    if (!Validator.TryValidateObject(command, context, results, true))
+    {
+        return Results.BadRequest(results);
+    }
 
     await publisher.PublishCommandAsync(command, cancellationToken);
 
@@ -136,6 +158,14 @@ app.MapDelete("/Vehicles", async ([FromBody]DeleteVehiclesCommand command,
     CancellationToken cancellationToken = default) =>
 {
     command.SagaId = Guid.NewGuid();
+
+    var context = new ValidationContext(command);
+    var results = new List<ValidationResult>();
+
+    if (!Validator.TryValidateObject(command, context, results, true))
+    {
+        return Results.BadRequest(results);
+    }
 
     await publisher.PublishCommandAsync(command!, cancellationToken);
 
@@ -174,6 +204,53 @@ app.MapGet("/Events/Status/{SagaId}", async ([FromQuery]Guid sagaId,
 .WithName("EventsStatus")
 .WithOpenApi();
 
+app.MapPost("/Users", async ([FromBody]CreateUserCommand command,
+    IPublisher publisher,
+    CancellationToken cancellationToken = default) =>
+{
+    command.SagaId = Guid.NewGuid();
+
+    var context = new ValidationContext(command);
+    var results = new List<ValidationResult>();
+
+    if (!Validator.TryValidateObject(command, context, results, true))
+    {
+        return Results.BadRequest(results);
+    }
+
+    await publisher.PublishCommandAsync(command, cancellationToken);
+
+    string locationUri = $"/Events/status/{command.SagaId}";
+
+    return Results.Accepted(locationUri, new {
+        command.Id });
+})
+.WithName("UsersPost")
+.WithOpenApi();
+
+app.MapPut("/Users", async ([FromBody]UpdateUserCommand command,
+    IPublisher publisher,
+    CancellationToken cancellationToken = default) =>
+{
+    command.SagaId = Guid.NewGuid();
+
+    var context = new ValidationContext(command);
+    var results = new List<ValidationResult>();
+
+    if (!Validator.TryValidateObject(command, context, results, true))
+    {
+        return Results.BadRequest(results);
+    }
+
+    await publisher.PublishCommandAsync(command, cancellationToken);
+
+    string locationUri = $"/Events/status/{command.SagaId}";
+
+    return Results.Accepted(locationUri, new {
+        command.Id });
+})
+.WithName("UsersPut")
+.WithOpenApi();
 
 app.Run();
 

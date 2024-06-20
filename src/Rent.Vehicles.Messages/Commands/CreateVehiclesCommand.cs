@@ -12,7 +12,7 @@ public record CreateVehiclesCommand : Command
 {
     [MessagePack.Key(1)]
     [JsonIgnore]
-    public Guid Id { get; set; }
+    public Guid Id { get; init; } = Guid.NewGuid();
     
     [MessagePack.Key(2)]
     [Range(2020, 2025, ErrorMessage = "Year should be between 2020 and 2025")]
@@ -29,5 +29,6 @@ public record CreateVehiclesCommand : Command
     [MessagePack.Key(5)]
     [Required]
     [EnumDataType(typeof(VehicleType))]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public required VehicleType Type { get; init; }
 }
