@@ -1,29 +1,33 @@
 
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-using MessagePack;
 
 using Rent.Vehicles.Entities.Types;
 
 namespace Rent.Vehicles.Messages.Commands;
 
-[MessagePackObject]
+[MessagePack.MessagePackObject]
 public record CreateVehiclesCommand : Command
 {
-    [Key(1)]
+    [MessagePack.Key(1)]
     [JsonIgnore]
     public Guid Id { get; set; }
-
-    [Key(2)]
-    [System.ComponentModel.DataAnnotations.Range(2020, 2025, ErrorMessage = "Year should be between 2020 and 2025")]
+    
+    [MessagePack.Key(2)]
+    [Range(2020, 2025, ErrorMessage = "Year should be between 2020 and 2025")]
     public required int Year { get; init; }
 
-    [Key(3)]
+    [MessagePack.Key(3)]
+    [Required]
     public required string Model { get; init; }
 
-    [Key(4)]
+    [MessagePack.Key(4)]
+    [Required]
     public required string LicensePlate { get; init; }
 
-    [Key(5)]
+    [MessagePack.Key(5)]
+    [Required]
+    [EnumDataType(typeof(VehicleType))]
     public required VehicleType Type { get; init; }
 }

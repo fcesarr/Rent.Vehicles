@@ -1,10 +1,12 @@
-using MessagePack;
+
+using System.ComponentModel.DataAnnotations;
 
 namespace Rent.Vehicles.Messages.Commands;
 
-[MessagePackObject]
+[MessagePack.MessagePackObject]
 public record DeleteVehiclesCommand : Command
 {
-    [Key(1)]
+    [MessagePack.Key(1)]
+    [Required]
     public required Guid Id { get; init; }
 }

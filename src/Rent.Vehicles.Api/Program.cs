@@ -1,9 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text;
 
 using LanguageExt.Common;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
 
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -17,6 +20,7 @@ using RabbitMQ.Client;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Entities.Types;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Commands;
@@ -59,7 +63,16 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c => {
+    c.MapType<VehicleType>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Enum = Enum.GetNames(typeof(VehicleType))
+            .Select(name => new OpenApiString(name))
+            .Cast<IOpenApiAny>()
+            .ToList()
+    });
+});
 
 var app = builder.Build();
 
@@ -86,9 +99,17 @@ app.MapPost("/Vehicles", async ([FromBody]CreateVehiclesCommand command,
     command.Id = Guid.NewGuid();
     command.SagaId = Guid.NewGuid();
 
+    var context = new ValidationContext(command);
+    var results = new List<ValidationResult>();
+
+    if (!Validator.TryValidateObject(command, context, results, true))
+    {
+        return Results.BadRequest(results);
+    }
+
     await publisher.PublishCommandAsync(command, cancellationToken);
 
-    string locationUri = $"/vehicles/status/{command.SagaId}";
+    string locationUri = $"/Events/status/{command.SagaId}";
 
     return Results.Accepted(locationUri, new { Id = command.Id });
 })
@@ -103,7 +124,7 @@ app.MapPut("/Vehicles", async ([FromBody]UpdateVehiclesCommand command,
 
     await publisher.PublishCommandAsync(command, cancellationToken);
 
-    string locationUri = $"/vehicles/status/{command.SagaId}";
+    string locationUri = $"/Events/status/{command.SagaId}";
 
     return Results.Accepted(locationUri);
 })
@@ -118,7 +139,7 @@ app.MapDelete("/Vehicles", async ([FromBody]DeleteVehiclesCommand command,
 
     await publisher.PublishCommandAsync(command!, cancellationToken);
 
-    string locationUri = $"/vehicles/status/{command.SagaId}";
+    string locationUri = $"/Events/status/{command.SagaId}";
 
     return Results.Accepted(locationUri);
 })
@@ -139,7 +160,7 @@ app.MapGet("/Vehicles/{Id}", async ([FromQuery]Guid id,
 .WithName("VehiclesGet")
 .WithOpenApi();
 
-app.MapGet("/Vehicles/Status/{SagaId}", async ([FromQuery]Guid sagaId,
+app.MapGet("/Events/Status/{SagaId}", async ([FromQuery]Guid sagaId,
     IFindService<Event> findService,
     CancellationToken cancellationToken = default) =>
 {
@@ -150,7 +171,7 @@ app.MapGet("/Vehicles/Status/{SagaId}", async ([FromQuery]Guid sagaId,
         _ => Results.StatusCode(500)
     });
 })
-.WithName("VehiclesStatus")
+.WithName("EventsStatus")
 .WithOpenApi();
 
 
