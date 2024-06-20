@@ -16,6 +16,8 @@ public class RentVehiclesContext : DbContext, IDbContext
 
 	public virtual DbSet<Vehicle>? VehicleSet { get; set; }
 
+    public virtual DbSet<User>? UserSet { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -69,10 +69,10 @@ builder.Services.AddSwaggerGen(c => {
             .Cast<IOpenApiAny>()
             .ToList()
     });
-    c.MapType<LicenseType>(() => new OpenApiSchema
+    c.MapType<Rent.Vehicles.Messages.Types.LicenseType>(() => new OpenApiSchema
     {
         Type = "string",
-        Enum = Enum.GetNames(typeof(LicenseType))
+        Enum = Enum.GetNames(typeof(Rent.Vehicles.Messages.Types.LicenseType))
             .Select(name => new OpenApiString(name))
             .Cast<IOpenApiAny>()
             .ToList()

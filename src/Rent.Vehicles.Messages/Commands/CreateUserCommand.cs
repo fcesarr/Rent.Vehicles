@@ -26,7 +26,7 @@ public record CreateUserCommand : Command
 
     [MessagePack.Key(5)]
     [Required]
-    public required DateTime LicenseNumber { get; init; }
+    public required string LicenseNumber { get; init; }
 
     [MessagePack.Key(6)]
     [Required]

@@ -58,6 +58,7 @@ builder.Services
     .AddProjectionDomain<VehiclesForSpecificYearProjection>()
     .AddProjectionDomain<Rent.Vehicles.Entities.Event>()
     .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleService, VehicleService>()
+    .AddDataDomain<User, IUserValidator, UserValidator, IUserService, UserService>()
     .AddDefaultSerializer<MessagePackSerializer>()
     .AddSingleton<IPublisher, Publisher>()
     .AddHostedService<CreateVehiclesCommandSqlBackgroundService>()
@@ -71,7 +72,9 @@ builder.Services
     .AddHostedService<UpdateVehiclesCommandSqlBackgroundService>()
     .AddHostedService<UpdateVehiclesEventSqlBackgroundService>()
     .AddHostedService<UpdateVehiclesSuccessEventNoSqlBackgroundService>()
-    .AddHostedService<EventBackgroundService>();
+    .AddHostedService<EventBackgroundService>()
+    .AddHostedService<CreateUserCommandSqlBackgroundService>()
+    .AddHostedService<CreateUserEventSqlBackgroundService>();
 
 var host = builder.Build();
 host.Run();
