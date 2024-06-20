@@ -10,7 +10,7 @@ using Rent.Vehicles.Services.Repositories.Interfaces;
 
 namespace Rent.Vehicles.Services.Repositories;
 
-public sealed class MongoRepository<TEntity> : INoSqlRepository<TEntity> where TEntity : Entity
+public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntity : Entity
 {
     private readonly ILogger<MongoRepository<TEntity>> _logger;
 

@@ -9,7 +9,7 @@ using Rent.Vehicles.Services.Repositories.Interfaces;
 
 namespace Rent.Vehicles.Services.Repositories;
 
-public sealed class EntityFrameworkRepository<TEntity> : ISqlRepository<TEntity> where TEntity : Entity
+public sealed class EntityFrameworkRepository<TEntity> : IRepository<TEntity> where TEntity : Entity
 {
     private readonly IDbContextFactory _dbContextFactory;
 

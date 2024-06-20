@@ -15,14 +15,14 @@ public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandServicePu
     DeleteVehiclesCommand, 
     DeleteVehiclesEvent,
     Command,
-    ISqlService<Command>>
+    IService<Command>>
 {
     public DeleteVehiclesCommandSqlBackgroundService(ILogger<DeleteVehiclesCommandSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        ISqlService<Command> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IService<Command> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 

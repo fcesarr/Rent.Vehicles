@@ -5,6 +5,8 @@ using System.Text.Json.Serialization;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
+using Rent.Vehicles.Entities.Types;
+
 namespace Rent.Vehicles.Entities;
 
 [Table("events", Schema = "events")]
@@ -24,10 +26,4 @@ public class Event : Entity
 
     [BsonElement("Message")]
     public required string Message { get; set; }
-}
-
-public enum StatusType
-{
-    Success,
-    Fail
 }

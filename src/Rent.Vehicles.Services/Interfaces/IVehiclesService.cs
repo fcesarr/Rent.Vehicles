@@ -1,18 +1,17 @@
 using LanguageExt.Common;
 
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Entities.Projections;
 
 namespace Rent.Vehicles.Services.Interfaces;
 
-public interface IVehiclesService : ISqlVehiclesService, INoSqlVehiclesService;
+public interface IVehicleService : IVehiclesService<Vehicle>;
 
-public interface ISqlVehiclesService :  ISqlService<Vehicle>
+public interface IVehicleProjectionService : IVehiclesService<VehicleProjection>;
+
+public interface IVehiclesService<TEntity> : IService<TEntity> where TEntity : Entity
 {
-    Task<Result<Vehicle>> UpdateAsync(Guid id, string licensePlate, CancellationToken cancellationToken = default);
-}
-
-
-public interface INoSqlVehiclesService : INoSqlService<Vehicle>
-{
-    Task<Result<Vehicle>> UpdateAsync(Guid id, string licensePlate, CancellationToken cancellationToken = default);
+    Task<Result<TEntity>> UpdateAsync(Guid id,
+        string licensePlate,
+        CancellationToken cancellationToken = default);
 }

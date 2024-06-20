@@ -14,14 +14,14 @@ public class DeleteVehiclesEventSqlBackgroundService : HandlerEventServicePublis
     DeleteVehiclesEvent,
     DeleteVehiclesSuccessEvent,
     Vehicle,
-    IVehiclesService>
+    IVehicleService>
 {
     public DeleteVehiclesEventSqlBackgroundService(ILogger<DeleteVehiclesEventSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IVehicleService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 

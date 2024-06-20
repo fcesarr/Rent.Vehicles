@@ -5,6 +5,7 @@ using LanguageExt.Common;
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Utils.Interfaces;
+using Rent.Vehicles.Entities.Types;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Producers.Interfaces;
 
@@ -32,7 +33,7 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
         {
             SagaId = eventToPublish.SagaId,
             Name = typeof(TEventToConsume).Name,
-            StatusType = Entities.StatusType.Success,
+            StatusType = StatusType.Success,
             Message = string.Empty
         };
 
@@ -49,7 +50,7 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
 
             return Task.CompletedTask;
         }, exception => {
-             @event = @event with { StatusType = Entities.StatusType.Fail, Message = exception.Message };
+             @event = @event with { StatusType = StatusType.Fail, Message = exception.Message };
 
             _publisher.PublishSingleEventAsync(@event, cancellationToken)
                 .GetAwaiter()
@@ -63,11 +64,9 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
         Exception exception,
         CancellationToken cancellationToken = default)
     {
-        @event = @event with { StatusType = Entities.StatusType.Fail, Message = exception.Message };
+        @event = @event with { StatusType = StatusType.Fail, Message = exception.Message };
 
         await _publisher.PublishSingleEventAsync(@event, cancellationToken);
-
-        // _logger.LogError(exception, exception.Message);
 
         return Task.FromResult(new Result<Task>(new Exception()));
     }

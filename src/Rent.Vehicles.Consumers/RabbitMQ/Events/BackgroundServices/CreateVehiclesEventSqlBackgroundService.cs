@@ -14,14 +14,14 @@ public class CreateVehiclesEventSqlBackgroundService : HandlerEventServicePublis
     CreateVehiclesEvent,
     CreateVehiclesSuccessEvent,
     Vehicle,
-    IVehiclesService>
+    IVehicleService>
 {
     public CreateVehiclesEventSqlBackgroundService(ILogger<CreateVehiclesEventSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IVehicleService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 

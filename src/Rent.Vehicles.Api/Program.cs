@@ -16,6 +16,7 @@ using Npgsql;
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Commands;
@@ -49,11 +50,11 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
         return client.GetDatabase("rent");
     })
     .AddSingleton<IValidator<Event>,  EventValidator>()
-    .AddSingleton<INoSqlRepository<Event>, MongoRepository<Event>>()
+    .AddSingleton<IRepository<Event>, MongoRepository<Event>>()
     .AddSingleton<IFindService<Event>, Service<Event>>()
-    .AddSingleton<IValidator<Vehicle>, VehicleValidator>()
-    .AddSingleton<INoSqlRepository<Vehicle>, MongoRepository<Vehicle>>()
-    .AddSingleton<IGetService<Vehicle>, Service<Vehicle>>();
+    .AddSingleton<IValidator<VehicleProjection>, Validator<VehicleProjection>>()
+    .AddSingleton<IRepository<VehicleProjection>, MongoRepository<VehicleProjection>>()
+    .AddSingleton<IGetService<VehicleProjection>, Service<VehicleProjection>>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -125,7 +126,7 @@ app.MapDelete("/Vehicles", async ([FromBody]DeleteVehiclesCommand command,
 .WithOpenApi();
 
 app.MapGet("/Vehicles/{Id}", async ([FromQuery]Guid id,
-    IGetService<Vehicle> getService,
+    IGetService<VehicleProjection> getService,
     CancellationToken cancellationToken = default) =>
 {
     var entity = await getService.GetAsync(x => x.Id == id, cancellationToken);

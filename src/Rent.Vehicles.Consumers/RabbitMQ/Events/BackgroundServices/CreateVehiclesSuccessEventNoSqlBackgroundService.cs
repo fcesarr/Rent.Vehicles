@@ -7,20 +7,21 @@ using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using LanguageExt.Common;
+using Rent.Vehicles.Entities.Projections;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
 public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
     CreateVehiclesSuccessEvent,
-    Vehicle,
-    IVehiclesService>
+    VehicleProjection,
+    IVehicleProjectionService>
 {
     public CreateVehiclesSuccessEventNoSqlBackgroundService(ILogger<CreateVehiclesSuccessEventNoSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehiclesService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IVehicleProjectionService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
         QueueName = $"{typeof(CreateVehiclesSuccessEvent).Name}.One";
     }
@@ -37,7 +38,7 @@ public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServ
 
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
     {
-        var entity = await _service.CreateAsync(new Vehicle
+        var entity = await _service.CreateAsync(new VehicleProjection
         {
             Id = @event.Id,
             Year = @event.Year,

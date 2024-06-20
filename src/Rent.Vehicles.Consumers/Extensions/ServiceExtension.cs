@@ -1,5 +1,6 @@
 
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories;
@@ -11,22 +12,38 @@ namespace Rent.Vehicles.Consumers.Extensions;
 
 public static class ServiceExtension
 {
-    public static IServiceCollection AddSqlService<TEntity>(this IServiceCollection services) where TEntity : Entity
-        => services.AddSqlService<TEntity, Validator<TEntity>>();
+    public static IServiceCollection AddDataDomain<TEntity>(this IServiceCollection services)
+        where TEntity : Entity
+        => services.AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
+            .AddSingleton<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
+            .AddSingleton<IService<TEntity>, Service<TEntity>>();
 
-    public static IServiceCollection AddSqlService<TEntity, TValidator>(this IServiceCollection services) 
+    public static IServiceCollection AddDataDomain<TEntity, TIValidator, TValidatorImplementation, TIService, TServiceImplementation>(this IServiceCollection services) 
         where TEntity : Entity
-        where TValidator : Validator<TEntity>
-        => services.AddSingleton<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
-            .AddSingleton<IValidator<TEntity>, TValidator>()
-            .AddSingleton<ICreateService<TEntity>, Service<TEntity>>()
-            .AddSingleton<IDeleteService<TEntity>, Service<TEntity>>()
-            .AddSingleton<IUpdateService<TEntity>, Service<TEntity>>();
-    public static IServiceCollection AddNoSqlService<TEntity>(this IServiceCollection services) 
+        where TIValidator : class, IValidator<TEntity>
+        where TValidatorImplementation : Validator<TEntity>, TIValidator
+        where TIService : class, IService<TEntity>
+        where TServiceImplementation : Service<TEntity>, TIService
+        => services.AddSingleton<TIValidator, TValidatorImplementation>()
+            .AddSingleton<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
+            .AddSingleton<TIService, TServiceImplementation>();
+
+    public static IServiceCollection AddProjectionDomain<TEntity>(this IServiceCollection services)
         where TEntity : Entity
-        => services.AddSingleton<IRepository<TEntity>, MongoRepository<TEntity>>()
-            .AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
-            .AddSingleton<ICreateService<TEntity>, Service<TEntity>>()
-            .AddSingleton<IDeleteService<TEntity>, Service<TEntity>>()
-            .AddSingleton<IUpdateService<TEntity>, Service<TEntity>>();
+        => services.AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
+            .AddSingleton<IRepository<TEntity>, MongoRepository<TEntity>>()
+            .AddSingleton<IService<TEntity>, Service<TEntity>>();
+
+    public static IServiceCollection AddProjectionDomain<TEntity, TIService, TServiceImplementation>(this IServiceCollection services) 
+        where TEntity : Entity
+        where TIService : class, IService<TEntity>
+        where TServiceImplementation : Service<TEntity>, TIService
+        => services.AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
+            .AddSingleton<IRepository<TEntity>, MongoRepository<TEntity>>()
+            .AddSingleton<TIService, TServiceImplementation>();
+
+    public static IServiceCollection AddDefaultSerializer<TImplementation>(this IServiceCollection services)
+        where TImplementation : class, ISerializer
+        => services.AddSingleton<ISerializer, TImplementation>();
+
 }

@@ -15,14 +15,14 @@ public class UpdateVehiclesCommandSqlBackgroundService : HandlerCommandServicePu
     UpdateVehiclesCommand,
     UpdateVehiclesEvent,
     Command,
-    ISqlService<Command>>
+    IService<Command>>
 {
     public UpdateVehiclesCommandSqlBackgroundService(ILogger<UpdateVehiclesCommandSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        ISqlService<Command> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IService<Command> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 

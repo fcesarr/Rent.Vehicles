@@ -7,26 +7,27 @@ using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Interfaces;
 using LanguageExt.Common;
+using Rent.Vehicles.Entities.Projections;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
 public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
     CreateVehiclesForSpecificYearEvent,
-    VehiclesForSpecificYear,
-    INoSqlService<VehiclesForSpecificYear>>
+    VehiclesForSpecificYearProjection,
+    IService<VehiclesForSpecificYearProjection>>
 {
     public CreateVehiclesForSpecificYearEventNoSqlBackgroundService(ILogger<CreateVehiclesForSpecificYearEventNoSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        INoSqlService<VehiclesForSpecificYear> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IService<VehiclesForSpecificYearProjection> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
     {
-        var entity = await _service.CreateAsync(new VehiclesForSpecificYear
+        var entity = await _service.CreateAsync(new VehiclesForSpecificYearProjection
         {
             Id = @event.Id,
             Year = @event.Year,
