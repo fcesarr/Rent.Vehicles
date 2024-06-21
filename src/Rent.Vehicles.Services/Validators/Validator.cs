@@ -14,7 +14,7 @@ public class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValida
 	{
 		var validationResult = new ValidationResult<TEntity>
         {
-            IsValid = false
+            IsValid = false,
         };
 
         if(instance is null)
