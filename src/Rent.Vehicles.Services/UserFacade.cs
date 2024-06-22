@@ -1,10 +1,16 @@
+using LanguageExt;
 using LanguageExt.Common;
+using LanguageExt.Pipes;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+using MongoDB.Bson;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Dtos;
 using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Settings;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services;
@@ -13,66 +19,64 @@ public class UserFacade : IUserFacade
 {
     private readonly ILogger<UserFacade> _logger;
 
-    private readonly IValidator<UserDto> _validator;
+    private readonly IBase64StringValidator _base64StringValidator;
 
     private readonly IUserService _userService;
 
+    private readonly ILicenseImageService _licenseImageService;
+
     public UserFacade(ILogger<UserFacade> logger,
-        IValidator<UserDto> validator,
-        IUserService userService)
+        IBase64StringValidator validator,
+        IUserService userService,
+        ILicenseImageService licenseImageService)
     {
         _logger = logger;
-        _validator = validator;
+        _base64StringValidator = validator;
         _userService = userService;
+        _licenseImageService = licenseImageService;
     }
 
-    public async Task<Result<User>> CreateAsync(UserDto? dto, CancellationToken cancellationToken = default)
+    public async Task<Result<User>> CreateAsync(UserDto dto, CancellationToken cancellationToken = default)
     {
-        var result = await _validator.ValidateAsync(dto, cancellationToken);
+        var result = await _base64StringValidator.ValidateAsync(dto.LicenseImage, cancellationToken);
 
         if(!result.IsValid)
             return new Result<User>(result.Exception);
 
-        return await _userService.CreateAsync(new User {
-            Name = result.Instance.Name,
-            Number = result.Instance.Number,
-            Birthday = result.Instance.Birthday,
-            LicenseNumber = result.Instance.LicenseNumber,
-            LicenseType = result.Instance.LicenseType,
-            LicensePath = await GetPathAsync(result.Instance.LicenseImage)
-        }, cancellationToken);
+        var licensePathResult = await _licenseImageService.GetPathAsync(dto.LicenseImage, cancellationToken);
+
+        return await licensePathResult
+            .Match(async licensePath => await _userService.CreateAsync(new User
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Number = dto.Number,
+                Birthday = dto.Birthday,
+                LicenseNumber = dto.LicenseNumber,
+                LicenseType = dto.LicenseType,
+                LicensePath = licensePath
+            }, cancellationToken), exception => Task.FromResult(new Result<User>(exception)));
     }
 
     public async Task<Result<User>> UpdateAsync(Guid id, string licenseImage, CancellationToken cancellationToken = default)
     {
         var entity = await _userService.GetAsync(x => x.Id == id, cancellationToken);
 
-        return await entity.Match(async entity => {
-
-            var dto = new UserDto
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                Number = entity.Number,
-                Birthday = entity.Birthday,
-                LicenseNumber = entity.LicenseNumber,
-                LicenseType = entity.LicenseType,
-                LicenseImage = licenseImage,
-            };
-
-            var result = await _validator.ValidateAsync(dto, cancellationToken);
+        return await entity.Match(async entity => 
+        {
+            var result = await _base64StringValidator.ValidateAsync(licenseImage, cancellationToken);
 
             if(!result.IsValid)
                 return new Result<User>(result.Exception);
+
+            var licensePathResult = await _licenseImageService.GetPathAsync(licenseImage, cancellationToken);
             
-            entity.LicensePath = await GetPathAsync(licenseImage);
+            return await licensePathResult.Match(async licensePath => {
+                entity.LicensePath = licensePath;
 
-            return entity;
+                return await _userService.UpdateAsync(entity, cancellationToken);
+            }, exception => Task.FromResult(new Result<User>(exception)));
+
         }, exception => Task.FromResult(new Result<User>(exception)));
-    }
-
-    private Task<string> GetPathAsync(string licenseImage)
-    {
-        return Task.FromResult(string.Empty);
     }
 }

@@ -1,5 +1,3 @@
-using Rent.Vehicles.Entities;
-
 namespace Rent.Vehicles.Services.Interfaces;
 
 public interface IService<TEntity> :
@@ -7,4 +5,7 @@ public interface IService<TEntity> :
     IDeleteService<TEntity>,
     IUpdateService<TEntity>,
     IGetService<TEntity>,
-    IFindService<TEntity> where TEntity : Entity;
+    IFindService<TEntity>,
+    IAction<TEntity> where TEntity : class;
+
+public interface IAction<TEntity> where TEntity : class;

@@ -7,22 +7,24 @@ using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using LanguageExt.Common;
+using Rent.Vehicles.Services.Dtos;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateUserEventSqlBackgroundService : HandlerEventServicePublishEventBackgroundService<
+public class CreateUserEventSqlBackgroundService : HandlerEventPublishEventBackgroundService<
     CreateUserEvent,
-    CreateUserSuccessEvent,
-    User,
-    IUserService>
+    CreateUserSuccessEvent>
 {
+    private readonly IUserFacade _userFacade;
+
     public CreateUserEventSqlBackgroundService(ILogger<CreateUserEventSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IUserService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IUserFacade userFacade) : base(logger, channel, periodicTimer, serializer, publisher)
     {
+        _userFacade = userFacade;
     }
 
     protected override CreateUserSuccessEvent CreateEventToPublish(CreateUserEvent @event)
@@ -41,16 +43,21 @@ public class CreateUserEventSqlBackgroundService : HandlerEventServicePublishEve
 
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
     {
-        var entity = await _service.CreateAsync(new User
+        var entity = await _userFacade.CreateAsync(new UserDto
         {
             Id = @event.Id,
             Name = @event.Name,
             Number = @event.Number,
             Birthday = @event.Birthday,
             LicenseNumber = @event.LicenseNumber,
-            LicensePath = @event.LicenseImage,
+            LicenseImage = @event.LicenseImage,
         }, cancellationToken);
 
         return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
+    }
+
+    protected override async Task PublishAsync(CreateUserSuccessEvent @event, CancellationToken cancellationToken = default)
+    {
+        await _publisher.PublishEventAsync(@event, cancellationToken);
     }
 }

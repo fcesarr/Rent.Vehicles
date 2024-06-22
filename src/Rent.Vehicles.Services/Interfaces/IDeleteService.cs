@@ -6,7 +6,7 @@ using Rent.Vehicles.Entities;
 
 namespace Rent.Vehicles.Services.Interfaces;
 
-public interface IDeleteService<TEntity> where TEntity : Entity
+public interface IDeleteService<TEntity> where TEntity : class
 {
     Task<Result<bool>> DeleteAsync(TEntity? entity, CancellationToken cancellationToken = default);
 

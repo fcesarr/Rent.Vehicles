@@ -12,8 +12,8 @@ namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 public abstract class HandlerEventServicePublishEventBackgroundService<TEventToConsume, TEventToPublish, TEntity, TService> : HandlerEventPublishEventBackgroundService<TEventToConsume, TEventToPublish>
     where TEventToConsume : Messages.Event
     where TEventToPublish : Messages.Event
-    where TEntity : Entity
-    where TService : IService<TEntity>
+    where TEntity : class
+    where TService : IAction<TEntity>
 {
     protected readonly TService _service;
 
