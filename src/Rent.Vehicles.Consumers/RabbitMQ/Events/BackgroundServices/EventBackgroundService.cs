@@ -35,7 +35,10 @@ public class EventBackgroundService : HandlerEventBackgroundService<Event>
         {
             SagaId = @event.SagaId,
             Name = @event.Name,
-            StatusType = @event.StatusType,
+            StatusType = @event.StatusType switch {
+                Messages.Types.StatusType.Success => Entities.Types.StatusType.Success,
+                Messages.Types.StatusType.Fail or _ => Entities.Types.StatusType.Fail
+            },
             Message = @event.Message,
         }, cancellationToken);
 

@@ -2,8 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-
-using Rent.Vehicles.Entities.Types;
+using Rent.Vehicles.Messages.Types;
 
 namespace Rent.Vehicles.Messages.Commands;
 

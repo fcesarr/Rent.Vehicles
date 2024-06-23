@@ -1,7 +1,5 @@
 using MessagePack;
 
-using Rent.Vehicles.Entities.Types;
-
 namespace Rent.Vehicles.Messages.Events;
 
 [MessagePackObject]

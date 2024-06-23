@@ -33,7 +33,7 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
         {
             SagaId = eventToPublish.SagaId,
             Name = typeof(TEventToConsume).Name,
-            StatusType = StatusType.Success,
+            StatusType = Messages.Types.StatusType.Success,
             Message = string.Empty
         };
 
@@ -50,7 +50,7 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
 
             return Task.CompletedTask;
         }, exception => {
-             @event = @event with { StatusType = StatusType.Fail, Message = exception.Message };
+             @event = @event with { StatusType = Messages.Types.StatusType.Fail, Message = exception.Message };
 
             _publisher.PublishSingleEventAsync(@event, cancellationToken)
                 .GetAwaiter()
@@ -64,7 +64,7 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
         Exception exception,
         CancellationToken cancellationToken = default)
     {
-        @event = @event with { StatusType = StatusType.Fail, Message = exception.Message };
+        @event = @event with { StatusType = Messages.Types.StatusType.Fail, Message = exception.Message };
 
         await _publisher.PublishSingleEventAsync(@event, cancellationToken);
 

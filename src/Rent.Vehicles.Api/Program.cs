@@ -61,10 +61,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Example API", Version = "v1" });
 
-    c.MapType<VehicleType>(() => new OpenApiSchema
+    c.MapType<Rent.Vehicles.Messages.Types.VehicleType>(() => new OpenApiSchema
     {
         Type = "string",
-        Enum = Enum.GetNames(typeof(VehicleType))
+        Enum = Enum.GetNames(typeof(Rent.Vehicles.Messages.Types.VehicleType))
             .Select(name => new OpenApiString(name))
             .Cast<IOpenApiAny>()
             .ToList()

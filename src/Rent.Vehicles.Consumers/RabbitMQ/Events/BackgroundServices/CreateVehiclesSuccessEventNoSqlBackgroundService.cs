@@ -44,7 +44,13 @@ public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServ
             Year = @event.Year,
             Model = @event.Model,
             LicensePlate = @event.LicensePlate,
-            Type = @event.Type
+            Type = @event.Type switch {
+                Messages.Types.VehicleType.B => Entities.Types.VehicleType.B,
+                Messages.Types.VehicleType.C => Entities.Types.VehicleType.C,
+                Messages.Types.VehicleType.D => Entities.Types.VehicleType.D,
+                Messages.Types.VehicleType.E => Entities.Types.VehicleType.E,
+                Messages.Types.VehicleType.A or _ => Entities.Types.VehicleType.A,
+            }
         }, cancellationToken);
 
         return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
