@@ -8,18 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Scripts/InsertCommand.sql" />
-    <None Remove="Scripts/InsertEvent.sql" />
-    <None Remove="Scripts/SelectEvent.sql" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts/InsertCommand.sql" />
-    <EmbeddedResource Include="Scripts/InsertEvent.sql" />
-    <EmbeddedResource Include="Scripts/SelectEvent.sql" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

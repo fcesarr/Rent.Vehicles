@@ -21,6 +21,9 @@ using Rent.Vehicles.Services;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Consumers.Extensions;
 using Rent.Vehicles.Services.Settings;
+using Rent.Vehicles.Services.Facades.Interfaces;
+using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.DataServices;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -62,14 +65,14 @@ builder.Services
         return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
     })
     .AddDataDomain<Command>()
-    .AddProjectionDomain<VehicleProjection, IVehicleProjectionService, VehicleProjectionService>()
+    .AddProjectionDomain<VehicleProjection, IVehicleProjectionDataService, VehicleProjectionDataService>()
     .AddProjectionDomain<VehiclesForSpecificYearProjection>()
     .AddProjectionDomain<Rent.Vehicles.Entities.Event>()
-    .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleService, VehicleService>()
-    .AddDataDomain<User, IUserValidator, UserValidator, IUserService, UserService>()
+    .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()
+    .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
     .AddDefaultSerializer<MessagePackSerializer>()
     .AddSingleton<IPublisher, Publisher>()
-    .AddDataDomain<User, IUserValidator, UserValidator, IUserService, UserService>()
+    .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
     .AddSingleton<IBase64StringValidator, Base64StringValidator>()
     .AddSingleton<IUserFacade, UserFacade>()
     .AddSingleton<IUploadService, FileUploadService>()

@@ -13,15 +13,14 @@ namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 public class DeleteVehiclesEventSqlBackgroundService : HandlerEventServicePublishEventBackgroundService<
     DeleteVehiclesEvent,
     DeleteVehiclesSuccessEvent,
-    Vehicle,
-    IVehicleService>
+    IVehicleDataService>
 {
     public DeleteVehiclesEventSqlBackgroundService(ILogger<DeleteVehiclesEventSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehicleService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IVehicleDataService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 

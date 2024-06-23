@@ -14,15 +14,14 @@ namespace Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
 public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandServicePublishEventBackgroundService<
     CreateVehiclesCommand,
     CreateVehiclesEvent,
-    Command,
-    IService<Command>>
+    IDataService<Command>>
 {
     public CreateVehiclesCommandSqlBackgroundService(ILogger<CreateVehiclesCommandSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IService<Command> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IDataService<Command> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 

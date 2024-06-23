@@ -16,14 +16,14 @@ public static class ServiceExtension
         where TEntity : Entity
         => services.AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
             .AddSingleton<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
-            .AddSingleton<IService<TEntity>, Service<TEntity>>();
+            .AddSingleton<IDataService<TEntity>, DataService<TEntity>>();
 
     public static IServiceCollection AddDataDomain<TEntity, TIValidator, TValidatorImplementation, TIService, TServiceImplementation>(this IServiceCollection services) 
         where TEntity : Entity
         where TIValidator : class, IValidator<TEntity>
         where TValidatorImplementation : Validator<TEntity>, TIValidator
-        where TIService : class, IService<TEntity>
-        where TServiceImplementation : Service<TEntity>, TIService
+        where TIService : class, IDataService<TEntity>
+        where TServiceImplementation : DataService<TEntity>, TIService
         => services.AddSingleton<TIValidator, TValidatorImplementation>()
             .AddSingleton<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
             .AddSingleton<TIService, TServiceImplementation>();
@@ -32,12 +32,12 @@ public static class ServiceExtension
         where TEntity : Entity
         => services.AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
             .AddSingleton<IRepository<TEntity>, MongoRepository<TEntity>>()
-            .AddSingleton<IService<TEntity>, Service<TEntity>>();
+            .AddSingleton<IDataService<TEntity>, DataService<TEntity>>();
 
     public static IServiceCollection AddProjectionDomain<TEntity, TIService, TServiceImplementation>(this IServiceCollection services) 
         where TEntity : Entity
-        where TIService : class, IService<TEntity>
-        where TServiceImplementation : Service<TEntity>, TIService
+        where TIService : class, IDataService<TEntity>
+        where TServiceImplementation : DataService<TEntity>, TIService
         => services.AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
             .AddSingleton<IRepository<TEntity>, MongoRepository<TEntity>>()
             .AddSingleton<TIService, TServiceImplementation>();

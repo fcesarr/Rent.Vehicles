@@ -13,15 +13,14 @@ namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
 public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
     CreateVehiclesForSpecificYearEvent,
-    VehiclesForSpecificYearProjection,
-    IService<VehiclesForSpecificYearProjection>>
+    IDataService<VehiclesForSpecificYearProjection>>
 {
     public CreateVehiclesForSpecificYearEventNoSqlBackgroundService(ILogger<CreateVehiclesForSpecificYearEventNoSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IService<VehiclesForSpecificYearProjection> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IDataService<VehiclesForSpecificYearProjection> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 

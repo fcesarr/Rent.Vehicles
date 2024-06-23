@@ -13,15 +13,15 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services;
 
-public class Service<TEntity> : IService<TEntity> where TEntity : Entity
+public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
 {
-    protected readonly ILogger<Service<TEntity>> _logger; 
+    protected readonly ILogger<DataService<TEntity>> _logger; 
 
     private readonly IValidator<TEntity> _validator;
 
     protected readonly IRepository<TEntity> _repository;
 
-    public Service(ILogger<Service<TEntity>> logger,
+    public DataService(ILogger<DataService<TEntity>> logger,
         IValidator<TEntity> validator,
         IRepository<TEntity> repository)
     {

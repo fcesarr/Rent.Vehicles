@@ -11,7 +11,6 @@ namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
 public class CreateUserSuccessEventUploadLicenseImageBackgroundService : HandlerEventServicePublishBackgroundService<
     CreateUserSuccessEvent,
-    Task,
     ILicenseImageService>
 {
     public CreateUserSuccessEventUploadLicenseImageBackgroundService(ILogger<CreateUserSuccessEventUploadLicenseImageBackgroundService> logger,

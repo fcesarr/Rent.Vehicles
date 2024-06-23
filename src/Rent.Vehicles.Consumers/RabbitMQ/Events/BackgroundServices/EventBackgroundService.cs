@@ -17,14 +17,14 @@ namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
 public class EventBackgroundService : HandlerEventBackgroundService<Event>
 {
-    private readonly IService<EventEntity> _service;
+    private readonly IDataService<EventEntity> _service;
 
     public EventBackgroundService(ILogger<EventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IService<EventEntity> service) : base(logger, channel, periodicTimer, serializer)
+        IDataService<EventEntity> service) : base(logger, channel, periodicTimer, serializer)
     {
         _service = service;
     }

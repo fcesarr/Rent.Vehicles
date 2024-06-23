@@ -7,9 +7,9 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services;
 
-public class UserService : Service<User>, IUserService
+public class UserDataService : DataService<User>, IUserDataService
 {
-    public UserService(ILogger<UserService> logger,
+    public UserDataService(ILogger<UserDataService> logger,
         IUserValidator validator,
         IRepository<User> repository) : base(logger, validator, repository)
     {

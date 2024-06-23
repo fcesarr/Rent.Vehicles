@@ -7,7 +7,7 @@ using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using LanguageExt.Common;
-using Rent.Vehicles.Services.Dtos;
+using Rent.Vehicles.Services.Facades.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
@@ -43,15 +43,7 @@ public class CreateUserEventSqlBackgroundService : HandlerEventPublishEventBackg
 
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
     {
-        var entity = await _userFacade.CreateAsync(new UserDto
-        {
-            Id = @event.Id,
-            Name = @event.Name,
-            Number = @event.Number,
-            Birthday = @event.Birthday,
-            LicenseNumber = @event.LicenseNumber,
-            LicenseImage = @event.LicenseImage,
-        }, cancellationToken);
+        var entity = await _userFacade.CreateAsync(@event, cancellationToken);
 
         return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
     }

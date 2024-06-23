@@ -2,7 +2,7 @@ using LanguageExt.Common;
 
 namespace Rent.Vehicles.Services.Interfaces;
 
-public interface ILicenseImageService : IAction<Task>
+public interface ILicenseImageService
 {
     Task<Result<string>> GetPathAsync(string licenseImage, CancellationToken cancellationToken = default);
 

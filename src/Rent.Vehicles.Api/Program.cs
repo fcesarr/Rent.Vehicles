@@ -50,10 +50,10 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
     })
     .AddSingleton<IValidator<Event>,  EventValidator>()
     .AddSingleton<IRepository<Event>, MongoRepository<Event>>()
-    .AddSingleton<IFindService<Event>, Service<Event>>()
+    .AddSingleton<IFindService<Event>, DataService<Event>>()
     .AddSingleton<IValidator<VehicleProjection>, Validator<VehicleProjection>>()
     .AddSingleton<IRepository<VehicleProjection>, MongoRepository<VehicleProjection>>()
-    .AddSingleton<IGetService<VehicleProjection>, Service<VehicleProjection>>();
+    .AddSingleton<IGetService<VehicleProjection>, DataService<VehicleProjection>>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

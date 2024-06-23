@@ -7,12 +7,10 @@ using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Producers.Interfaces;
 
-using Event = Rent.Vehicles.Messages.Events.Event;
-
 namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
 public abstract class HandlerCommandPublishBackgroundService<TCommandToConsume> : HandlerMessageBackgroundService<TCommandToConsume>
-    where TCommandToConsume : Messages.Command
+    where TCommandToConsume : Command
 {
     protected readonly IPublisher _publisher;
 

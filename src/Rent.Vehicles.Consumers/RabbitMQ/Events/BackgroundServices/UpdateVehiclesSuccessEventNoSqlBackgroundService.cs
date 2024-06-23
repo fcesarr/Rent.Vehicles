@@ -8,20 +8,20 @@ using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using LanguageExt.Common;
 using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Services.DataServices.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
 public class UpdateVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
     UpdateVehiclesSuccessEvent,
-    VehicleProjection,
-    IVehicleProjectionService>
+    IVehicleProjectionDataService>
 {
     public UpdateVehiclesSuccessEventNoSqlBackgroundService(ILogger<UpdateVehiclesSuccessEventNoSqlBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehicleProjectionService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IVehicleProjectionDataService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
     }
 

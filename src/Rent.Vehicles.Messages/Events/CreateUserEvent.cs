@@ -28,6 +28,3 @@ public record CreateUserEvent : Messages.Event
     [Key(7)]
     public required string LicenseImage { get; set; }
 }
-
-[MessagePackObject]
-public record CreateUserSuccessEvent : CreateUserEvent;
