@@ -34,12 +34,14 @@ public class EventBackgroundService : HandlerEventBackgroundService<Event>
         var entity = await _service.CreateAsync(new EventEntity
         {
             SagaId = @event.SagaId,
-            Name = @event.Name,
+            Name = @event.Type,
             StatusType = @event.StatusType switch {
                 Messages.Types.StatusType.Success => Entities.Types.StatusType.Success,
                 Messages.Types.StatusType.Fail or _ => Entities.Types.StatusType.Fail
             },
             Message = @event.Message,
+            SerializerType = Lib.Types.SerializerType.MessagePack,
+            Data = await _serializer.SerializeAsync(@event, cancellationToken)
         }, cancellationToken);
 
         return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));

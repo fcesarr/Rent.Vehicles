@@ -35,7 +35,7 @@ public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEv
                 Type = @event.Type,
                 SagaId = @event.SagaId
             },
-            new CreateVehiclesYearProjectionEvent
+            new CreateVehiclesForSpecificYearEvent
             {
                 Id = @event.Id,
                 Year = @event.Year,

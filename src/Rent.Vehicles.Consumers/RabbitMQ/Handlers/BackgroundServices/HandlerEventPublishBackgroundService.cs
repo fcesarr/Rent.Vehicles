@@ -32,7 +32,7 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
         var @event = new Event
         {
             SagaId = eventToPublish.SagaId,
-            Name = typeof(TEventToConsume).Name,
+            Type = typeof(TEventToConsume).Name,
             StatusType = Messages.Types.StatusType.Success,
             Message = string.Empty
         };

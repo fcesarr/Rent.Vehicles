@@ -13,10 +13,10 @@ using Rent.Vehicles.Messages;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesYearProjectionEventBackgroundService : HandlerEventPublishEventBackgroundService<
-    CreateVehiclesYearProjectionEvent>
+public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerEventPublishEventBackgroundService<
+    CreateVehiclesForSpecificYearEvent>
 {
-    public CreateVehiclesYearProjectionEventBackgroundService(ILogger<CreateVehiclesYearProjectionEventBackgroundService> logger,
+    public CreateVehiclesForSpecificYearEventBackgroundService(ILogger<CreateVehiclesForSpecificYearEventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -24,7 +24,7 @@ public class CreateVehiclesYearProjectionEventBackgroundService : HandlerEventPu
     {
     }
 
-    protected override IEnumerable<Messages.Event> CreateEventToPublish(CreateVehiclesYearProjectionEvent @event)
+    protected override IEnumerable<Messages.Event> CreateEventToPublish(CreateVehiclesForSpecificYearEvent @event)
     {
         return [
             new CreateVehiclesForSpecificYearProjectionEvent
@@ -39,7 +39,7 @@ public class CreateVehiclesYearProjectionEventBackgroundService : HandlerEventPu
         ];
     }
 
-    protected override Task<Result<Task>> HandlerMessageAsync(CreateVehiclesYearProjectionEvent @event, CancellationToken cancellationToken = default)
+    protected override Task<Result<Task>> HandlerMessageAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
     {
         var result = new Result<Task>(Task.CompletedTask);
         
