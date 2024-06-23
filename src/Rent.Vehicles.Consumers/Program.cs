@@ -34,19 +34,7 @@ builder.Services
     .AddSingleton<IModel>(service => {
         var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
         var connection = factory.CreateConnection();
-        var channel = connection.CreateModel();
-
-        channel.ExchangeDeclare(exchange: typeof(CreateUserSuccessEvent).Name,
-            type: "fanout",
-            durable: true,
-            autoDelete: false);
-
-        channel.ExchangeDeclare(exchange: typeof(CreateVehiclesSuccessEvent).Name,
-            type: "fanout",
-            durable: true,
-            autoDelete: false);
-
-        return channel;
+        return connection.CreateModel();
     })
     .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
     .AddSingleton<IMongoDatabase>(service => {
@@ -78,20 +66,20 @@ builder.Services
     .AddSingleton<IUploadService, FileUploadService>()
     .AddSingleton<ILicenseImageService, LicenseImageService>()
     .AddHostedService<CreateVehiclesCommandSqlBackgroundService>()
-    .AddHostedService<CreateVehiclesEventSqlBackgroundService>()
-    .AddHostedService<CreateVehiclesForSpecificYearEventNoSqlBackgroundService>()
-    .AddHostedService<CreateVehiclesSuccessEventNoSqlBackgroundService>()
-    .AddHostedService<CreateVehiclesSuccessEventSpecificYearBackgroundService>()
+    .AddHostedService<CreateVehiclesEventBackgroundService>()
+    .AddHostedService<CreateVehiclesForSpecificYearProjectionEventBackgroundService>()
+    .AddHostedService<CreateVehiclesProjectionEventBackgroundService>()
+    .AddHostedService<CreateVehiclesYearProjectionEventBackgroundService>()
     .AddHostedService<DeleteVehiclesCommandSqlBackgroundService>()
-    .AddHostedService<DeleteVehiclesEventSqlBackgroundService>()
-    .AddHostedService<DeleteVehiclesSuccessEventNoSqlBackgroundService>()
+    .AddHostedService<DeleteVehiclesEventBackgroundService>()
+    .AddHostedService<DeleteVehiclesProjectionEventBackgroundService>()
     .AddHostedService<UpdateVehiclesCommandSqlBackgroundService>()
-    .AddHostedService<UpdateVehiclesEventSqlBackgroundService>()
-    .AddHostedService<UpdateVehiclesSuccessEventNoSqlBackgroundService>()
+    .AddHostedService<UpdateVehiclesEventBackgroundService>()
+    .AddHostedService<UpdateVehiclesProjectionEventBackgroundService>()
     .AddHostedService<EventBackgroundService>()
     .AddHostedService<CreateUserCommandSqlBackgroundService>()
-    .AddHostedService<CreateUserEventSqlBackgroundService>()
-    .AddHostedService<CreateUserSuccessEventUploadLicenseImageBackgroundService>();
+    .AddHostedService<CreateUserEventBackgroundService>()
+    .AddHostedService<UploadUserLicenseImageEventBackgroundService>();
 
 var host = builder.Build();
 host.Run();

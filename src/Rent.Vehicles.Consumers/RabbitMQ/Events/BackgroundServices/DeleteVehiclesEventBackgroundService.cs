@@ -10,12 +10,11 @@ using LanguageExt.Common;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class DeleteVehiclesEventSqlBackgroundService : HandlerEventServicePublishEventBackgroundService<
+public class DeleteVehiclesEventBackgroundService : HandlerEventServicePublishEventBackgroundService<
     DeleteVehiclesEvent,
-    DeleteVehiclesSuccessEvent,
     IVehicleDataService>
 {
-    public DeleteVehiclesEventSqlBackgroundService(ILogger<DeleteVehiclesEventSqlBackgroundService> logger,
+    public DeleteVehiclesEventBackgroundService(ILogger<DeleteVehiclesEventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -24,13 +23,15 @@ public class DeleteVehiclesEventSqlBackgroundService : HandlerEventServicePublis
     {
     }
 
-    protected override DeleteVehiclesSuccessEvent CreateEventToPublish(DeleteVehiclesEvent @event)
+    protected override IEnumerable<Messages.Event> CreateEventToPublish(DeleteVehiclesEvent @event)
     {
-        return new DeleteVehiclesSuccessEvent
-        {
-            Id = @event.Id,
-            SagaId = @event.SagaId
-        };
+        return [
+            new DeleteVehiclesProjectionEvent
+            {
+                Id = @event.Id,
+                SagaId = @event.SagaId
+            }
+        ];
     }
 
     protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesEvent @event, CancellationToken cancellationToken = default)

@@ -6,14 +6,13 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
-public abstract class HandlerEventServicePublishEventBackgroundService<TEventToConsume, TEventToPublish, TService> : HandlerEventPublishEventBackgroundService<TEventToConsume, TEventToPublish>
+public abstract class HandlerEventServicePublishEventBackgroundService<TEventToConsume, TService> : HandlerEventPublishEventBackgroundService<TEventToConsume>
     where TEventToConsume : Messages.Event
-    where TEventToPublish : Messages.Event
     where TService : class
 {
     protected readonly TService _service;
 
-    protected HandlerEventServicePublishEventBackgroundService(ILogger<HandlerEventServicePublishEventBackgroundService<TEventToConsume, TEventToPublish, TService>> logger,
+    protected HandlerEventServicePublishEventBackgroundService(ILogger<HandlerEventServicePublishEventBackgroundService<TEventToConsume, TService>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,

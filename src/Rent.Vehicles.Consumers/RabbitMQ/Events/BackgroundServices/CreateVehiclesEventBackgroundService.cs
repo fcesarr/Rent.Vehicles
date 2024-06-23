@@ -10,12 +10,11 @@ using LanguageExt.Common;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesEventSqlBackgroundService : HandlerEventServicePublishEventBackgroundService<
+public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEventBackgroundService<
     CreateVehiclesEvent,
-    CreateVehiclesSuccessEvent,
     IVehicleDataService>
 {
-    public CreateVehiclesEventSqlBackgroundService(ILogger<CreateVehiclesEventSqlBackgroundService> logger,
+    public CreateVehiclesEventBackgroundService(ILogger<CreateVehiclesEventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -24,17 +23,28 @@ public class CreateVehiclesEventSqlBackgroundService : HandlerEventServicePublis
     {
     }
 
-    protected override CreateVehiclesSuccessEvent CreateEventToPublish(CreateVehiclesEvent @event)
+    protected override IEnumerable<Messages.Event> CreateEventToPublish(CreateVehiclesEvent @event)
     {
-        return new CreateVehiclesSuccessEvent
-        {
-            Id = @event.Id,
-            Year = @event.Year,
-            Model = @event.Model,
-            LicensePlate = @event.LicensePlate,
-            Type = @event.Type,
-            SagaId = @event.SagaId
-        };
+        return [
+            new CreateVehiclesProjectionEvent
+            {
+                Id = @event.Id,
+                Year = @event.Year,
+                Model = @event.Model,
+                LicensePlate = @event.LicensePlate,
+                Type = @event.Type,
+                SagaId = @event.SagaId
+            },
+            new CreateVehiclesYearProjectionEvent
+            {
+                Id = @event.Id,
+                Year = @event.Year,
+                Model = @event.Model,
+                LicensePlate = @event.LicensePlate,
+                Type = @event.Type,
+                SagaId = @event.SagaId
+            }
+        ];
     }
 
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesEvent @event, CancellationToken cancellationToken = default)
@@ -55,10 +65,5 @@ public class CreateVehiclesEventSqlBackgroundService : HandlerEventServicePublis
         }, cancellationToken);
 
         return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
-    }
-
-    protected override async Task PublishAsync(CreateVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
-    {
-        await _publisher.PublishEventAsync(@event, cancellationToken);
     }
 }

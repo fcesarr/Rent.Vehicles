@@ -12,31 +12,20 @@ using Rent.Vehicles.Services.DataServices.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
-    CreateVehiclesSuccessEvent,
+public class CreateVehiclesProjectionEventBackgroundService : HandlerEventServicePublishBackgroundService<
+    CreateVehiclesProjectionEvent,
     IVehicleProjectionDataService>
 {
-    public CreateVehiclesSuccessEventNoSqlBackgroundService(ILogger<CreateVehiclesSuccessEventNoSqlBackgroundService> logger,
+    public CreateVehiclesProjectionEventBackgroundService(ILogger<CreateVehiclesProjectionEventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
         IVehicleProjectionDataService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
     {
-        QueueName = $"{typeof(CreateVehiclesSuccessEvent).Name}.One";
     }
 
-    public override Task StartAsync(CancellationToken cancellationToken)
-    {
-        var result = base.StartAsync(cancellationToken);
-
-        _channel.QueueBind(queue: QueueName,
-            exchange: typeof(CreateVehiclesSuccessEvent).Name, routingKey:"");
-        
-        return result;
-    }
-
-    protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesProjectionEvent @event, CancellationToken cancellationToken = default)
     {
         var entity = await _service.CreateAsync(new VehicleProjection
         {

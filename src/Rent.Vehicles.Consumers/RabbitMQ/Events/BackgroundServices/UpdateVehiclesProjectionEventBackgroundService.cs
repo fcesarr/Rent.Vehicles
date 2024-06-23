@@ -7,16 +7,15 @@ using Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using LanguageExt.Common;
-using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class UpdateVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
-    UpdateVehiclesSuccessEvent,
+public class UpdateVehiclesProjectionEventBackgroundService : HandlerEventServicePublishBackgroundService<
+    UpdateVehiclesProjectionEvent,
     IVehicleProjectionDataService>
 {
-    public UpdateVehiclesSuccessEventNoSqlBackgroundService(ILogger<UpdateVehiclesSuccessEventNoSqlBackgroundService> logger,
+    public UpdateVehiclesProjectionEventBackgroundService(ILogger<UpdateVehiclesProjectionEventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -25,7 +24,7 @@ public class UpdateVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServ
     {
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(UpdateVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(UpdateVehiclesProjectionEvent @event, CancellationToken cancellationToken = default)
     {
         var entity = await _service.UpdateAsync(@event.Id, @event.LicensePlate, cancellationToken);
 

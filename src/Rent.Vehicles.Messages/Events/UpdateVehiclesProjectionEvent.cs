@@ -3,4 +3,4 @@ using MessagePack;
 namespace Rent.Vehicles.Messages.Events;
 
 [MessagePackObject]
-public record CreateUserSuccessEvent : CreateUserEvent;
+public record UpdateVehiclesProjectionEvent : UpdateVehiclesEvent;

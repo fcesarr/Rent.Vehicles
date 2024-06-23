@@ -11,11 +11,11 @@ using Rent.Vehicles.Entities.Projections;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
-    CreateVehiclesForSpecificYearEvent,
+public class CreateVehiclesForSpecificYearProjectionEventBackgroundService : HandlerEventServicePublishBackgroundService<
+    CreateVehiclesForSpecificYearProjectionEvent,
     IDataService<VehiclesForSpecificYearProjection>>
 {
-    public CreateVehiclesForSpecificYearEventNoSqlBackgroundService(ILogger<CreateVehiclesForSpecificYearEventNoSqlBackgroundService> logger,
+    public CreateVehiclesForSpecificYearProjectionEventBackgroundService(ILogger<CreateVehiclesForSpecificYearProjectionEventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -24,7 +24,7 @@ public class CreateVehiclesForSpecificYearEventNoSqlBackgroundService : HandlerE
     {
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesForSpecificYearProjectionEvent @event, CancellationToken cancellationToken = default)
     {
         var entity = await _service.CreateAsync(new VehiclesForSpecificYearProjection
         {

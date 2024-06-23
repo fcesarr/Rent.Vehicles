@@ -12,11 +12,11 @@ using Rent.Vehicles.Services.DataServices.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
 
-public class DeleteVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServicePublishBackgroundService<
-    DeleteVehiclesSuccessEvent,
+public class DeleteVehiclesProjectionEventBackgroundService : HandlerEventServicePublishBackgroundService<
+    DeleteVehiclesProjectionEvent,
     IVehicleProjectionDataService>
 {
-    public DeleteVehiclesSuccessEventNoSqlBackgroundService(ILogger<DeleteVehiclesSuccessEventNoSqlBackgroundService> logger,
+    public DeleteVehiclesProjectionEventBackgroundService(ILogger<DeleteVehiclesProjectionEventBackgroundService> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -25,7 +25,7 @@ public class DeleteVehiclesSuccessEventNoSqlBackgroundService : HandlerEventServ
     {
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesSuccessEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesProjectionEvent @event, CancellationToken cancellationToken = default)
     {
         var entity =  await _service.DeleteAsync(@event.Id, cancellationToken);
 

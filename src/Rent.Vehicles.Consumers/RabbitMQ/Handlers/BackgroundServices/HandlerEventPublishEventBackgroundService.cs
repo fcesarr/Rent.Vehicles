@@ -10,11 +10,10 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.RabbitMQ.Handlers.BackgroundServices;
 
-public abstract class HandlerEventPublishEventBackgroundService<TEventToConsume, TEventToPublish> : HandlerEventPublishBackgroundService<TEventToConsume>
+public abstract class HandlerEventPublishEventBackgroundService<TEventToConsume> : HandlerEventPublishBackgroundService<TEventToConsume>
     where TEventToConsume : Messages.Event
-    where TEventToPublish : Messages.Event
 {
-    protected HandlerEventPublishEventBackgroundService(ILogger<HandlerEventPublishEventBackgroundService<TEventToConsume, TEventToPublish>> logger,
+    protected HandlerEventPublishEventBackgroundService(ILogger<HandlerEventPublishEventBackgroundService<TEventToConsume>> logger,
         IModel channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -38,10 +37,17 @@ public abstract class HandlerEventPublishEventBackgroundService<TEventToConsume,
     }
 
  
-    protected abstract TEventToPublish CreateEventToPublish(TEventToConsume @event);
+    protected abstract IEnumerable<Messages.Event> CreateEventToPublish(TEventToConsume @event);
 
-    protected virtual async Task PublishAsync(TEventToPublish @event, CancellationToken cancellationToken = default)
+    protected virtual async Task PublishAsync(IEnumerable<Messages.Event> events, CancellationToken cancellationToken = default)
     {
-        await _publisher.PublishSingleEventAsync(@event, cancellationToken);
+        var tasks = new List<Task>();
+        
+        foreach (var @event in events)
+        {
+            tasks.Add(_publisher.PublishSingleEventAsync(@event, cancellationToken));
+        }
+
+        await Task.WhenAll(tasks);
     }
 }
