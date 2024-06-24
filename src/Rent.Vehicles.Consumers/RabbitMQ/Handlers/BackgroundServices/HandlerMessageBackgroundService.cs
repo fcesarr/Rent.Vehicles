@@ -147,5 +147,8 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     }
     
 
-    protected abstract Task<Result<Task>> HandlerAsync(TEventToConsume message, CancellationToken cancellationToken = default);
+    protected virtual async Task<Result<Task>> HandlerAsync(TEventToConsume message, CancellationToken cancellationToken = default)
+        => await HandlerMessageAsync(message, cancellationToken);
+    
+    protected abstract Task<Result<Task>> HandlerMessageAsync(TEventToConsume message, CancellationToken cancellationToken = default);
 }

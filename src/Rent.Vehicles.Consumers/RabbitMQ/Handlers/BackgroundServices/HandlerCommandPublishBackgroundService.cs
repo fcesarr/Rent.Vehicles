@@ -22,11 +22,4 @@ public abstract class HandlerCommandPublishBackgroundService<TCommandToConsume> 
     {
         _publisher = publisher;
     }
-
-    protected override async Task<Result<Task>> HandlerAsync(TCommandToConsume eventToPublish, CancellationToken cancellationToken = default)
-        => await HandlerMessageAsync(eventToPublish, cancellationToken);
-
-    protected abstract Task<Result<Task>> HandlerMessageAsync(TCommandToConsume @event, CancellationToken cancellationToken = default);
-
-    
 }

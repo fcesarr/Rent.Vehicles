@@ -16,12 +16,5 @@ public abstract class HandlerEventBackgroundService<TEventToConsume> : HandlerMe
         IPeriodicTimer periodicTimer,
         ISerializer serializer) : base(logger, channel, periodicTimer, serializer)
     {
-    }
-
-    protected override async Task<Result<Task>> HandlerAsync(TEventToConsume eventToPublish, CancellationToken cancellationToken = default)
-        => await HandlerMessageAsync(eventToPublish, cancellationToken);
-
-    protected abstract Task<Result<Task>> HandlerMessageAsync(TEventToConsume @event, CancellationToken cancellationToken = default);
-
-    
+    }    
 }

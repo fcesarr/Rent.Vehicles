@@ -37,27 +37,26 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
             Message = string.Empty
         };
 
-        var result = await base.HandlerAsync(eventToPublish, cancellationToken);
-
-        return result.Match(result => {
-            result
-                .GetAwaiter()
-                .GetResult();
-
-            _publisher.PublishSingleEventAsync(@event, cancellationToken)
-                .GetAwaiter()
-                .GetResult();
-
-            return Task.CompletedTask;
-        }, exception => {
-             @event = @event with { StatusType = Messages.Types.StatusType.Fail, Message = exception.Message };
-
-            _publisher.PublishSingleEventAsync(@event, cancellationToken)
-                .GetAwaiter()
-                .GetResult();
-
-            return new Result<Task>(exception);
-        });
+        try
+        {
+            var result = await base.HandlerAsync(eventToPublish, cancellationToken);
+    
+            return result.Match(result => {
+                result
+                    .GetAwaiter()
+                    .GetResult();
+    
+                _publisher.PublishSingleEventAsync(@event, cancellationToken)
+                    .GetAwaiter()
+                    .GetResult();
+    
+                return Task.CompletedTask;
+            }, exception => TreatException(@event, exception, cancellationToken));
+        }
+        catch (Exception ex)
+        {
+            return TreatException(@event, ex, cancellationToken);
+        }
     }
 
     private async Task<Result<Task>> TreatException(Event @event,

@@ -32,6 +32,8 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 using Rent.Vehicles.Entities.Extensions;
 using Rent.Vehicles.Entities.Contexts.Interfaces;
 using Rent.Vehicles.Entities.Contexts;
+using Rent.Vehicles.Services.Facades.Interfaces;
+using Rent.Vehicles.Services.Facades;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +57,15 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
     .AddSingleton<IValidator<Event>,  EventValidator>()
     .AddSingleton<IRepository<Event>, EntityFrameworkRepository<Event>>()
     .AddSingleton<IDataService<Event>, DataService<Event>>()
+    .AddSingleton<IEventFacade, EventFacade>()
+    .AddSingleton<IUserValidator,  UserValidator>()
+    .AddSingleton<IBase64StringValidator, Base64StringValidator>()
+    .AddSingleton<ILicenseImageService, LicenseImageService>()
+    .AddSingleton<IUploadService, FileUploadService>()
+    .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
+    .AddSingleton<IRepository<User>, EntityFrameworkRepository<User>>()
+    .AddSingleton<IUserDataService, UserDataService>()
+    .AddSingleton<IUserFacade, UserFacade>()
     .AddSingleton<IValidator<VehicleProjection>, Validator<VehicleProjection>>()
     .AddSingleton<IRepository<VehicleProjection>, MongoRepository<VehicleProjection>>()
     .AddSingleton<IDataService<VehicleProjection>, DataService<VehicleProjection>>();
@@ -195,10 +206,10 @@ app.MapGet("/Vehicles/{Id}", async ([FromQuery]Guid id,
 .WithOpenApi();
 
 app.MapGet("/Events/Status/{SagaId}", async ([FromQuery]Guid sagaId,
-    IDataService<Event> findService,
+    IEventFacade facade,
     CancellationToken cancellationToken = default) =>
 {
-    var entities = await findService.FindAsync(x => x.SagaId == sagaId, cancellationToken);
+    var entities = await facade.FindAsync(x => x.SagaId == sagaId, cancellationToken);
 
     return entities.Match(entity => Results.Ok(entity), exception => exception switch{
         NullException or EmptyException => Results.NoContent(),
@@ -254,6 +265,20 @@ app.MapPut("/Users", async ([FromBody]UpdateUserCommand command,
         command.Id });
 })
 .WithName("UsersPut")
+.WithOpenApi();
+
+app.MapGet("/Users/{Id}", async ([FromQuery]Guid id,
+    IUserFacade facade,
+    CancellationToken cancellationToken = default) =>
+{
+    var entity = await facade.GetAsync(x => x.Id == id, cancellationToken);
+
+    return entity.Match(entity => Results.Ok(entity), exception => exception switch{
+        NullException => Results.NotFound(),
+        _ => Results.StatusCode(500)
+    });
+})
+.WithName("UserGet")
 .WithOpenApi();
 
 app.Run();

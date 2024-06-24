@@ -18,6 +18,5 @@ public class Event : Entity
     public required StatusType StatusType { get; set; }
     public required string Message { get; set; }
     public required SerializerType SerializerType { get; set; }
-    [JsonIgnore]
     public required IList<byte> Data { get; set; }
 }
