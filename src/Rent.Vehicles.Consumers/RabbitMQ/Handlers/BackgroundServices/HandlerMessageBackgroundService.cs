@@ -58,6 +58,9 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
             try
             {
+                if(_channel.IsClosed)
+                    continue;
+
                 basicGetResult = _channel.BasicGet(QueueName, false);
 
                 if(basicGetResult == null)
@@ -75,12 +78,14 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
                 await result.Match(async result => {
                         await result;
 
-                        _channel.BasicAck(basicGetResult.DeliveryTag, true);
                     }, exception => exception switch
                     {
                         NoRetryException => TreatNoRetryException(exception),
-                        _ => TreatException(basicGetResult, _retry, _channel, exception) 
-                    });    
+                        RetryException => TreatRetryException(basicGetResult, _retry, _channel, exception),
+                        _ => throw exception
+                    });
+
+                _channel.BasicAck(basicGetResult.DeliveryTag, true);        
             }
             catch (Exception ex)
             {   
@@ -96,7 +101,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         return Task.CompletedTask;
     }
 
-    private Task TreatException(BasicGetResult basicGetResult,
+    private Task TreatRetryException(BasicGetResult basicGetResult,
         IDictionary<string, int> retry,
         IModel channel, 
         Exception exception)

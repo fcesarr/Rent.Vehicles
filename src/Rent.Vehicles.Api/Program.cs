@@ -29,6 +29,9 @@ using Rent.Vehicles.Services.Repositories;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
+using Rent.Vehicles.Entities.Extensions;
+using Rent.Vehicles.Entities.Contexts.Interfaces;
+using Rent.Vehicles.Entities.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +42,7 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
         var connection = factory.CreateConnection();
         return connection.CreateModel();
     })
+    .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
     .AddSingleton<IMongoDatabase>(service => {
         var configuration = service.GetRequiredService<IConfiguration>();
 
@@ -49,11 +53,11 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
         return client.GetDatabase("rent");
     })
     .AddSingleton<IValidator<Event>,  EventValidator>()
-    .AddSingleton<IRepository<Event>, MongoRepository<Event>>()
-    .AddSingleton<IFindService<Event>, DataService<Event>>()
+    .AddSingleton<IRepository<Event>, EntityFrameworkRepository<Event>>()
+    .AddSingleton<IDataService<Event>, DataService<Event>>()
     .AddSingleton<IValidator<VehicleProjection>, Validator<VehicleProjection>>()
     .AddSingleton<IRepository<VehicleProjection>, MongoRepository<VehicleProjection>>()
-    .AddSingleton<IGetService<VehicleProjection>, DataService<VehicleProjection>>();
+    .AddSingleton<IDataService<VehicleProjection>, DataService<VehicleProjection>>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -177,7 +181,7 @@ app.MapDelete("/Vehicles", async ([FromBody]DeleteVehiclesCommand command,
 .WithOpenApi();
 
 app.MapGet("/Vehicles/{Id}", async ([FromQuery]Guid id,
-    IGetService<VehicleProjection> getService,
+    IDataService<VehicleProjection> getService,
     CancellationToken cancellationToken = default) =>
 {
     var entity = await getService.GetAsync(x => x.Id == id, cancellationToken);
@@ -191,13 +195,13 @@ app.MapGet("/Vehicles/{Id}", async ([FromQuery]Guid id,
 .WithOpenApi();
 
 app.MapGet("/Events/Status/{SagaId}", async ([FromQuery]Guid sagaId,
-    IFindService<Event> findService,
+    IDataService<Event> findService,
     CancellationToken cancellationToken = default) =>
 {
     var entities = await findService.FindAsync(x => x.SagaId == sagaId, cancellationToken);
 
     return entities.Match(entity => Results.Ok(entity), exception => exception switch{
-        NullException => Results.NoContent(),
+        NullException or EmptyException => Results.NoContent(),
         _ => Results.StatusCode(500)
     });
 })

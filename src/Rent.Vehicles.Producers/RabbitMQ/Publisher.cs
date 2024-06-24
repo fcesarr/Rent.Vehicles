@@ -40,6 +40,6 @@ public class Publisher : IPublisher
         _channel.BasicPublish(exchange: string.Empty,
             routingKey: @event.GetType().Name,
             basicProperties: null,
-            body: await _serializer.SerializeAsync(@event, cancellationToken));
+            body: await _serializer.SerializeAsync(@event, @event.GetType(), cancellationToken));
     }
 }

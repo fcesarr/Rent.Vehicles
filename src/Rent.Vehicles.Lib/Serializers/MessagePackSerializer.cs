@@ -30,4 +30,16 @@ public class MessagePackSerializer : ISerializer
 
         return inputStream.ToArray();
     }
+
+    public async Task<byte[]> SerializeAsync(dynamic? entity, Type type, CancellationToken cancellationToken = default)
+    {
+        if(entity is null)
+            return [];
+
+        using var inputStream = new MemoryStream();
+
+        await MessagePack.MessagePackSerializer.SerializeAsync(type, inputStream, entity, _options, cancellationToken);
+
+        return inputStream.ToArray();
+    }
 }

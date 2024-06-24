@@ -31,7 +31,7 @@ builder.Services.Configure<LicenseImageSetting>(builder.Configuration.GetSection
 
 builder.Services
     .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
-    .AddSingleton<IModel>(service => {
+    .AddTransient<IModel>(service => {
         var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
         var connection = factory.CreateConnection();
         return connection.CreateModel();
@@ -55,7 +55,7 @@ builder.Services
     .AddDataDomain<Command>()
     .AddProjectionDomain<VehicleProjection, IVehicleProjectionDataService, VehicleProjectionDataService>()
     .AddProjectionDomain<VehiclesForSpecificYearProjection>()
-    .AddProjectionDomain<Rent.Vehicles.Entities.Event>()
+    .AddDataDomain<Rent.Vehicles.Entities.Event>()
     .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()
     .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
     .AddDefaultSerializer<MessagePackSerializer>()
@@ -70,6 +70,7 @@ builder.Services
     .AddHostedService<UpdateVehiclesCommandSqlBackgroundService>()
     .AddHostedService<CreateUserCommandSqlBackgroundService>()
     .AddHostedService<CreateUserEventBackgroundService>()
+    .AddHostedService<CreateUserProjectionEventBackgroundService>()
     .AddHostedService<CreateVehiclesEventBackgroundService>()
     .AddHostedService<CreateVehiclesForSpecificYearEventBackgroundService>()
     .AddHostedService<CreateVehiclesForSpecificYearProjectionEventBackgroundService>()
