@@ -1,4 +1,4 @@
-using Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
+using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Messages.Commands;
 

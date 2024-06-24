@@ -14,7 +14,10 @@ public interface IDataService<TEntity> where TEntity : Entity
 
     Task<Result<bool>> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<TEntity>>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<TEntity>>> FindAsync(Expression<Func<TEntity, bool>> predicate,
+        bool descending = false,
+        Expression<Func<TEntity, dynamic>>? orderBy = default,
+        CancellationToken cancellationToken = default);
    
     Task<Result<TEntity>> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 

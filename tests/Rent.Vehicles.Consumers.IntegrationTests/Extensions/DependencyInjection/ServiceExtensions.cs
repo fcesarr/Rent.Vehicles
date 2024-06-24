@@ -19,8 +19,8 @@ using System.Reflection;
 using Rent.Vehicles.Services.Factories;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
-using Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
-using Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
+using Rent.Vehicles.Consumers.Commands.BackgroundServices;
+using Rent.Vehicles.Consumers.Events.BackgroundServices;
 using MongoDB.Driver;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;

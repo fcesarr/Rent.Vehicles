@@ -58,15 +58,23 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository<TEntity> wh
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
+        bool descending = false,
+        Expression<Func<TEntity, dynamic>>? orderBy = default,
+        CancellationToken cancellationToken = default)
     {
         using var context = await _dbContextFactory
             .CreateDbContextAsync(cancellationToken);
 
-        var dbSet = context.Set<TEntity>();
+        var dbSet = context.Set<TEntity>()
+            .Where(predicate);
+
+        if (orderBy is not null)
+		{
+			dbSet = descending ? dbSet.OrderByDescending(orderBy) : dbSet.OrderBy(orderBy);
+		}
 
         return await dbSet
-            .Where(predicate)
             .ToListAsync(cancellationToken);
     }
 

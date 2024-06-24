@@ -18,9 +18,12 @@ public class EventFacade : IEventFacade
         _dataService = dataService;
     }
 
-    public async Task<Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Event, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Event, bool>> predicate,
+        bool descending = false,
+        Expression<Func<Event, dynamic>>? orderBy = default,
+        CancellationToken cancellationToken = default)
     {
-        var entities = await _dataService.FindAsync(predicate, cancellationToken);
+        var entities = await _dataService.FindAsync(predicate, false, orderBy, cancellationToken);
 
         return entities.Match(entities => entities.Select(x => new EventResponse
         {

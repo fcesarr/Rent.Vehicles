@@ -209,7 +209,7 @@ app.MapGet("/Events/Status/{SagaId}", async ([FromQuery]Guid sagaId,
     IEventFacade facade,
     CancellationToken cancellationToken = default) =>
 {
-    var entities = await facade.FindAsync(x => x.SagaId == sagaId, cancellationToken);
+    var entities = await facade.FindAsync(x => x.SagaId == sagaId, true, x => x.Created, cancellationToken);
 
     return entities.Match(entity => Results.Ok(entity), exception => exception switch{
         NullException or EmptyException => Results.NoContent(),

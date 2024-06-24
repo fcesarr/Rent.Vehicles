@@ -8,8 +8,8 @@ using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Repositories;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
-using Rent.Vehicles.Consumers.RabbitMQ.Commands.BackgroundServices;
-using Rent.Vehicles.Consumers.RabbitMQ.Events.BackgroundServices;
+using Rent.Vehicles.Consumers.Commands.BackgroundServices;
+using Rent.Vehicles.Consumers.Events.BackgroundServices;
 using MongoDB.Driver;
 using Rent.Vehicles.Entities.Contexts;
 using Rent.Vehicles.Entities.Extensions;
@@ -24,6 +24,8 @@ using Rent.Vehicles.Services.Settings;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.DataServices;
+using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Consumers;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -32,9 +34,30 @@ builder.Services.Configure<LicenseImageSetting>(builder.Configuration.GetSection
 builder.Services
     .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
     .AddTransient<IModel>(service => {
-        var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
+        var factory = new ConnectionFactory { 
+            HostName = "localhost",
+            Port = 5672,
+            UserName = "admin",
+            Password = "nimda",
+            RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
+            SocketReadTimeout = TimeSpan.FromSeconds(30),
+            SocketWriteTimeout = TimeSpan.FromSeconds(30)    
+        };
         var connection = factory.CreateConnection();
         return connection.CreateModel();
+    })
+    .AddTransient<IConsumer>(service => {
+        var factory = new ConnectionFactory { 
+            HostName = "localhost",
+            Port = 5672,
+            UserName = "admin",
+            Password = "nimda",
+            RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
+            SocketReadTimeout = TimeSpan.FromSeconds(30),
+            SocketWriteTimeout = TimeSpan.FromSeconds(30)  
+        };
+        var connection = factory.CreateConnection();
+        return new RabbitMQConsumer(connection.CreateModel());
     })
     .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
     .AddSingleton<IMongoDatabase>(service => {

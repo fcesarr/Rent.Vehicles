@@ -54,9 +54,12 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         return true;
     }
 
-    public async Task<Result<IEnumerable<TEntity>>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<TEntity>>> FindAsync(Expression<Func<TEntity, bool>> predicate,
+        bool descending = false,
+        Expression<Func<TEntity, dynamic>>? orderBy = default,
+        CancellationToken cancellationToken = default)
     {
-        var entities = await _repository.FindAsync(predicate, cancellationToken);
+        var entities = await _repository.FindAsync(predicate, descending, orderBy, cancellationToken);
     
         if(!entities.Any())
             return new Result<IEnumerable<TEntity>>(new EmptyException());

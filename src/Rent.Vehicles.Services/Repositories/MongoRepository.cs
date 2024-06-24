@@ -48,13 +48,30 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
         _ = await _mongoCollection.DeleteOneAsync(filter, cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
+        bool descending = false,
+        Expression<Func<TEntity, dynamic>>? orderBy = default,
+        CancellationToken cancellationToken = default)
     {
+        var findOptions = new FindOptions<TEntity>();
+
+        if(orderBy is not null)
+        {
+            var sortDefinition = Builders<TEntity>.Sort;
+
+            var sort = sortDefinition.Ascending(orderBy);
+
+            if(descending)
+                sort = sortDefinition.Descending(orderBy);
+
+            findOptions.Sort = sort;
+        }
+
         var filter = Builders<TEntity>.Filter
             .Where(predicate);
         
         var cursor =  await _mongoCollection
-            .FindAsync(filter, cancellationToken: cancellationToken);
+            .FindAsync(filter, options: findOptions, cancellationToken: cancellationToken);
 
         return await cursor
             .ToListAsync(cancellationToken);

@@ -14,5 +14,8 @@ public interface IRepository<TEntity> where TEntity : Entity
 
     Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
+        bool descending = false,
+        Expression<Func<TEntity, dynamic>>? orderBy = default,
+        CancellationToken cancellationToken = default);
 }
