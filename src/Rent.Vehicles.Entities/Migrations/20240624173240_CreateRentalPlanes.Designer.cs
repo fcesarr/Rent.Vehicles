@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rent.Vehicles.Entities.Contexts;
@@ -11,13 +12,18 @@ using Rent.Vehicles.Entities.Contexts;
 namespace Rent.Vehicles.Entities.Migrations
 {
     [DbContext(typeof(RentVehiclesContext))]
-    partial class RentVehiclesContextModelSnapshot : ModelSnapshot
+    [Migration("20240624173240_CreateRentalPlanes")]
+    partial class CreateRentalPlanes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true)
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -115,7 +121,7 @@ namespace Rent.Vehicles.Entities.Migrations
                     b.ToTable("events", "events");
                 });
 
-            modelBuilder.Entity("Rent.Vehicles.Entities.Rent", b =>
+            modelBuilder.Entity("Rent.Vehicles.Entities.RentalPlane", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -129,69 +135,6 @@ namespace Rent.Vehicles.Entities.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("created");
-
-                    b.Property<decimal>("DailyCost")
-                        .HasColumnType("numeric")
-                        .HasColumnName("daily_cost");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("end_date");
-
-                    b.Property<DateTime>("EstimatedDate")
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("estimated_date");
-
-                    b.Property<int>("NumberOfDays")
-                        .HasColumnType("integer")
-                        .HasColumnName("number_of_days");
-
-                    b.Property<decimal>("PostEndDateFine")
-                        .HasColumnType("numeric")
-                        .HasColumnName("post_end_date_fine");
-
-                    b.Property<decimal>("PreEndDatePercentageFine")
-                        .HasColumnType("numeric")
-                        .HasColumnName("pre_end_date_percentage_fine");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("start_date");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.Property<Guid>("VehicleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("vehicle_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_rents");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_rents_user_id");
-
-                    b.HasIndex("VehicleId")
-                        .HasDatabaseName("ix_rents_vehicle_id");
-
-                    b.ToTable("rents", "vehicles");
-                });
-
-            modelBuilder.Entity("Rent.Vehicles.Entities.RentalPlane", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp without time zone")
-                        .HasColumnName("created");
-
-                    b.Property<decimal>("DailyCost")
-                        .HasColumnType("numeric")
-                        .HasColumnName("daily_cost");
 
                     b.Property<int>("NumberOfDays")
                         .HasColumnType("integer")
@@ -213,45 +156,45 @@ namespace Rent.Vehicles.Entities.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("701aebde-0d7b-4533-8dc6-7cfa3b193f1f"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7580),
-                            DailyCost = 30.0m,
+                            Id = new Guid("282ff9de-7436-4875-82da-2ca1b894f08f"),
+                            Cost = 30.0m,
+                            Created = new DateTime(2024, 6, 24, 17, 32, 39, 755, DateTimeKind.Utc).AddTicks(708),
                             NumberOfDays = 7,
                             PostEndDateFine = 50.0m,
                             PreEndDatePercentageFine = 1.20m
                         },
                         new
                         {
-                            Id = new Guid("3f0b41b2-d448-4f1a-878b-ab6554c9b9b3"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7656),
-                            DailyCost = 28.0m,
+                            Id = new Guid("68b5779a-27f9-4e35-949c-d66f1915701b"),
+                            Cost = 28.0m,
+                            Created = new DateTime(2024, 6, 24, 17, 32, 39, 755, DateTimeKind.Utc).AddTicks(778),
                             NumberOfDays = 15,
                             PostEndDateFine = 50.0m,
                             PreEndDatePercentageFine = 1.40m
                         },
                         new
                         {
-                            Id = new Guid("56bf4d36-c9fb-46e0-80ac-1bf23b1bcb13"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7669),
-                            DailyCost = 22.0m,
+                            Id = new Guid("b96cac96-d3cb-40ae-a8de-0c67f08400ae"),
+                            Cost = 22.0m,
+                            Created = new DateTime(2024, 6, 24, 17, 32, 39, 755, DateTimeKind.Utc).AddTicks(790),
                             NumberOfDays = 30,
                             PostEndDateFine = 50.0m,
                             PreEndDatePercentageFine = 1.0m
                         },
                         new
                         {
-                            Id = new Guid("3d3eff16-f44a-48c8-9124-dd2146f7445f"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7679),
-                            DailyCost = 20.0m,
+                            Id = new Guid("b664a818-09a2-4ac0-b58b-820624f6adb0"),
+                            Cost = 20.0m,
+                            Created = new DateTime(2024, 6, 24, 17, 32, 39, 755, DateTimeKind.Utc).AddTicks(801),
                             NumberOfDays = 45,
                             PostEndDateFine = 50.0m,
                             PreEndDatePercentageFine = 1.0m
                         },
                         new
                         {
-                            Id = new Guid("5ff3d14d-c145-40b6-bae4-938488506ddb"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7690),
-                            DailyCost = 18.0m,
+                            Id = new Guid("2860ce87-765a-4df7-9c9b-00fb02d49265"),
+                            Cost = 18.0m,
+                            Created = new DateTime(2024, 6, 24, 17, 32, 39, 755, DateTimeKind.Utc).AddTicks(811),
                             NumberOfDays = 50,
                             PostEndDateFine = 50.0m,
                             PreEndDatePercentageFine = 1.0m
@@ -314,10 +257,6 @@ namespace Rent.Vehicles.Entities.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("created");
 
-                    b.Property<bool>("IsRented")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_rented");
-
                     b.Property<string>("LicensePlate")
                         .IsRequired()
                         .HasColumnType("text")
@@ -351,27 +290,6 @@ namespace Rent.Vehicles.Entities.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_events_commands_saga_id");
-                });
-
-            modelBuilder.Entity("Rent.Vehicles.Entities.Rent", b =>
-                {
-                    b.HasOne("Rent.Vehicles.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_rents_users_user_id");
-
-                    b.HasOne("Rent.Vehicles.Entities.Vehicle", "Vehicle")
-                        .WithMany()
-                        .HasForeignKey("VehicleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_rents_vehicles_vehicle_id");
-
-                    b.Navigation("User");
-
-                    b.Navigation("Vehicle");
                 });
 #pragma warning restore 612, 618
         }

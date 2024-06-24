@@ -19,7 +19,7 @@ public static class DbContextExtension
 			{
 				options.UseNpgsql(connectionString)
                     .UseSnakeCaseNamingConvention()
-                    .UseLazyLoadingProxies();
+                    .UseLazyLoadingProxies(false);
 			})
 			.AddSingleton<IDbContextFactory>(service =>
 			{

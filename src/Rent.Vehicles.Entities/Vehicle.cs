@@ -15,4 +15,6 @@ public class Vehicle : Entity
     public required string LicensePlate { get; set; }
 
     public VehicleType Type { get; init; }
+
+    public bool IsRented { get; set; } = false;
 }

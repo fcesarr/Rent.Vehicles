@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rent.Vehicles.Entities.Contexts;
@@ -11,9 +12,11 @@ using Rent.Vehicles.Entities.Contexts;
 namespace Rent.Vehicles.Entities.Migrations
 {
     [DbContext(typeof(RentVehiclesContext))]
-    partial class RentVehiclesContextModelSnapshot : ModelSnapshot
+    [Migration("20240624175017_CreateRents")]
+    partial class CreateRents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,8 +216,8 @@ namespace Rent.Vehicles.Entities.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("701aebde-0d7b-4533-8dc6-7cfa3b193f1f"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7580),
+                            Id = new Guid("39e02a68-9b2f-4638-869d-2a1b51145a9b"),
+                            Created = new DateTime(2024, 6, 24, 17, 50, 17, 247, DateTimeKind.Utc).AddTicks(3373),
                             DailyCost = 30.0m,
                             NumberOfDays = 7,
                             PostEndDateFine = 50.0m,
@@ -222,8 +225,8 @@ namespace Rent.Vehicles.Entities.Migrations
                         },
                         new
                         {
-                            Id = new Guid("3f0b41b2-d448-4f1a-878b-ab6554c9b9b3"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7656),
+                            Id = new Guid("45df35af-ab37-4fa2-8324-f03806ddd48d"),
+                            Created = new DateTime(2024, 6, 24, 17, 50, 17, 247, DateTimeKind.Utc).AddTicks(3426),
                             DailyCost = 28.0m,
                             NumberOfDays = 15,
                             PostEndDateFine = 50.0m,
@@ -231,8 +234,8 @@ namespace Rent.Vehicles.Entities.Migrations
                         },
                         new
                         {
-                            Id = new Guid("56bf4d36-c9fb-46e0-80ac-1bf23b1bcb13"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7669),
+                            Id = new Guid("a8118564-6c17-4e76-be3c-c8947fda30ad"),
+                            Created = new DateTime(2024, 6, 24, 17, 50, 17, 247, DateTimeKind.Utc).AddTicks(3436),
                             DailyCost = 22.0m,
                             NumberOfDays = 30,
                             PostEndDateFine = 50.0m,
@@ -240,8 +243,8 @@ namespace Rent.Vehicles.Entities.Migrations
                         },
                         new
                         {
-                            Id = new Guid("3d3eff16-f44a-48c8-9124-dd2146f7445f"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7679),
+                            Id = new Guid("d8a5a35f-c718-435b-a119-1ea2d679acb6"),
+                            Created = new DateTime(2024, 6, 24, 17, 50, 17, 247, DateTimeKind.Utc).AddTicks(3444),
                             DailyCost = 20.0m,
                             NumberOfDays = 45,
                             PostEndDateFine = 50.0m,
@@ -249,8 +252,8 @@ namespace Rent.Vehicles.Entities.Migrations
                         },
                         new
                         {
-                            Id = new Guid("5ff3d14d-c145-40b6-bae4-938488506ddb"),
-                            Created = new DateTime(2024, 6, 24, 18, 2, 24, 399, DateTimeKind.Utc).AddTicks(7690),
+                            Id = new Guid("699b68db-2f0f-41ed-a414-b7fca8dcb5e1"),
+                            Created = new DateTime(2024, 6, 24, 17, 50, 17, 247, DateTimeKind.Utc).AddTicks(3452),
                             DailyCost = 18.0m,
                             NumberOfDays = 50,
                             PostEndDateFine = 50.0m,
@@ -313,10 +316,6 @@ namespace Rent.Vehicles.Entities.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("created");
-
-                    b.Property<bool>("IsRented")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_rented");
 
                     b.Property<string>("LicensePlate")
                         .IsRequired()
