@@ -31,7 +31,7 @@ public class LicenseImageService : ILicenseImageService
         var fileExtension = GetFileExtension(fileBytes);
 
         if (fileExtension == null)
-            return new Result<Task>(new NullException());
+            return Result<Task>.Failure(new NullException());
 
         var fileName = GetMd5Hash(fileBytes);
 
@@ -76,7 +76,7 @@ public class LicenseImageService : ILicenseImageService
             var fileExtension = GetFileExtension(fileBytes);
 
             if (fileExtension == null)
-                return new Result<string>(new NullException());
+                return Result<string>.Failure(new NullException());
 
             var fileName = GetMd5Hash(fileBytes);
 
@@ -86,19 +86,16 @@ public class LicenseImageService : ILicenseImageService
         }, cancellationToken);
     }
 
-    private  string GetMd5Hash(byte[] input)
+    private static string GetMd5Hash(byte[] input)
     {
-        using (MD5 md5 = MD5.Create())
-        {
-            byte[] hashBytes = md5.ComputeHash(input);
+        byte[] hashBytes = MD5.HashData(input);
 
-            // Convert byte array to a hexadecimal string
-            StringBuilder sb = new StringBuilder();
-            foreach (byte b in hashBytes)
-            {
-                sb.Append(b.ToString("x2"));
-            }
-            return sb.ToString();
+        // Convert byte array to a hexadecimal string
+        var stringBuilder = new StringBuilder();
+        foreach (byte b in hashBytes)
+        {
+            stringBuilder.Append(b.ToString("x2"));
         }
+        return stringBuilder.ToString();
     }
 }

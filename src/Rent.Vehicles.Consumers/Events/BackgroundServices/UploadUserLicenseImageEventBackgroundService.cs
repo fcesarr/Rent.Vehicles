@@ -25,6 +25,11 @@ public class UploadUserLicenseImageEventBackgroundService : HandlerEventServiceP
 
     protected override async Task<Result<Task>> HandlerMessageAsync(UploadUserLicenseImageEvent @event, CancellationToken cancellationToken = default)
     {
-        return await _service.UploadAsync(@event.LicenseImage, cancellationToken);
+        var result = await _service.UploadAsync(@event.LicenseImage, cancellationToken);
+
+        if(!result.IsSuccess)
+            return new Result<Task>(result.Exception);
+
+        return result.Value;
     }
 }

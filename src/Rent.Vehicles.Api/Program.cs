@@ -197,10 +197,15 @@ app.MapGet("/Vehicles/{Id}", async ([FromQuery]Guid id,
 {
     var entity = await getService.GetAsync(x => x.Id == id, cancellationToken);
 
-    return entity.Match(entity => Results.Ok(entity), exception => exception switch{
-        NullException => Results.NotFound(),
-        _ => Results.StatusCode(500)
-    });
+    if(!entity.IsSuccess)
+    {
+        return entity.Exception switch {
+            NullException => Results.NotFound(),
+            _ => Results.StatusCode(500)
+        };
+    }
+
+    return Results.Ok(entity.Value);
 })
 .WithName("VehiclesGet")
 .WithOpenApi();

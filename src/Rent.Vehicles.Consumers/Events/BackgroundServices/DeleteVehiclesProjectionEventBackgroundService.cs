@@ -30,6 +30,9 @@ public class DeleteVehiclesProjectionEventBackgroundService : HandlerEventServic
     {
         var entity =  await _service.DeleteAsync(@event.Id, cancellationToken);
 
-        return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
+        if(!entity.IsSuccess)
+            return new Result<Task>(entity.Exception);
+
+        return Task.CompletedTask;
     }
 }

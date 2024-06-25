@@ -38,22 +38,24 @@ public class UserFacade : IUserFacade
         _licenseImageService = licenseImageService;
     }
 
-    public async Task<Result<UserResponse>> CreateAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
+    public async Task<LanguageExt.Common.Result<UserResponse>> CreateAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
     {
         var result = await _base64StringValidator.ValidateAsync(@event.LicenseImage, cancellationToken);
 
         if(!result.IsValid)
-            return new Result<UserResponse>(result.Exception);
+            return new LanguageExt.Common.Result<UserResponse>(result.Exception);
 
         var licensePathResult = await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
 
-        return await licensePathResult
-            .Match(async licensePath => await TreatCreateUserEventToResponseAsync(licensePath,
+        if(!licensePathResult.IsSuccess)
+            return new LanguageExt.Common.Result<UserResponse>(licensePathResult.Exception);
+
+        return await TreatCreateUserEventToResponseAsync(licensePathResult.Value,
                 @event,
-                cancellationToken), exception => Task.FromResult(new Result<UserResponse>(exception)));
+                cancellationToken);
     }
 
-    private async Task<Result<UserResponse>> TreatCreateUserEventToResponseAsync(string licensePath,
+    private async Task<LanguageExt.Common.Result<UserResponse>> TreatCreateUserEventToResponseAsync(string licensePath,
         CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -72,72 +74,83 @@ public class UserFacade : IUserFacade
             LicensePath = licensePath
         }, cancellationToken);
 
-        return entity.Match(entity => new UserResponse
+        if(!entity.IsSuccess)
+            return new LanguageExt.Common.Result<UserResponse>(entity.Exception);
+
+        return new UserResponse
         {
-            Id = entity.Id,
-            Number = entity.Number,
-            Name = entity.Name,
-            LicenseNumber = entity.LicenseNumber,
-            LicenseType = entity.LicenseType,
-            LicensePath = entity.LicensePath,
-            Birthday = entity.Birthday,
-            Created = entity.Created
-        }, exception => new Result<UserResponse>(exception));
+            Id = entity.Value.Id,
+            Number = entity.Value.Number,
+            Name = entity.Value.Name,
+            LicenseNumber = entity.Value.LicenseNumber,
+            LicenseType = entity.Value.LicenseType,
+            LicensePath = entity.Value.LicensePath,
+            Birthday = entity.Value.Birthday,
+            Created = entity.Value.Created
+        };
     }
 
-    public async Task<Result<UserResponse>> UpdateAsync(UpdateUserEvent @event, CancellationToken cancellationToken = default)
+    public async Task<LanguageExt.Common.Result<UserResponse>> UpdateAsync(UpdateUserEvent @event, CancellationToken cancellationToken = default)
     {
         var entity = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 
-        return await entity.Match(async entity => await TreatUpdateUserEventToResponseAsync(entity, @event, cancellationToken),
-            exception => Task.FromResult(new Result<UserResponse>(exception)));
+        if(!entity.IsSuccess)
+            return new LanguageExt.Common.Result<UserResponse>(entity.Exception);
+
+        return await TreatUpdateUserEventToResponseAsync(entity.Value, @event, cancellationToken);
     }
 
-    private async Task<Result<UserResponse>> TreatUpdateUserEventToResponseAsync(User entity,
+    private async Task<LanguageExt.Common.Result<UserResponse>> TreatUpdateUserEventToResponseAsync(User entity,
         UpdateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
         var result = await _base64StringValidator.ValidateAsync(@event.LicenseImage, cancellationToken);
 
         if(!result.IsValid)
-            return new Result<UserResponse>(result.Exception);
+            return new LanguageExt.Common.Result<UserResponse>(result.Exception);
 
         var licensePathResult = await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
         
-        return await licensePathResult.Match(async licensePath => {
-            entity.LicensePath = licensePath;
+        if(!licensePathResult.IsSuccess)
+            return new LanguageExt.Common.Result<UserResponse>(licensePathResult.Exception);
 
-            var entityResult = await _dataService.UpdateAsync(entity, cancellationToken);
+        entity.LicensePath = licensePathResult.Value;
 
-            return entityResult.Match(entity => new UserResponse
-                {
-                    Id = entity.Id,
-                    Number = entity.Number,
-                    Name = entity.Name,
-                    LicenseNumber = entity.LicenseNumber,
-                    LicenseType = entity.LicenseType,
-                    LicensePath = entity.LicensePath,
-                    Birthday = entity.Birthday,
-                    Created = entity.Created
-                },
-                exception => new Result<UserResponse>(exception));
-        }, exception => Task.FromResult(new Result<UserResponse>(exception)));
+        var entityResult = await _dataService.UpdateAsync(entity, cancellationToken);
+
+        if(!entityResult.IsSuccess)
+            return new LanguageExt.Common.Result<UserResponse>(entityResult.Exception);
+
+        return new UserResponse
+        {
+            Id = entityResult.Value.Id,
+            Number = entityResult.Value.Number,
+            Name = entityResult.Value.Name,
+            LicenseNumber = entityResult.Value.LicenseNumber,
+            LicenseType = entityResult.Value.LicenseType,
+            LicensePath = entityResult.Value.LicensePath,
+            Birthday = entityResult.Value.Birthday,
+            Created = entityResult.Value.Created
+        };
     }
 
-    public async Task<Result<UserResponse>> GetAsync(Expression<Func<User, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<LanguageExt.Common.Result<UserResponse>> GetAsync(Expression<Func<User, bool>> predicate, CancellationToken cancellationToken = default)
     {
         var entity = await _dataService.GetAsync(predicate, cancellationToken);
 
-        return entity.Match(entity => new UserResponse
+        if(!entity.IsSuccess)
+            return new LanguageExt.Common.Result<UserResponse>(entity.Exception);
+
+        return new UserResponse
         {
-            Id = entity.Id,
-            Number = entity.Number,
-            Name = entity.Name,
-            LicenseNumber = entity.LicenseNumber,
-            LicenseType = entity.LicenseType,
-            LicensePath = entity.LicensePath,
-            Birthday = entity.Birthday,
-            Created = entity.Created
-        }, exception => new Result<UserResponse>(exception));
+            Id = entity.Value.Id,
+            Number = entity.Value.Number,
+            Name = entity.Value.Name,
+            LicenseNumber = entity.Value.LicenseNumber,
+            LicenseType = entity.Value.LicenseType,
+            LicensePath = entity.Value.LicensePath,
+            Birthday = entity.Value.Birthday,
+            Created = entity.Value.Created
+        };
     }
 }

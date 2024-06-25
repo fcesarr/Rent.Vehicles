@@ -48,7 +48,11 @@ public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandServicePu
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command))
         };
 
-        return (await _service.CreateAsync(entity, cancellationToken))
-            .Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
+        var result = await _service.CreateAsync(entity, cancellationToken);
+
+        if(!result.IsSuccess)
+            return  new Result<Task>(result.Exception);
+
+        return Task.CompletedTask;
     }
 }

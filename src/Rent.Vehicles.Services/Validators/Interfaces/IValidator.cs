@@ -15,5 +15,5 @@ public class ValidationResult<T> where T : class
 
     public T Instance { get; set; } = default!;
 
-	public ValidationException? Exception { get; set; }
+	public ValidationException Exception { get; set; } = default!;
 }

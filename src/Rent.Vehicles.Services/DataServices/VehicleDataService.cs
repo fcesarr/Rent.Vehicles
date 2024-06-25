@@ -23,14 +23,13 @@ public class VehicleDataService : DataService<Vehicle>, IVehicleDataService
     {
         var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
-        return await entity.Match(async entity => 
-        {
-            if(entity == null)
-                return new Result<Vehicle>(new NullException());
+        if(!entity.IsSuccess)
+            return Result<Vehicle>.Failure(entity.Exception);
 
-            entity.LicensePlate = licensePlate;
+        if(entity.Value is null)
+            return Result<Vehicle>.Failure(new NullException());
+        
 
-            return await UpdateAsync(entity, cancellationToken);
-        }, exception => Task.FromResult(new Result<Vehicle>(exception)));
+        return await UpdateAsync(entity.Value, cancellationToken);
     }
 }

@@ -37,11 +37,14 @@ public class UpdateVehiclesEventBackgroundService : HandlerEventServicePublishEv
         ];
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(UpdateVehiclesEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<LanguageExt.Common.Result<Task>> HandlerMessageAsync(UpdateVehiclesEvent @event, CancellationToken cancellationToken = default)
     {
         var entity = await _service.UpdateAsync(@event.Id, @event.LicensePlate, cancellationToken);
 
-        return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
+        if(!entity.IsSuccess)
+            return new LanguageExt.Common.Result<Task>(entity.Exception);
+
+        return Task.CompletedTask;
     }
 }
 

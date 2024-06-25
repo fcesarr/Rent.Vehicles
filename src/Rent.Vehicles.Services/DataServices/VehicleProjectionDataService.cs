@@ -25,14 +25,12 @@ public class VehicleProjectionDataService : DataService<VehicleProjection>, IVeh
     {
         var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
-        return await entity.Match(async entity => 
-        {
-            if(entity == null)
-                return new Result<VehicleProjection>(new NullException());
+        if(!entity.IsSuccess)
+            return Result<VehicleProjection>.Failure(entity.Exception);
 
-            entity.LicensePlate = licensePlate;
+        if(entity.Value is null)
+            return Result<VehicleProjection>.Failure(new NullException());
 
-            return await UpdateAsync(entity, cancellationToken);
-        }, exception => Task.FromResult(new Result<VehicleProjection>(exception)));
+        return await UpdateAsync(entity.Value, cancellationToken);
     }
 }

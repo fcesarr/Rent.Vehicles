@@ -35,7 +35,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if(!result.IsValid)
-            return new Result<TEntity>(result.Exception);
+            return Result<TEntity>.Failure(result.Exception);
 
         await _repository.CreateAsync(result.Instance, cancellationToken);
 
@@ -47,7 +47,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if(!result.IsValid)
-            return new Result<bool>(result.Exception);
+            return Result<bool>.Failure(result.Exception);
 
         await _repository.DeleteAsync(result.Instance, cancellationToken);
 
@@ -62,7 +62,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         var entities = await _repository.FindAsync(predicate, descending, orderBy, cancellationToken: cancellationToken);
     
         if(!entities.Any())
-            return new Result<IEnumerable<TEntity>>(new EmptyException());
+            return Result<IEnumerable<TEntity>>.Failure(new EmptyException());
 
         return entities
             .ToList();
@@ -73,7 +73,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         var entity = await _repository.GetAsync(predicate, cancellationToken: cancellationToken);
 
         if(entity == null)
-            return new Result<TEntity>(new NullException());
+            return Result<TEntity>.Failure(new NullException());
 
         return entity;
     }
@@ -83,7 +83,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if(!result.IsValid)
-            return new Result<TEntity>(result.Exception);
+            return Result<TEntity>.Failure(result.Exception);
 
         await _repository.UpdateAsync(result.Instance, cancellationToken);
 
@@ -94,10 +94,10 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
     {
         var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
-        return await entity.Match(async entity => 
-        {
-            return await DeleteAsync(entity, cancellationToken);
-        }, exception => Task.FromResult(new Result<bool>(exception)));
+        if(!entity.IsSuccess)
+            return Result<bool>.Failure(entity.Exception);
+
+        return await DeleteAsync(entity.Value, cancellationToken);
     }
 }
 

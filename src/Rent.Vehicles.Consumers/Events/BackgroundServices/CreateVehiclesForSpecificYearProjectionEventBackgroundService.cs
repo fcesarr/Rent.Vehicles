@@ -42,6 +42,9 @@ public class CreateVehiclesForSpecificYearProjectionEventBackgroundService : Han
             }
         }, cancellationToken);
 
-        return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
+        if(!entity.IsSuccess)
+            return new Result<Task>(entity.Exception);
+
+        return Task.CompletedTask;
     }
 }
