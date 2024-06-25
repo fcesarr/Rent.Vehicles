@@ -1,13 +1,9 @@
-using LanguageExt;
-using LanguageExt.Common;
-using LanguageExt.TypeClasses;
-
-using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
@@ -24,19 +20,26 @@ public abstract class HandlerEventPublishEventBackgroundService<TEventToConsume>
 
     protected override async Task<Result<Task>> HandlerAsync(TEventToConsume @event, CancellationToken cancellationToken = default)
     {
-        var result = await base.HandlerAsync(@event, cancellationToken);
+        try
+        {
+            var result = await base.HandlerAsync(@event, cancellationToken);
 
-        return result.Match(result => {
-            result.GetAwaiter().GetResult();
+            if(!result.IsSuccess)
+            {
+                return result.Exception!;
+            }
 
-            var eventToPublish = CreateEventToPublish(@event);
-        
-            PublishAsync(eventToPublish, cancellationToken).GetAwaiter().GetResult();
+            await result.Value!;
 
-            return Task.CompletedTask;
-        }, exception => new Result<Task>(exception));
+            var eventsToPublish = CreateEventToPublish(@event);
+
+            return PublishAsync(eventsToPublish, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
     }
-
  
     protected abstract IEnumerable<Messages.Event> CreateEventToPublish(TEventToConsume @event);
 

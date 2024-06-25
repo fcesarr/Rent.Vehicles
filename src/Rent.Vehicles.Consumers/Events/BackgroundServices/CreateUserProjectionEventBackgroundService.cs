@@ -6,10 +6,10 @@ using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
-using LanguageExt.Common;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -28,6 +28,6 @@ public class CreateUserProjectionEventBackgroundService : HandlerEventServicePub
 
     protected override Task<Result<Task>> HandlerMessageAsync(CreateUserProjectionEvent @event, CancellationToken cancellationToken = default)
     {
-        throw new Exception();
+        return Task.Run(() => Result<Task>.Failure(new Exception()), cancellationToken);
     }
 }

@@ -1,5 +1,4 @@
 
-using LanguageExt.Common;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Messages.Events;
@@ -26,18 +25,18 @@ public class RentFacade : IRentFacade
         _vehicleService = vehicleService;
     }
 
-    public async Task<LanguageExt.Common.Result<RentResponse>> CreateAsync(CreateRentEvent @event, CancellationToken cancellationToken = default)
+    public async Task<Result<RentResponse>> CreateAsync(CreateRentEvent @event, CancellationToken cancellationToken = default)
     {
         var rentalPlanes = await _rentalPlaneDataService.GetAsync(x => x.Id == @event.RentPlaneId, cancellationToken);
 
         if(!rentalPlanes.IsSuccess)
-            return new LanguageExt.Common.Result<RentResponse>(rentalPlanes.Exception);
+            return rentalPlanes.Exception!;
 
         
         var vehicle = await _vehicleService.GetAsync(x => !x.IsRented, cancellationToken);
 
         if(!vehicle.IsSuccess)
-            return new LanguageExt.Common.Result<RentResponse>(vehicle.Exception);
+            return vehicle.Exception!;
 
         var vehicleId = vehicle.Value;
 

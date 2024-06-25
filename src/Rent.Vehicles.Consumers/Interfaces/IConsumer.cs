@@ -9,7 +9,11 @@ public interface IConsumer
 
     Task<ConsumerResponse?> ConsumeAsync(CancellationToken cancellationToken = default);
 
+    Task AckAsync(dynamic id, CancellationToken cancellationToken = default);
+
     Task NackAsync(dynamic id, CancellationToken cancellationToken = default);
+
+    Task RemoveAsync(dynamic id, CancellationToken cancellationToken = default);
 }
 
 

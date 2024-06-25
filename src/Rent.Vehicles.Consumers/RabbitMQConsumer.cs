@@ -20,7 +20,7 @@ public class RabbitMQConsumer : IConsumer
     public Task<ConsumerResponse?> ConsumeAsync(CancellationToken cancellationToken = default)
     {
         return Task.Run(() => {
-            var basicGetResult = _model.BasicGet(_name, true);
+            var basicGetResult = _model.BasicGet(_name, false);
 
             if(basicGetResult == null)
                 return null;
@@ -33,10 +33,12 @@ public class RabbitMQConsumer : IConsumer
         }, cancellationToken);
     }
 
-    public Task NackAsync(dynamic id, CancellationToken cancellationToken = default)
+    public Task AckAsync(dynamic id, CancellationToken cancellationToken = default)
     {
         return Task.Run(() => {
-            _model.BasicNack(id, false, true);
+            _model.BasicAck(id, false);
+
+            return Task.CompletedTask;
         }, cancellationToken);
     }
 
@@ -47,5 +49,23 @@ public class RabbitMQConsumer : IConsumer
                 durable: true,
                 exclusive: false,
                 autoDelete: false), cancellationToken);
+    }
+
+    public Task RemoveAsync(dynamic id, CancellationToken cancellationToken = default)
+    {
+         return Task.Run(() => {
+            _model.BasicReject(id, false);
+
+            return Task.CompletedTask;
+        }, cancellationToken);
+    }
+
+    public Task NackAsync(dynamic id, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() => {
+            _model.BasicNack(id, false, true);
+
+            return Task.CompletedTask;
+        }, cancellationToken);
     }
 }

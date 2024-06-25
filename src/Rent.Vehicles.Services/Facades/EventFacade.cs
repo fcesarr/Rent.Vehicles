@@ -1,7 +1,5 @@
 using System.Linq.Expressions;
 
-using LanguageExt.Common;
-
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
@@ -18,7 +16,7 @@ public class EventFacade : IEventFacade
         _dataService = dataService;
     }
 
-    public async Task<LanguageExt.Common.Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Event, bool>> predicate,
+    public async Task<Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Event, bool>> predicate,
         bool descending = false,
         Expression<Func<Event, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default)
@@ -26,7 +24,7 @@ public class EventFacade : IEventFacade
         var entities = await _dataService.FindAsync(predicate, false, orderBy, cancellationToken);
 
         if(!entities.IsSuccess)
-            return new LanguageExt.Common.Result<IEnumerable<EventResponse>>(entities.Exception);
+            return entities.Exception!;
 
         return entities.Value?.Select(x => new EventResponse
         {

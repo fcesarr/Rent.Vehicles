@@ -1,18 +1,14 @@
-using System.ComponentModel;
+
 using System.Security.Cryptography;
-using System.Text;
-
-using LanguageExt;
-using LanguageExt.Common;
-
-using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Exceptions;
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Responses;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
+using Rent.Vehicles.Lib.Extensions;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages;
+using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
@@ -42,22 +38,18 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
-        _channel.SubscribeAsync(QueueName, cancellationToken);
+        _channel.SubscribeAsync(typeof(TEventToConsume).Name, cancellationToken);
 
         return base.StartAsync(cancellationToken);
     }
-
-    protected string QueueName { get; set; } = typeof(TEventToConsume).Name;
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         while(await _periodicTimer.WaitForNextTickAsync(cancellationToken))
         {
-            ConsumerResponse? consumerResponse = default;
-
             try
             {
-                consumerResponse = await _channel.ConsumeAsync(cancellationToken);
+                ConsumerResponse? consumerResponse = await _channel.ConsumeAsync(cancellationToken);
 
                 if(consumerResponse == null)
                     continue;
@@ -71,21 +63,24 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
                 
                 var result = await HandlerAsync(message, cancellationToken);
 
-                await result.Match(async result => {
-                        await result;
-
-                    }, exception => exception switch
+                if(!result.IsSuccess)
+                {
+                    await (result.Exception switch
                     {
-                        NoRetryException => TreatNoRetryExceptionAsync(exception),
                         RetryException => TreatRetryExceptionAsync(consumerResponse,
-                            exception,
+                            result.Exception,
                             cancellationToken),
-                        _ => throw exception
+                        NoRetryException or _ => TreatNoRetryExceptionAsync(result.Exception!)
                     });
+
+                    continue;
+                }
+
+                await _channel.AckAsync(consumerResponse.Id, cancellationToken);
             }
             catch (Exception ex)
             {   
-                _logger.LogError(ex, ex.Message);
+                await TreatNoRetryExceptionAsync(ex);
             }
         }
     }
@@ -97,50 +92,28 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         return Task.CompletedTask;
     }
 
-    private Task TreatRetryExceptionAsync(ConsumerResponse consumerResponse,
+    private async Task TreatRetryExceptionAsync(ConsumerResponse consumerResponse,
         Exception exception, 
         CancellationToken cancellationToken = default)
     {
-        if(consumerResponse != null)
-        {
-            var hash = ComputeSha256Hash(consumerResponse.Data);
-
-            if (_retry.TryGetValue(hash, out int count))
-            {
-                _retry[hash] = ++count;
-            }
-
-            _ = _retry.TryAdd(hash, 0);
-
-            if(count > 3)
-            {
-                _channel.NackAsync(consumerResponse.Id, cancellationToken);
-            }
-        }
         
+        var hash = consumerResponse.Data.ByteToMD5String();
+
+        if (_retry.TryGetValue(hash, out int count) || _retry.TryAdd(hash, 0))
+        {
+            _retry[hash] = ++count;
+        }
+
         _logger.LogError(exception, exception.Message);
 
-        return Task.CompletedTask;
-    }
-
-    private string ComputeSha256Hash(byte[] inputBytes)
-    {
-        using (SHA256 sha256 = SHA256.Create())
+        if(count < 3)
         {
-            // Compute the SHA-256 hash
-            byte[] hashBytes = sha256.ComputeHash(inputBytes);
-
-            // Convert hash byte array to a hex string
-            StringBuilder sb = new StringBuilder();
-            foreach (byte b in hashBytes)
-            {
-                sb.Append(b.ToString("x2"));
-            }
-
-            return sb.ToString();
+            await _channel.NackAsync(consumerResponse.Id, cancellationToken);
+            return;
         }
+
+        await _channel.RemoveAsync(consumerResponse.Id, cancellationToken);
     }
-    
 
     protected virtual async Task<Result<Task>> HandlerAsync(TEventToConsume message, CancellationToken cancellationToken = default)
         => await HandlerMessageAsync(message, cancellationToken);

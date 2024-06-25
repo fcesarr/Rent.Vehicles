@@ -216,10 +216,16 @@ app.MapGet("/Events/Status/{SagaId}", async ([FromQuery]Guid sagaId,
 {
     var entities = await facade.FindAsync(x => x.SagaId == sagaId, true, x => x.Created, cancellationToken);
 
-    return entities.Match(entity => Results.Ok(entity), exception => exception switch{
-        NullException or EmptyException => Results.NoContent(),
-        _ => Results.StatusCode(500)
-    });
+    if(!entities.IsSuccess)
+    {
+        return entities.Exception  switch{
+            NullException or EmptyException => Results.NoContent(),
+            _ => Results.StatusCode(500)
+        };
+    }
+        
+
+    return Results.Ok(entities.Value);
 })
 .WithName("EventsStatus")
 .WithOpenApi();
@@ -278,10 +284,15 @@ app.MapGet("/Users/{Id}", async ([FromQuery]Guid id,
 {
     var entity = await facade.GetAsync(x => x.Id == id, cancellationToken);
 
-    return entity.Match(entity => Results.Ok(entity), exception => exception switch{
-        NullException => Results.NotFound(),
-        _ => Results.StatusCode(500)
-    });
+    if(!entity.IsSuccess)
+    {
+        return entity.Exception switch {
+            NullException => Results.NotFound(),
+            _ => Results.StatusCode(500)
+        };
+    }
+
+    return Results.Ok(entity.Value);
 })
 .WithName("UserGet")
 .WithOpenApi();

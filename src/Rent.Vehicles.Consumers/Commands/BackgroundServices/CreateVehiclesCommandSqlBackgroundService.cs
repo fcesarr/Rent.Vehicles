@@ -7,8 +7,8 @@ using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
-using LanguageExt.Common;
 using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
@@ -51,12 +51,7 @@ public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandServicePu
             Type = typeof(CreateVehiclesEvent).Name,
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command))
         };
-
-        var result = await _service.CreateAsync(entity, cancellationToken);
-
-        if(!result.IsSuccess)
-            return  new Result<Task>(result.Exception);
-
-        return Task.CompletedTask;
+        
+        return _service.CreateAsync(entity, cancellationToken);
     }
 }

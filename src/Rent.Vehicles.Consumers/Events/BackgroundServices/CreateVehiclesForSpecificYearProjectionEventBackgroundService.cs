@@ -6,9 +6,9 @@ using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Interfaces;
-using LanguageExt.Common;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -43,7 +43,7 @@ public class CreateVehiclesForSpecificYearProjectionEventBackgroundService : Han
         }, cancellationToken);
 
         if(!entity.IsSuccess)
-            return new Result<Task>(entity.Exception);
+            return entity.Exception!;
 
         return Task.CompletedTask;
     }

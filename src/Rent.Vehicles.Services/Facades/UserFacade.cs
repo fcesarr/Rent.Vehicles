@@ -1,11 +1,6 @@
 using System.Linq.Expressions;
 
-using LanguageExt;
-using LanguageExt.Common;
-
 using Microsoft.Extensions.Logging;
-
-using MongoDB.Bson;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Messages.Commands;
@@ -38,24 +33,24 @@ public class UserFacade : IUserFacade
         _licenseImageService = licenseImageService;
     }
 
-    public async Task<LanguageExt.Common.Result<UserResponse>> CreateAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
+    public async Task<Result<UserResponse>> CreateAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
     {
         var result = await _base64StringValidator.ValidateAsync(@event.LicenseImage, cancellationToken);
 
         if(!result.IsValid)
-            return new LanguageExt.Common.Result<UserResponse>(result.Exception);
+            return result.Exception!;
 
         var licensePathResult = await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
 
         if(!licensePathResult.IsSuccess)
-            return new LanguageExt.Common.Result<UserResponse>(licensePathResult.Exception);
+            return licensePathResult.Exception!;
 
-        return await TreatCreateUserEventToResponseAsync(licensePathResult.Value,
+        return await TreatCreateUserEventToResponseAsync(licensePathResult.Value!,
                 @event,
                 cancellationToken);
     }
 
-    private async Task<LanguageExt.Common.Result<UserResponse>> TreatCreateUserEventToResponseAsync(string licensePath,
+    private async Task<Result<UserResponse>> TreatCreateUserEventToResponseAsync(string licensePath,
         CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -75,11 +70,11 @@ public class UserFacade : IUserFacade
         }, cancellationToken);
 
         if(!entity.IsSuccess)
-            return new LanguageExt.Common.Result<UserResponse>(entity.Exception);
+            return entity.Exception!;
 
         return new UserResponse
         {
-            Id = entity.Value.Id,
+            Id = entity.Value!.Id,
             Number = entity.Value.Number,
             Name = entity.Value.Name,
             LicenseNumber = entity.Value.LicenseNumber,
@@ -90,40 +85,40 @@ public class UserFacade : IUserFacade
         };
     }
 
-    public async Task<LanguageExt.Common.Result<UserResponse>> UpdateAsync(UpdateUserEvent @event, CancellationToken cancellationToken = default)
+    public async Task<Result<UserResponse>> UpdateAsync(UpdateUserEvent @event, CancellationToken cancellationToken = default)
     {
         var entity = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 
         if(!entity.IsSuccess)
-            return new LanguageExt.Common.Result<UserResponse>(entity.Exception);
+            return entity.Exception!;
 
-        return await TreatUpdateUserEventToResponseAsync(entity.Value, @event, cancellationToken);
+        return await TreatUpdateUserEventToResponseAsync(entity.Value!, @event, cancellationToken);
     }
 
-    private async Task<LanguageExt.Common.Result<UserResponse>> TreatUpdateUserEventToResponseAsync(User entity,
+    private async Task<Result<UserResponse>> TreatUpdateUserEventToResponseAsync(User entity,
         UpdateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
         var result = await _base64StringValidator.ValidateAsync(@event.LicenseImage, cancellationToken);
 
         if(!result.IsValid)
-            return new LanguageExt.Common.Result<UserResponse>(result.Exception);
+            return result.Exception!;
 
         var licensePathResult = await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
         
         if(!licensePathResult.IsSuccess)
-            return new LanguageExt.Common.Result<UserResponse>(licensePathResult.Exception);
+            return licensePathResult.Exception!;
 
-        entity.LicensePath = licensePathResult.Value;
+        entity.LicensePath = licensePathResult.Value!;
 
         var entityResult = await _dataService.UpdateAsync(entity, cancellationToken);
 
         if(!entityResult.IsSuccess)
-            return new LanguageExt.Common.Result<UserResponse>(entityResult.Exception);
+            return entityResult.Exception!;
 
         return new UserResponse
         {
-            Id = entityResult.Value.Id,
+            Id = entityResult.Value!.Id,
             Number = entityResult.Value.Number,
             Name = entityResult.Value.Name,
             LicenseNumber = entityResult.Value.LicenseNumber,
@@ -134,16 +129,16 @@ public class UserFacade : IUserFacade
         };
     }
 
-    public async Task<LanguageExt.Common.Result<UserResponse>> GetAsync(Expression<Func<User, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<Result<UserResponse>> GetAsync(Expression<Func<User, bool>> predicate, CancellationToken cancellationToken = default)
     {
         var entity = await _dataService.GetAsync(predicate, cancellationToken);
 
         if(!entity.IsSuccess)
-            return new LanguageExt.Common.Result<UserResponse>(entity.Exception);
+            return entity.Exception!;
 
         return new UserResponse
         {
-            Id = entity.Value.Id,
+            Id = entity.Value!.Id,
             Number = entity.Value.Number,
             Name = entity.Value.Name,
             LicenseNumber = entity.Value.LicenseNumber,

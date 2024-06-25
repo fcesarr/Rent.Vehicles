@@ -4,9 +4,9 @@ using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
-using LanguageExt.Common;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -28,8 +28,8 @@ public class UploadUserLicenseImageEventBackgroundService : HandlerEventServiceP
         var result = await _service.UploadAsync(@event.LicenseImage, cancellationToken);
 
         if(!result.IsSuccess)
-            return new Result<Task>(result.Exception);
+            return result.Exception!;
 
-        return result.Value;
+        return result.Value!;
     }
 }

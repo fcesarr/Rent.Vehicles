@@ -4,7 +4,6 @@ using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
-using LanguageExt.Common;
 using Rent.Vehicles.Services.Exceptions;
 
 namespace Rent.Vehicles.Services;

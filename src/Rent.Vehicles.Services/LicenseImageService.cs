@@ -1,13 +1,10 @@
-using System.Security.Cryptography;
-using System.Text;
-
-using LanguageExt.Common;
 
 using Microsoft.Extensions.Options;
 
 using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Settings;
+using Rent.Vehicles.Lib.Extensions;
 
 namespace Rent.Vehicles.Services;
 
@@ -33,7 +30,7 @@ public class LicenseImageService : ILicenseImageService
         if (fileExtension == null)
             return Result<Task>.Failure(new NullException());
 
-        var fileName = GetMd5Hash(fileBytes);
+        var fileName = fileBytes.ByteToMD5String();
 
         var filePath = $"{_licenseImageServiceSetting.Path}/{fileName}.{fileExtension}";
 
@@ -78,24 +75,11 @@ public class LicenseImageService : ILicenseImageService
             if (fileExtension == null)
                 return Result<string>.Failure(new NullException());
 
-            var fileName = GetMd5Hash(fileBytes);
+            var fileName = fileBytes.ByteToMD5String();
 
             var filePath = $"{_licenseImageServiceSetting.Path}/{fileName}.{fileExtension}";
 
             return filePath;
         }, cancellationToken);
-    }
-
-    private static string GetMd5Hash(byte[] input)
-    {
-        byte[] hashBytes = MD5.HashData(input);
-
-        // Convert byte array to a hexadecimal string
-        var stringBuilder = new StringBuilder();
-        foreach (byte b in hashBytes)
-        {
-            stringBuilder.Append(b.ToString("x2"));
-        }
-        return stringBuilder.ToString();
     }
 }

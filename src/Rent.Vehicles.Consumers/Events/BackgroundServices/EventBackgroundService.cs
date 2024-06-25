@@ -1,8 +1,4 @@
 
-using LanguageExt.Common;
-
-using RabbitMQ.Client;
-
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
@@ -12,6 +8,7 @@ using Rent.Vehicles.Services.Interfaces;
 using EventEntity = Rent.Vehicles.Entities.Event;
 using Event = Rent.Vehicles.Messages.Events.Event;
 using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Services;
 
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
@@ -46,7 +43,7 @@ public class EventBackgroundService : HandlerEventBackgroundService<Event>
         }, cancellationToken);
 
         if(!entity.IsSuccess)
-            return new Result<Task>(entity.Exception);
+            return entity.Exception!;
 
         return Task.CompletedTask;
     }

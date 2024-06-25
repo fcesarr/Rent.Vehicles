@@ -6,7 +6,7 @@ namespace Rent.Vehicles.Services.Facades.Interfaces;
 
 public interface IEventFacade
 {
-    Task<LanguageExt.Common.Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Entities.Event, bool>> predicate,
+    Task<Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Entities.Event, bool>> predicate,
         bool descending = false,
         Expression<Func<Entities.Event, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default);

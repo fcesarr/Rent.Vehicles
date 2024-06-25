@@ -7,10 +7,9 @@ using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Consumers.Exceptions;
-using LanguageExt.Common;
-using LanguageExt;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -42,11 +41,9 @@ public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerEventP
 
     protected override Task<Result<Task>> HandlerMessageAsync(CreateVehiclesForSpecificYearEvent @event, CancellationToken cancellationToken = default)
     {
-        var result = new Result<Task>(Task.CompletedTask);
-        
         if(@event.Year != 2024)
-            result = new Result<Task>(new SpecificYearException(string.Empty));
+            return Task.Run(() => Result<Task>.Failure(new SpecificYearException(string.Empty)), cancellationToken);
         
-        return Task.FromResult(result);
+        return Task.Run(() => Result<Task>.Success(Task.CompletedTask), cancellationToken);
     }
 }

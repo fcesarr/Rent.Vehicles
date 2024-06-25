@@ -6,9 +6,9 @@ using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
-using LanguageExt.Common;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -30,7 +30,7 @@ public class UpdateVehiclesProjectionEventBackgroundService : HandlerEventServic
         var entity = await _service.UpdateAsync(@event.Id, @event.LicensePlate, cancellationToken);
 
         if(!entity.IsSuccess)
-            return new Result<Task>(entity.Exception);
+            return entity.Exception!;
 
         return Task.CompletedTask;
     }

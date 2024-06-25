@@ -6,9 +6,9 @@ using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
-using LanguageExt.Common;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -48,8 +48,11 @@ public class CreateUserEventBackgroundService : HandlerEventServicePublishEventB
 
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
     {
-        var entity = await _service.CreateAsync(@event, cancellationToken);
+        var user = await _service.CreateAsync(@event, cancellationToken);
 
-        return entity.Match(entity => Task.CompletedTask, exception => new Result<Task>(exception));
+        if(!user.IsSuccess)
+            return user.Exception!;
+
+        return Task.CompletedTask;
     }
 }

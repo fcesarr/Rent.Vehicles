@@ -1,6 +1,3 @@
-using LanguageExt.Common;
-
-using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
