@@ -23,9 +23,9 @@ public class Rent : Entity
 
     public required Guid VehicleId { get; set; }
 
-    public required Vehicle Vehicle { get; set; }
+    public Vehicle? Vehicle { get; set; }
 
     public required Guid UserId { get; set; }
 
-    public required User User { get; set; }
+    public User? User { get; set; }
 }

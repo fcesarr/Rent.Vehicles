@@ -59,7 +59,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         Expression<Func<TEntity, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default)
     {
-        var entities = await _repository.FindAsync(predicate, descending, orderBy, cancellationToken);
+        var entities = await _repository.FindAsync(predicate, descending, orderBy, cancellationToken: cancellationToken);
     
         if(!entities.Any())
             return new Result<IEnumerable<TEntity>>(new EmptyException());
@@ -70,7 +70,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
 
     public async Task<Result<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        var entity = await _repository.GetAsync(predicate, cancellationToken);
+        var entity = await _repository.GetAsync(predicate, cancellationToken: cancellationToken);
 
         if(entity == null)
             return new Result<TEntity>(new NullException());

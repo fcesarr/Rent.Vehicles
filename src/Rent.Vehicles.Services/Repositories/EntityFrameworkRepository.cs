@@ -61,6 +61,7 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository<TEntity> wh
     public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         bool descending = false,
         Expression<Func<TEntity, dynamic>>? orderBy = default,
+        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
         using var context = await _dbContextFactory
@@ -74,19 +75,40 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository<TEntity> wh
 			dbSet = descending ? dbSet.OrderByDescending(orderBy) : dbSet.OrderBy(orderBy);
 		}
 
+        if (includes is not null)
+		{
+			dbSet = includes
+				.Aggregate(dbSet, (current, include) => current.Include(include));
+		}
+
         return await dbSet
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
+        bool descending = false,
+        Expression<Func<TEntity, dynamic>>? orderBy = default,
+        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
+        CancellationToken cancellationToken = default)
     {
         using var context = await _dbContextFactory
             .CreateDbContextAsync(cancellationToken);
 
-        var dbSet = context.Set<TEntity>();
+        var dbSet = context.Set<TEntity>()
+            .Where(predicate);
+
+        if (orderBy is not null)
+		{
+			dbSet = descending ? dbSet.OrderByDescending(orderBy) : dbSet.OrderBy(orderBy);
+		}
+
+        if (includes is not null)
+		{
+			dbSet = includes
+				.Aggregate(dbSet, (current, include) => current.Include(include));
+		}
 
         return await dbSet
-            .Where(predicate)
             .FirstOrDefaultAsync(cancellationToken);
     }
 

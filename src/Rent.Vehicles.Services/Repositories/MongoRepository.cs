@@ -51,6 +51,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
     public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         bool descending = false,
         Expression<Func<TEntity, dynamic>>? orderBy = default,
+        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
         var findOptions = new FindOptions<TEntity>();
@@ -67,6 +68,15 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
             findOptions.Sort = sort;
         }
 
+        if(includes is not null)
+        {
+            var projectionDefinition = Builders<TEntity>.Projection;
+
+            var projection = projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
+
+            findOptions.Projection = projection;
+        }
+
         var filter = Builders<TEntity>.Filter
             .Where(predicate);
         
@@ -77,10 +87,36 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
+        bool descending = false,
+        Expression<Func<TEntity, dynamic>>? orderBy = default,
+        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
+        CancellationToken cancellationToken = default)
     {
         try
         {
+            var findOptions = new FindOptions<TEntity>();
+
+            if(orderBy is not null)
+            {
+                var sortDefinition = Builders<TEntity>.Sort;
+
+                var sort = sortDefinition.Ascending(orderBy);
+
+                if(descending)
+                    sort = sortDefinition.Descending(orderBy);
+
+                findOptions.Sort = sort;
+            }
+
+            if(includes is not null)
+            {
+                var projectionDefinition = Builders<TEntity>.Projection;
+
+                var projection = projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
+
+                findOptions.Projection = projection;
+            }
             
             var filter = Builders<TEntity>.Filter
                 .Where(predicate);

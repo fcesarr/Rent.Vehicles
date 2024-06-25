@@ -12,10 +12,15 @@ public interface IRepository<TEntity> where TEntity : Entity
 
     Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-    Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
+        bool descending = false,
+        Expression<Func<TEntity, dynamic>>? orderBy = default,
+        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
+        CancellationToken cancellationToken = default);
 
     Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         bool descending = false,
         Expression<Func<TEntity, dynamic>>? orderBy = default,
+        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
         CancellationToken cancellationToken = default);
 }
