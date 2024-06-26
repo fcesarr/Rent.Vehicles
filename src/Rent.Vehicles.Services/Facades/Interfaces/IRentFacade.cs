@@ -7,4 +7,6 @@ namespace Rent.Vehicles.Services.Facades.Interfaces;
 public interface IRentFacade
 {
     Task<Result<RentResponse>> CreateAsync(CreateRentEvent @event, CancellationToken cancellationToken = default);
+
+    Task<Result<RentResponse>> UpdateAsync(UpdateRentEvent @event, CancellationToken cancellationToken = default);
 }

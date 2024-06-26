@@ -106,6 +106,7 @@ builder.Services
     .AddHostedService<UpdateVehiclesCommandSqlBackgroundService>()
     .AddHostedService<CreateUserCommandSqlBackgroundService>()
     .AddHostedService<CreateRentCommandSqlBackgroundService>()
+    .AddHostedService<UpdateRentCommandSqlBackgroundService>()
     .AddHostedService<CreateUserEventBackgroundService>()
     .AddHostedService<CreateUserProjectionEventBackgroundService>()
     .AddHostedService<CreateVehiclesEventBackgroundService>()
@@ -118,7 +119,8 @@ builder.Services
     .AddHostedService<UpdateVehiclesEventBackgroundService>()
     .AddHostedService<UpdateVehiclesProjectionEventBackgroundService>()
     .AddHostedService<UploadUserLicenseImageEventBackgroundService>()
-    .AddHostedService<CreateRentEventBackgroundService>();
+    .AddHostedService<CreateRentEventBackgroundService>()
+    .AddHostedService<UpdateRentEventBackgroundService>();
 
 var host = builder.Build();
 host.Run();

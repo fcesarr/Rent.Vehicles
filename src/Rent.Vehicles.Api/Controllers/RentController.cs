@@ -35,6 +35,22 @@ public class RentController : Controller
 
         string locationUri = $"/Events/status/{command.SagaId}";
 
-        return Results.Accepted(locationUri, command);
+        return Results.Accepted(locationUri, new CommandResponse(command.Id));
+    }
+
+    [HttpPut]
+	[ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(CommandResponse))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
+	public async Task<IResult> PutAsync([FromBody]UpdateRentCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        command.SagaId = Guid.NewGuid();
+
+        await _publisher.PublishCommandAsync(command, cancellationToken);
+
+        string locationUri = $"/Events/status/{command.SagaId}";
+
+        return Results.Accepted(locationUri, new CommandResponse(command.Id));
     }
 }
