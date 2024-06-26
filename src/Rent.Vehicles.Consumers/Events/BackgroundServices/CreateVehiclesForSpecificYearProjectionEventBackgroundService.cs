@@ -13,20 +13,22 @@ using Rent.Vehicles.Services;
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
 public class CreateVehiclesForSpecificYearProjectionEventBackgroundService : HandlerEventServicePublishBackgroundService<
-    CreateVehiclesForSpecificYearProjectionEvent,
-    IDataService<VehiclesForSpecificYearProjection>>
+    CreateVehiclesForSpecificYearProjectionEvent>
 {
     public CreateVehiclesForSpecificYearProjectionEventBackgroundService(ILogger<CreateVehiclesForSpecificYearProjectionEventBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
+        IServiceProvider serviceProvider,
         IPublisher publisher,
-        IDataService<VehiclesForSpecificYearProjection> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
     {
     }
 
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesForSpecificYearProjectionEvent @event, CancellationToken cancellationToken = default)
-    {
+    {        
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IDataService<VehiclesForSpecificYearProjection>>();
+
         var entity = await _service.CreateAsync(new VehiclesForSpecificYearProjection
         {
             Id = @event.Id,

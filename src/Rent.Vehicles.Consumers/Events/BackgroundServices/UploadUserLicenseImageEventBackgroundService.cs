@@ -11,20 +11,21 @@ using Rent.Vehicles.Services;
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
 public class UploadUserLicenseImageEventBackgroundService : HandlerEventServicePublishBackgroundService<
-    UploadUserLicenseImageEvent,
-    ILicenseImageService>
+    UploadUserLicenseImageEvent>
 {
     public UploadUserLicenseImageEventBackgroundService(ILogger<UploadUserLicenseImageEventBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        ILicenseImageService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
     {
     }
 
     protected override async Task<Result<Task>> HandlerMessageAsync(UploadUserLicenseImageEvent @event, CancellationToken cancellationToken = default)
     {
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILicenseImageService>();
+
         var result = await _service.UploadAsync(@event.LicenseImage, cancellationToken);
 
         if(!result.IsSuccess)

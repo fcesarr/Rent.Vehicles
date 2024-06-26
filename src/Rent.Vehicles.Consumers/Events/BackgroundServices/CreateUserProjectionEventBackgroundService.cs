@@ -14,20 +14,22 @@ using Rent.Vehicles.Services;
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
 public class CreateUserProjectionEventBackgroundService : HandlerEventServicePublishBackgroundService<
-    CreateUserProjectionEvent,
-    IVehicleProjectionDataService>
+    CreateUserProjectionEvent>
 {
     public CreateUserProjectionEventBackgroundService(ILogger<CreateUserProjectionEventBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
+        IServiceProvider serviceProvider,
         IPublisher publisher,
-        IVehicleProjectionDataService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
     {
     }
 
     protected override Task<Result<Task>> HandlerMessageAsync(CreateUserProjectionEvent @event, CancellationToken cancellationToken = default)
     {
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IVehicleProjectionDataService>();
+
         return Task.Run(() => Result<Task>.Failure(new Exception()), cancellationToken);
     }
 }

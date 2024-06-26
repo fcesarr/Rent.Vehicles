@@ -9,20 +9,22 @@ using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Facades.Interfaces;
+using Rent.Vehicles.Services.Repositories.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
-public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandServicePublishEventBackgroundService<
+public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEventBackgroundService<
     CreateVehiclesCommand,
-    CreateVehiclesEvent,
-    IDataService<Command>>
+    CreateVehiclesEvent>
 {
     public CreateVehiclesCommandSqlBackgroundService(ILogger<CreateVehiclesCommandSqlBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IDataService<Command> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
     {
     }
 
@@ -42,6 +44,10 @@ public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandServicePu
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
+        var service = _serviceScopeFactory.CreateScope()
+            .ServiceProvider
+            .GetRequiredService<ICommandDataService>();
+
         var entity = new Command
         {
             SagaId = command.SagaId,
@@ -52,6 +58,6 @@ public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandServicePu
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command))
         };
         
-        return _service.CreateAsync(entity, cancellationToken);
+        return service.CreateAsync(entity, cancellationToken);
     }
 }

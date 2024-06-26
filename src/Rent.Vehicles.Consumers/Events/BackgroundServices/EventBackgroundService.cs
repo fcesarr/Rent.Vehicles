@@ -15,20 +15,21 @@ namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
 public class EventBackgroundService : HandlerEventBackgroundService<Event>
 {
-    private readonly IDataService<EventEntity> _service;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public EventBackgroundService(ILogger<EventBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IPublisher publisher,
-        IDataService<EventEntity> service) : base(logger, channel, periodicTimer, serializer)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer)
     {
-        _service = service;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     protected override async Task<Result<Task>> HandlerMessageAsync(Event @event, CancellationToken cancellationToken = default)
     {
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IDataService<EventEntity>>();
+
         var entity = await _service.CreateAsync(new EventEntity
         {
             SagaId = @event.SagaId,

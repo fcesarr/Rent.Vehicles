@@ -1,10 +1,12 @@
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 using Rent.Vehicles.Entities.Contexts.Interfaces;
 
 namespace Rent.Vehicles.Entities.Contexts;
 
-public class RentVehiclesContext : DbContext, IDbContext
+public class RentVehiclesContext : DbContext, IDbContext, IUnitOfWorkerContext
 {
 	public RentVehiclesContext(DbContextOptions options)
 		: base(options)
@@ -24,6 +26,21 @@ public class RentVehiclesContext : DbContext, IDbContext
 
     public virtual DbSet<Rent>? RentSet { get; set; }
 
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+	{
+		var transaction = await Database.BeginTransactionAsync(cancellationToken);
+		await Database.UseTransactionAsync(transaction.GetDbTransaction(), cancellationToken);
+	}
+
+	public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+	{
+		await Database.RollbackTransactionAsync(cancellationToken);
+	}
+
+	public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+	{
+		await Database.CommitTransactionAsync(cancellationToken);
+	}
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

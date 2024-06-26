@@ -14,9 +14,9 @@ public static class ServiceExtension
 {
     public static IServiceCollection AddDataDomain<TEntity>(this IServiceCollection services)
         where TEntity : Entity
-        => services.AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
-            .AddSingleton<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
-            .AddSingleton<IDataService<TEntity>, DataService<TEntity>>();
+        => services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
+            .AddScoped<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
+            .AddScoped<IDataService<TEntity>, DataService<TEntity>>();
 
     public static IServiceCollection AddDataDomain<TEntity, TIValidator, TValidatorImplementation, TIService, TServiceImplementation>(this IServiceCollection services) 
         where TEntity : Entity
@@ -24,23 +24,23 @@ public static class ServiceExtension
         where TValidatorImplementation : Validator<TEntity>, TIValidator
         where TIService : class, IDataService<TEntity>
         where TServiceImplementation : DataService<TEntity>, TIService
-        => services.AddSingleton<TIValidator, TValidatorImplementation>()
-            .AddSingleton<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
-            .AddSingleton<TIService, TServiceImplementation>();
+        => services.AddScoped<TIValidator, TValidatorImplementation>()
+            .AddScoped<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
+            .AddScoped<TIService, TServiceImplementation>();
 
     public static IServiceCollection AddProjectionDomain<TEntity>(this IServiceCollection services)
         where TEntity : Entity
-        => services.AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
-            .AddSingleton<IRepository<TEntity>, MongoRepository<TEntity>>()
-            .AddSingleton<IDataService<TEntity>, DataService<TEntity>>();
+        => services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
+            .AddScoped<IRepository<TEntity>, MongoRepository<TEntity>>()
+            .AddScoped<IDataService<TEntity>, DataService<TEntity>>();
 
     public static IServiceCollection AddProjectionDomain<TEntity, TIService, TServiceImplementation>(this IServiceCollection services) 
         where TEntity : Entity
         where TIService : class, IDataService<TEntity>
         where TServiceImplementation : DataService<TEntity>, TIService
-        => services.AddSingleton<IValidator<TEntity>, Validator<TEntity>>()
-            .AddSingleton<IRepository<TEntity>, MongoRepository<TEntity>>()
-            .AddSingleton<TIService, TServiceImplementation>();
+        => services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
+            .AddScoped<IRepository<TEntity>, MongoRepository<TEntity>>()
+            .AddScoped<TIService, TServiceImplementation>();
 
     public static IServiceCollection AddDefaultSerializer<TImplementation>(this IServiceCollection services)
         where TImplementation : class, ISerializer

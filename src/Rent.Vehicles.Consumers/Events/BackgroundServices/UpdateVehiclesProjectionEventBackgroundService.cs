@@ -13,20 +13,21 @@ using Rent.Vehicles.Services;
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
 public class UpdateVehiclesProjectionEventBackgroundService : HandlerEventServicePublishBackgroundService<
-    UpdateVehiclesProjectionEvent,
-    IVehicleProjectionDataService>
+    UpdateVehiclesProjectionEvent>
 {
     public UpdateVehiclesProjectionEventBackgroundService(ILogger<UpdateVehiclesProjectionEventBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehicleProjectionDataService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
     {
     }
 
     protected override async Task<Result<Task>> HandlerMessageAsync(UpdateVehiclesProjectionEvent @event, CancellationToken cancellationToken = default)
     {
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IVehicleProjectionDataService>();
+
         var entity = await _service.UpdateAsync(@event.Id, @event.LicensePlate, cancellationToken);
 
         if(!entity.IsSuccess)

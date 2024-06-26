@@ -7,20 +7,19 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
-public abstract class HandlerEventServicePublishBackgroundService<TEventToConsume, TService> : HandlerEventPublishBackgroundService<TEventToConsume>
+public abstract class HandlerEventServicePublishBackgroundService<TEventToConsume> : HandlerEventPublishBackgroundService<TEventToConsume>
     where TEventToConsume : Messages.Event
-    where TService : class
 {
-    protected readonly TService _service;
+    protected IServiceScopeFactory _serviceScopeFactory;
 
-    protected HandlerEventServicePublishBackgroundService(ILogger<HandlerEventServicePublishBackgroundService<TEventToConsume, TService>> logger,
+    protected HandlerEventServicePublishBackgroundService(ILogger<HandlerEventServicePublishBackgroundService<TEventToConsume>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        TService service) : base(logger, channel, periodicTimer, serializer, publisher)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher)
     {
-        _service = service;
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
 

@@ -13,15 +13,14 @@ using Rent.Vehicles.Services;
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
 public class CreateUserEventBackgroundService : HandlerEventServicePublishEventBackgroundService<
-    CreateUserEvent,
-    IUserFacade>
+    CreateUserEvent>
 {
     public CreateUserEventBackgroundService(ILogger<CreateUserEventBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IUserFacade userFacade) : base(logger, channel, periodicTimer, serializer, publisher, userFacade)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
     {
     }
 
@@ -48,6 +47,8 @@ public class CreateUserEventBackgroundService : HandlerEventServicePublishEventB
 
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
     {
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IUserFacade>();
+
         var user = await _service.CreateAsync(@event, cancellationToken);
 
         if(!user.IsSuccess)

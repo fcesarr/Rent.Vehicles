@@ -11,12 +11,16 @@ public abstract class HandlerCommandPublishEventBackgroundService<TCommandToCons
     where TCommandToConsume : Messages.Command
     where TEventToPublish : Messages.Event
 {
+    protected IServiceScopeFactory _serviceScopeFactory;
+
     protected HandlerCommandPublishEventBackgroundService(ILogger<HandlerCommandPublishEventBackgroundService<TCommandToConsume, TEventToPublish>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IPublisher publisher) : base(logger, channel, periodicTimer, serializer, publisher)
+        IPublisher publisher,
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher)
     {
+        _serviceScopeFactory = serviceScopeFactory;
     }
 
     protected override async Task<Result<Task>> HandlerAsync(TCommandToConsume @event, CancellationToken cancellationToken = default)

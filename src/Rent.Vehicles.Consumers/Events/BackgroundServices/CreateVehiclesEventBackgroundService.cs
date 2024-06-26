@@ -12,15 +12,15 @@ using Rent.Vehicles.Services;
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
 public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEventBackgroundService<
-    CreateVehiclesEvent,
-    IVehicleDataService>
+    CreateVehiclesEvent>
 {
     public CreateVehiclesEventBackgroundService(ILogger<CreateVehiclesEventBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
+        IServiceProvider serviceProvider,
         IPublisher publisher,
-        IVehicleDataService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
     {
     }
 
@@ -50,6 +50,8 @@ public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEv
 
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesEvent @event, CancellationToken cancellationToken = default)
     {
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IVehicleDataService>();
+
         var entity = await _service.CreateAsync(new Vehicle
         {
             Id = @event.Id,

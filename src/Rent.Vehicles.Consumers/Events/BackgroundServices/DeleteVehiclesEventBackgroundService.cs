@@ -12,15 +12,14 @@ using Rent.Vehicles.Services;
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
 public class DeleteVehiclesEventBackgroundService : HandlerEventServicePublishEventBackgroundService<
-    DeleteVehiclesEvent,
-    IVehicleDataService>
+    DeleteVehiclesEvent>
 {
     public DeleteVehiclesEventBackgroundService(ILogger<DeleteVehiclesEventBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IVehicleDataService service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
     {
     }
 
@@ -37,6 +36,8 @@ public class DeleteVehiclesEventBackgroundService : HandlerEventServicePublishEv
 
     protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesEvent @event, CancellationToken cancellationToken = default)
     {
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IVehicleDataService>();
+
         var entity = await _service.DeleteAsync(@event.Id, cancellationToken);
 
         if(!entity.IsSuccess)

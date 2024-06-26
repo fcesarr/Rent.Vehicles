@@ -9,20 +9,20 @@ using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.DataServices.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
-public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandServicePublishEventBackgroundService<
+public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandPublishEventBackgroundService<
     DeleteVehiclesCommand, 
-    DeleteVehiclesEvent,
-    IDataService<Command>>
+    DeleteVehiclesEvent>
 {
     public DeleteVehiclesCommandSqlBackgroundService(ILogger<DeleteVehiclesCommandSqlBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IDataService<Command> service) : base(logger, channel, periodicTimer, serializer, publisher, service)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
     {
     }
 
@@ -38,6 +38,10 @@ public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandServicePu
     protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
+        var service = _serviceScopeFactory.CreateScope()
+            .ServiceProvider
+            .GetRequiredService<ICommandDataService>();
+
         var entity = new Command
         {
             SagaId = command.SagaId,
@@ -48,6 +52,6 @@ public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandServicePu
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command))
         };
         
-        return _service.CreateAsync(entity, cancellationToken);
+        return service.CreateAsync(entity, cancellationToken);
     }
 }
