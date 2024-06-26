@@ -19,9 +19,9 @@ public class RentController : Controller
 {
     private readonly IPublisher _publisher;
 
-    private readonly IValidator<CreateRentCommand> _createRentCommandValidator;
+    private readonly IValidator<CreateRentCommand> _createCommandValidator;
 
-    private readonly IValidator<UpdateRentCommand> _updateRentCommandValidator;
+    private readonly IValidator<UpdateRentCommand> _updateCommandValidator;
 
     private readonly IRentFacade _rentFacade;
 
@@ -31,8 +31,8 @@ public class RentController : Controller
         IRentFacade rentFacade)
     {
         _publisher = publisher;
-        _createRentCommandValidator = createRentCommandValidator;
-        _updateRentCommandValidator = updateRentCommandValidator;
+        _createCommandValidator = createRentCommandValidator;
+        _updateCommandValidator = updateRentCommandValidator;
         _rentFacade = rentFacade;
     }
 
@@ -45,7 +45,7 @@ public class RentController : Controller
     {
         command.SagaId = Guid.NewGuid();
 
-        var result = await _createRentCommandValidator
+        var result = await _createCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if(!result.IsValid)
@@ -68,7 +68,7 @@ public class RentController : Controller
     {
         command.SagaId = Guid.NewGuid();
 
-        var result = await _updateRentCommandValidator
+        var result = await _updateCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if(!result.IsValid)
@@ -84,6 +84,7 @@ public class RentController : Controller
 
     [HttpGet("cost/{id:guid}/{endDate:datetime}")]
 	[ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(CostResponse))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IResult> GetAsync([FromRoute]Guid id, [FromRoute] DateTime endDate,

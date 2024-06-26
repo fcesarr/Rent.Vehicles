@@ -12,5 +12,5 @@ public record UpdateRentCommand : Command
 
     [MessagePack.Key(2)]
     [Required]
-    public required DateTime Data { get; set; }
+    public required DateTime EndDate { get; set; }
 }
