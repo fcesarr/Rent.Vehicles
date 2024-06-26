@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Mvc;
 
 using Rent.Vehicles.Api.Extensions;
@@ -7,6 +8,7 @@ using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Responses;
+using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Api.Controllers;
 
@@ -17,11 +19,20 @@ public class RentController : Controller
 {
     private readonly IPublisher _publisher;
 
+    private readonly IValidator<CreateRentCommand> _createRentCommandValidator;
+
+    private readonly IValidator<UpdateRentCommand> _updateRentCommandValidator;
+
     private readonly IRentFacade _rentFacade;
 
-    public RentController(IPublisher publisher, IRentFacade rentFacade)
+    public RentController(IPublisher publisher,
+        IValidator<CreateRentCommand> createRentCommandValidator,
+        IValidator<UpdateRentCommand> updateRentCommandValidator,
+        IRentFacade rentFacade)
     {
         _publisher = publisher;
+        _createRentCommandValidator = createRentCommandValidator;
+        _updateRentCommandValidator = updateRentCommandValidator;
         _rentFacade = rentFacade;
     }
 
@@ -33,6 +44,12 @@ public class RentController : Controller
         CancellationToken cancellationToken = default)
     {
         command.SagaId = Guid.NewGuid();
+
+        var result = await _createRentCommandValidator
+            .ValidateAsync(command, cancellationToken);
+
+        if(!result.IsValid)
+            return result.Exception.TreatExceptionToResult(HttpContext);
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
@@ -50,6 +67,13 @@ public class RentController : Controller
         CancellationToken cancellationToken = default)
     {
         command.SagaId = Guid.NewGuid();
+
+        var result = await _updateRentCommandValidator
+            .ValidateAsync(command, cancellationToken);
+
+        if(!result.IsValid)
+            return result.Exception.TreatExceptionToResult(HttpContext);
+
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 

@@ -36,6 +36,7 @@ using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Facades;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.DataServices;
+using Rent.Vehicles.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,7 +82,10 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
     .AddScoped<IRepository<Vehicle>, EntityFrameworkRepository<Vehicle>>()
     .AddScoped<IRepository<VehicleProjection>, MongoRepository<VehicleProjection>>()
     .AddScoped<IDataService<VehicleProjection>, DataService<VehicleProjection>>()
-    .AddScoped<IValidator<VehicleProjection>, Validator<VehicleProjection>>();
+    .AddScoped<IValidator<VehicleProjection>, Validator<VehicleProjection>>()
+    .AddScoped<IValidator<CreateRentCommand>, Rent.Vehicles.Api.Validators.Validator<CreateRentCommand>>()
+    .AddScoped<IValidator<UpdateRentCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateRentCommand>>()
+    .AddScoped<IValidator<CreateVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<CreateVehiclesCommand>>();
 
 builder.Services.AddControllers();
 
@@ -152,18 +156,17 @@ app.UseRouting();
 app.MapControllers();
 
 app.MapPost("/Vehicles", async ([FromBody]CreateVehiclesCommand command,
+    IValidator<CreateVehiclesCommand> validator,
     IPublisher publisher,
+    HttpContext httpContext,
     CancellationToken cancellationToken = default) =>
 {
     command.SagaId = Guid.NewGuid();
 
-    var context = new ValidationContext(command);
-    var results = new List<ValidationResult>();
+    var result = await validator.ValidateAsync(command, cancellationToken);
 
-    if (!Validator.TryValidateObject(command, context, results, true))
-    {
-        return Results.BadRequest(results);
-    }
+    if(!result.IsValid)
+        return result.Exception.TreatExceptionToResult(httpContext);
 
     await publisher.PublishCommandAsync(command, cancellationToken);
 
