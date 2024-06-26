@@ -10,7 +10,7 @@ using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Responses;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
-namespace Rent.Vehicles.Services;
+namespace Rent.Vehicles.Services.Facades;
 
 public class UserFacade : IUserFacade
 {

@@ -13,11 +13,11 @@ using Rent.Vehicles.Services.DataServices.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
-public class UpdateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEventBackgroundService<
-    UpdateVehiclesCommand,
-    UpdateVehiclesEvent>
+public class CreateRentCommandSqlBackgroundService : HandlerCommandPublishEventBackgroundService<
+    CreateRentCommand,
+    CreateRentEvent>
 {
-    public UpdateVehiclesCommandSqlBackgroundService(ILogger<UpdateVehiclesCommandSqlBackgroundService> logger,
+    public CreateRentCommandSqlBackgroundService(ILogger<CreateRentCommandSqlBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -26,17 +26,19 @@ public class UpdateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
     {
     }
 
-    protected override UpdateVehiclesEvent CreateEventToPublish(UpdateVehiclesCommand command)
+    protected override CreateRentEvent CreateEventToPublish(CreateRentCommand command)
     {
-        return new UpdateVehiclesEvent
+        return new CreateRentEvent
         {
-            Id = command.Id, 
-            LicensePlate = command.LicensePlate,
+            Id = command.Id,
+            UserId = command.UserId,
+            RentPlaneId = command.RentPlaneId,
             SagaId = command.SagaId
         };
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(UpdateVehiclesCommand command, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(CreateRentCommand command,
+        CancellationToken cancellationToken = default)
     {
         var service = _serviceScopeFactory.CreateScope()
             .ServiceProvider
@@ -45,10 +47,10 @@ public class UpdateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
         var entity = new Command
         {
             SagaId = command.SagaId,
-            ActionType = Entities.Types.ActionType.Update,
+            ActionType = Entities.Types.ActionType.Create,
             SerializerType = Lib.Types.SerializerType.MessagePack,
-            EntityType = Entities.Types.EntityType.Vehicles,
-            Type = typeof(DeleteVehiclesEvent).Name,
+            EntityType = Entities.Types.EntityType.Rent,
+            Type = typeof(CreateRentEvent).Name,
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
         

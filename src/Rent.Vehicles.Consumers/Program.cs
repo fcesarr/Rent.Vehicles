@@ -26,6 +26,7 @@ using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers;
+using Rent.Vehicles.Services.Facades;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -87,6 +88,14 @@ builder.Services
     .AddDefaultSerializer<MessagePackSerializer>()
     .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
     .AddScoped<IUserFacade, UserFacade>()
+    .AddScoped<IValidator<Rent.Vehicles.Entities.Rent>, Validator<Rent.Vehicles.Entities.Rent>>()
+    .AddScoped<IRepository<Rent.Vehicles.Entities.Rent>, EntityFrameworkRepository<Rent.Vehicles.Entities.Rent>>()
+    .AddScoped<IDataService<Rent.Vehicles.Entities.Rent>, DataService<Rent.Vehicles.Entities.Rent>>()
+    .AddScoped<IValidator<RentalPlane>, Validator<RentalPlane>>()
+    .AddScoped<IRepository<RentalPlane>, EntityFrameworkRepository<RentalPlane>>()
+    .AddScoped<IDataService<RentalPlane>, DataService<RentalPlane>>()
+    .AddScoped<IVehicleDataService, VehicleDataService>()
+    .AddScoped<IRentFacade, RentFacade>()
     .AddSingleton<IBase64StringValidator, Base64StringValidator>()
     .AddSingleton<IUploadService, FileUploadService>()
     .AddSingleton<ILicenseImageService, LicenseImageService>()
@@ -96,6 +105,7 @@ builder.Services
     .AddHostedService<DeleteVehiclesCommandSqlBackgroundService>()
     .AddHostedService<UpdateVehiclesCommandSqlBackgroundService>()
     .AddHostedService<CreateUserCommandSqlBackgroundService>()
+    .AddHostedService<CreateRentCommandSqlBackgroundService>()
     .AddHostedService<CreateUserEventBackgroundService>()
     .AddHostedService<CreateUserProjectionEventBackgroundService>()
     .AddHostedService<CreateVehiclesEventBackgroundService>()
@@ -107,7 +117,8 @@ builder.Services
     .AddHostedService<EventBackgroundService>()
     .AddHostedService<UpdateVehiclesEventBackgroundService>()
     .AddHostedService<UpdateVehiclesProjectionEventBackgroundService>()
-    .AddHostedService<UploadUserLicenseImageEventBackgroundService>();
+    .AddHostedService<UploadUserLicenseImageEventBackgroundService>()
+    .AddHostedService<CreateRentEventBackgroundService>();
 
 var host = builder.Build();
 host.Run();

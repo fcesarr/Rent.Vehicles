@@ -54,7 +54,7 @@ public class CreateUserCommandSqlBackgroundService : HandlerCommandPublishEventB
             SerializerType = Lib.Types.SerializerType.MessagePack,
             EntityType = Entities.Types.EntityType.User,
             Type = typeof(CreateUserEvent).Name,
-            Data = await _serializer.SerializeAsync(CreateEventToPublish(command))
+            Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
         
         return service.CreateAsync(entity, cancellationToken);

@@ -55,7 +55,7 @@ public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
             SerializerType = Lib.Types.SerializerType.MessagePack,
             EntityType = Entities.Types.EntityType.Vehicles,
             Type = typeof(CreateVehiclesEvent).Name,
-            Data = await _serializer.SerializeAsync(CreateEventToPublish(command))
+            Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
         
         return service.CreateAsync(entity, cancellationToken);

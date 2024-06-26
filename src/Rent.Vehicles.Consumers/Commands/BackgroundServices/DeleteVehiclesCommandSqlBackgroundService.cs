@@ -49,7 +49,7 @@ public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
             SerializerType = Lib.Types.SerializerType.MessagePack,
             EntityType = Entities.Types.EntityType.Vehicles,
             Type = typeof(DeleteVehiclesEvent).Name,
-            Data = await _serializer.SerializeAsync(CreateEventToPublish(command))
+            Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
         
         return service.CreateAsync(entity, cancellationToken);

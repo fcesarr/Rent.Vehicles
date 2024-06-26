@@ -54,21 +54,36 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
 
         return client.GetDatabase("rent");
     })
-    .AddSingleton<IValidator<Event>,  EventValidator>()
-    .AddSingleton<IRepository<Event>, EntityFrameworkRepository<Event>>()
-    .AddSingleton<IDataService<Event>, DataService<Event>>()
-    .AddSingleton<IEventFacade, EventFacade>()
-    .AddSingleton<IUserValidator,  UserValidator>()
-    .AddSingleton<IBase64StringValidator, Base64StringValidator>()
-    .AddSingleton<ILicenseImageService, LicenseImageService>()
-    .AddSingleton<IUploadService, FileUploadService>()
-    .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
-    .AddSingleton<IRepository<User>, EntityFrameworkRepository<User>>()
-    .AddSingleton<IUserDataService, UserDataService>()
-    .AddSingleton<IUserFacade, UserFacade>()
-    .AddSingleton<IValidator<VehicleProjection>, Validator<VehicleProjection>>()
-    .AddSingleton<IRepository<VehicleProjection>, MongoRepository<VehicleProjection>>()
-    .AddSingleton<IDataService<VehicleProjection>, DataService<VehicleProjection>>();
+    .AddScoped<IValidator<Event>, EventValidator>()
+    .AddScoped<IRepository<Event>, EntityFrameworkRepository<Event>>()
+    .AddScoped<IDataService<Event>, DataService<Event>>()
+    .AddScoped<IEventFacade, EventFacade>()
+    .AddScoped<IUserValidator,  UserValidator>()
+    .AddScoped<IBase64StringValidator, Base64StringValidator>()
+    .AddScoped<ILicenseImageService, LicenseImageService>()
+    .AddScoped<IUploadService, FileUploadService>()
+    .AddScoped<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
+    .AddScoped<IRepository<User>, EntityFrameworkRepository<User>>()
+    .AddScoped<IUserDataService, UserDataService>()
+    .AddScoped<IUserFacade, UserFacade>()
+
+    .AddScoped<IValidator<Rent.Vehicles.Entities.Rent>, Validator<Rent.Vehicles.Entities.Rent>>()
+    .AddScoped<IRepository<Rent.Vehicles.Entities.Rent>, EntityFrameworkRepository<Rent.Vehicles.Entities.Rent>>()
+    .AddScoped<IDataService<Rent.Vehicles.Entities.Rent>, DataService<Rent.Vehicles.Entities.Rent>>()
+    .AddScoped<IValidator<RentalPlane>, Validator<RentalPlane>>()
+    .AddScoped<IRepository<RentalPlane>, EntityFrameworkRepository<RentalPlane>>()
+    .AddScoped<IDataService<RentalPlane>, DataService<RentalPlane>>()
+    .AddScoped<IVehicleDataService, VehicleDataService>()
+    .AddScoped<IRentFacade, RentFacade>()
+    .AddScoped<IVehicleValidator, VehicleValidator>()
+    .AddScoped<IRepository<Vehicle>, EntityFrameworkRepository<Vehicle>>()
+    .AddScoped<IRepository<VehicleProjection>, MongoRepository<VehicleProjection>>()
+    .AddScoped<IDataService<VehicleProjection>, DataService<VehicleProjection>>()
+    .AddScoped<IValidator<VehicleProjection>, Validator<VehicleProjection>>();
+
+builder.Services.AddControllers();
+
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -94,11 +109,17 @@ builder.Services.AddSwaggerGen(c => {
     });
 });
 
-
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+
+BsonClassMap.RegisterClassMap<Event>(map =>
+{
+    map.AutoMap();
+    map.MapProperty(x => x.SagaId).SetSerializer(new GuidSerializer(BsonType.String));
+});
+
 
 var app = builder.Build();
 
@@ -114,12 +135,9 @@ app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
-BsonClassMap.RegisterClassMap<Event>(
-    map =>
-    {
-        map.AutoMap();
-        map.MapProperty(x => x.SagaId).SetSerializer(new GuidSerializer(BsonType.String));
-    });
+app.UseRouting();
+
+app.MapControllers();
 
 app.MapPost("/Vehicles", async ([FromBody]CreateVehiclesCommand command,
     IPublisher publisher,
