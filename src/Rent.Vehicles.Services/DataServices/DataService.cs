@@ -15,7 +15,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
 {
     protected readonly ILogger<DataService<TEntity>> _logger; 
 
-    private readonly IValidator<TEntity> _validator;
+    protected readonly IValidator<TEntity> _validator;
 
     protected readonly IRepository<TEntity> _repository;
 

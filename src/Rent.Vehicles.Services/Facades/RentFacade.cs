@@ -72,13 +72,23 @@ public class RentFacade : IRentFacade
         }
     }
 
+    public async Task<Result<CostResponse>> EstimateCostAsync(Guid id, DateTime endDate, CancellationToken cancellationToken = default)
+    {
+        var entity = await _dataService.EstimateCostAsync(id, endDate, cancellationToken);
+
+        if(!entity.IsSuccess)
+            return entity.Exception!;
+
+        return new CostResponse(entity.Value.Cost, entity.Value.EndDate);
+    }
+
     public async Task<Result<RentResponse>> UpdateAsync(UpdateRentEvent @event, CancellationToken cancellationToken = default)
     {
         try
         {
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-            var entity = await _dataService.UpdateAsync(@event.Id, @event.Data, cancellationToken);
+            var entity = await _dataService.UpdateAsync(@event.Id, @event.EndDate, cancellationToken);
                 
             var vehicle = await _vehicleService.GetAsync(x => x.Id == entity.Value.VehicleId, cancellationToken);
 

@@ -9,4 +9,6 @@ public interface IRentFacade
     Task<Result<RentResponse>> CreateAsync(CreateRentEvent @event, CancellationToken cancellationToken = default);
 
     Task<Result<RentResponse>> UpdateAsync(UpdateRentEvent @event, CancellationToken cancellationToken = default);
+
+    Task<Result<CostResponse>> EstimateCostAsync(Guid id, DateTime endDate, CancellationToken cancellationToken = default);
 }

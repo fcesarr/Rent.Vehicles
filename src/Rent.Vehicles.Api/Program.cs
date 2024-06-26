@@ -34,6 +34,8 @@ using Rent.Vehicles.Entities.Contexts.Interfaces;
 using Rent.Vehicles.Entities.Contexts;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Facades;
+using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.DataServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,9 +69,9 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
     .AddScoped<IUserDataService, UserDataService>()
     .AddScoped<IUserFacade, UserFacade>()
 
-    .AddScoped<IValidator<Rent.Vehicles.Entities.Rent>, Validator<Rent.Vehicles.Entities.Rent>>()
+    .AddScoped<IRentValidator, RentValidator>()
     .AddScoped<IRepository<Rent.Vehicles.Entities.Rent>, EntityFrameworkRepository<Rent.Vehicles.Entities.Rent>>()
-    .AddScoped<IDataService<Rent.Vehicles.Entities.Rent>, DataService<Rent.Vehicles.Entities.Rent>>()
+    .AddScoped<IRentDataService, RentDataService>()
     .AddScoped<IValidator<RentalPlane>, Validator<RentalPlane>>()
     .AddScoped<IRepository<RentalPlane>, EntityFrameworkRepository<RentalPlane>>()
     .AddScoped<IDataService<RentalPlane>, DataService<RentalPlane>>()
@@ -107,6 +109,16 @@ builder.Services.AddSwaggerGen(c => {
             .Cast<IOpenApiAny>()
             .ToList()
     });
+});
+
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = problemDetaisContext => {
+    var webHostEnvironment = problemDetaisContext.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+
+    if(problemDetaisContext.HttpContext.Response.StatusCode == StatusCodes.Status500InternalServerError 
+        && !webHostEnvironment.IsDevelopment())
+    {
+        problemDetaisContext.ProblemDetails.Detail = null;
+    }
 });
 
 builder.Services.ConfigureHttpJsonOptions(options =>

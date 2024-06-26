@@ -31,7 +31,7 @@ public class UpdateRentCommandSqlBackgroundService : HandlerCommandPublishEventB
         return new UpdateRentEvent
         {
             Id = command.Id,
-            Data = command.Data,
+            EndDate = command.Data,
             SagaId = command.SagaId
         };
     }

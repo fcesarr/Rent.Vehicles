@@ -11,5 +11,5 @@ public record UpdateRentEvent : Messages.Event
     public required Guid Id { get; init; }
 
     [Key(2)]
-    public required DateTime Data { get; set; }
+    public required DateTime EndDate { get; set; }
 }
