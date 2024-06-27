@@ -86,7 +86,7 @@ builder.Services
     .AddScoped<IValidator<Command>, Validator<Command>>()
     .AddRepository<IRepository<Command>, EntityFrameworkRepository<Command>>()
     .AddScoped<ICommandDataService, CommandDataService>()
-    .AddProjectionDomain<VehicleProjection, IVehicleProjectionDataService, VehicleProjectionDataService>()
+    .AddProjectionDomain<VehicleProjection>()
     .AddProjectionDomain<VehiclesForSpecificYearProjection>()
     .AddDataDomain<Event>()
     .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()

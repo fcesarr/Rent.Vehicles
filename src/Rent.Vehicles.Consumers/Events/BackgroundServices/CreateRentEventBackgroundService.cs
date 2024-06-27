@@ -29,11 +29,7 @@ public class CreateRentEventBackgroundService : HandlerEventServicePublishEventB
     {
         return
         [
-            new CreateRentProjectionEvent
-            {
-                Id = @event.Id,
-                SagaId = @event.SagaId,
-            }
+            new CreateRentProjectionEvent { Id = @event.Id, SagaId = @event.SagaId }
         ];
     }
 
@@ -42,11 +38,11 @@ public class CreateRentEventBackgroundService : HandlerEventServicePublishEventB
     {
         var service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IRentFacade>();
 
-        var user = await service.CreateAsync(@event, cancellationToken);
+        var entity = await service.CreateAsync(@event, cancellationToken);
 
-        if (!user.IsSuccess)
+        if (!entity.IsSuccess)
         {
-            return user.Exception!;
+            return entity.Exception!;
         }
 
         return Task.CompletedTask;

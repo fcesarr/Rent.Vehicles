@@ -1,15 +1,12 @@
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
-using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Messages.Projections.Events;
-using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Services.Interfaces;
 
 using Event = Rent.Vehicles.Messages.Event;
 
@@ -33,17 +30,8 @@ public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEv
     {
         return
         [
-            new CreateVehiclesProjectionEvent
-            {
-                Id = @event.Id,
-                SagaId = @event.SagaId
-            },
-            new CreateVehiclesForSpecificYearEvent
-            {
-                Id = @event.Id,
-                Year = @event.Year,
-                SagaId = @event.SagaId
-            }
+            new CreateVehiclesProjectionEvent { Id = @event.Id, SagaId = @event.SagaId },
+            new CreateVehiclesForSpecificYearEvent { Id = @event.Id, Year = @event.Year, SagaId = @event.SagaId }
         ];
     }
 

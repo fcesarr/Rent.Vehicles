@@ -3,7 +3,6 @@ using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
-using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
@@ -12,24 +11,20 @@ using Event = Rent.Vehicles.Messages.Event;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
-public class CreateUserEventBackgroundService : HandlerEventServicePublishEventBackgroundService<
-    CreateUserEvent>
+public class UpdateUserLicenseImageEventBackgroundService : HandlerEventServicePublishEventBackgroundService<
+    UpdateUserLicenseImageEvent>
 {
-    public CreateUserEventBackgroundService(ILogger<CreateUserEventBackgroundService> logger,
-        IConsumer channel,
-        IPeriodicTimer periodicTimer,
-        ISerializer serializer,
-        IPublisher publisher,
+    public UpdateUserLicenseImageEventBackgroundService(ILogger<UpdateUserLicenseImageEventBackgroundService> logger,
+        IConsumer channel, IPeriodicTimer periodicTimer, ISerializer serializer, IPublisher publisher,
         IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
         serviceScopeFactory)
     {
     }
 
-    protected override IEnumerable<Event> CreateEventToPublish(CreateUserEvent @event)
+    protected override IEnumerable<Event> CreateEventToPublish(UpdateUserLicenseImageEvent @event)
     {
         return
         [
-            new CreateUserProjectionEvent { Id = @event.Id, SagaId = @event.SagaId },
             new UploadUserLicenseImageEvent
             {
                 Id = @event.Id, LicenseImage = @event.LicenseImage, SagaId = @event.SagaId
@@ -37,19 +32,17 @@ public class CreateUserEventBackgroundService : HandlerEventServicePublishEventB
         ];
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event,
+    protected override async Task<Result<Task>> HandlerMessageAsync(UpdateUserLicenseImageEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var service = _serviceScopeFactory
-            .CreateScope()
-            .ServiceProvider
+        var service = _serviceScopeFactory.CreateScope().ServiceProvider
             .GetRequiredService<IUserFacade>();
 
-        var entity = await service.CreateAsync(@event, cancellationToken);
+        var result = await service.UpdateAsync(@event, cancellationToken);
 
-        if (!entity.IsSuccess)
+        if (!result.IsSuccess)
         {
-            return entity.Exception!;
+            return result.Exception!;
         }
 
         return Task.CompletedTask;

@@ -2,10 +2,10 @@ using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
-using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Facades.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -27,9 +27,9 @@ public class DeleteVehiclesProjectionEventBackgroundService : HandlerEventServic
         CancellationToken cancellationToken = default)
     {
         var _service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IVehicleProjectionDataService>();
+            .GetRequiredService<IVehicleProjectionFacade>();
 
-        var entity = await _service.DeleteAsync(@event.Id, cancellationToken);
+        var entity = await _service.DeleteAsync(@event, cancellationToken);
 
         if (!entity.IsSuccess)
         {

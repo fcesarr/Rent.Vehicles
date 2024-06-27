@@ -10,17 +10,45 @@ public record UserResponse
         init;
     }
 
-    public required string Name { get; set; }
+    public required string Name
+    {
+        get;
+        set;
+    }
 
-    public required string Number { get; set; }
+    public required string Number
+    {
+        get;
+        set;
+    }
 
-    public required DateTime Birthday { get; set; }
+    public required DateTime Birthday
+    {
+        get;
+        set;
+    }
 
-    public required string LicenseNumber { get; set; }
+    public required string LicenseNumber
+    {
+        get;
+        set;
+    }
 
-    public required LicenseType LicenseType { get; set; }
+    public required LicenseType LicenseType
+    {
+        get;
+        set;
+    }
 
-    public required string LicensePath { get; set; }
+    public required string LicensePath
+    {
+        get;
+        set;
+    }
 
-    public required DateTime Created { get; init; }
+    public required DateTime Created
+    {
+        get;
+        init;
+    }
 }

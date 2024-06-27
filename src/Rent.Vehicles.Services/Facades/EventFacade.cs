@@ -1,6 +1,8 @@
 using System.Linq.Expressions;
 
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Responses;
@@ -11,9 +13,27 @@ public class EventFacade : IEventFacade
 {
     private readonly IDataService<Event> _dataService;
 
-    public EventFacade(IDataService<Event> dataService)
+    private readonly ISerializer _serializer;
+
+    public EventFacade(IDataService<Event> dataService, ISerializer serializer)
     {
         _dataService = dataService;
+        _serializer = serializer;
+    }
+
+    public async Task<Result<EventResponse>> CreateAsync(Messages.Events.Event @event,
+        CancellationToken cancellationToken = default)
+    {
+        var data = await _serializer.SerializeAsync(@event, cancellationToken);
+
+        var entity = await _dataService.CreateAsync(@event.ToEntity(data), cancellationToken);
+
+        if (!entity.IsSuccess)
+        {
+            return entity.Exception!;
+        }
+
+        return entity.Value!.ToResponse();
     }
 
     public async Task<Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Event, bool>> predicate,
@@ -21,23 +41,13 @@ public class EventFacade : IEventFacade
         Expression<Func<Event, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default)
     {
-        var
-            entities = await _dataService.FindAsync(predicate, false, orderBy, cancellationToken);
+        var entities = await _dataService.FindAsync(predicate, false, orderBy, cancellationToken);
 
         if (!entities.IsSuccess)
         {
             return entities.Exception!;
         }
 
-        return entities.Value?.Select(x => new EventResponse
-        {
-            Id = x.Id,
-            SagaId = x.SagaId,
-            StatusType = x.StatusType,
-            SerializerType = x.SerializerType,
-            Name = x.Name,
-            Message = x.Message,
-            Created = x.Created
-        }).ToList() ?? Array.Empty<EventResponse>().ToList();
+        return entities.Value?.Select(x => x.ToResponse()).ToList() ?? Array.Empty<EventResponse>().ToList();
     }
 }

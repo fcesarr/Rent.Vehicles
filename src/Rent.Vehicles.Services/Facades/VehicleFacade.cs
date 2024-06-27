@@ -1,7 +1,4 @@
-
-using Rent.Vehicles.Entities;
 using Rent.Vehicles.Messages.Events;
-using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
@@ -18,12 +15,41 @@ public class VehicleFacade : IVehicleFacade
         _dataService = dataService;
     }
 
-    public async Task<Result<VehicleResponse>> CreateAsync(CreateVehiclesEvent @event, CancellationToken cancellationToken = default)
+    public async Task<Result<VehicleResponse>> CreateAsync(CreateVehiclesEvent @event,
+        CancellationToken cancellationToken = default)
     {
         var entity = await _dataService.CreateAsync(@event.ToEntity(), cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
+        {
             return entity.Exception!;
+        }
+
+        return entity.Value!.ToResponse();
+    }
+
+    public async Task<Result<bool>> DeleteAsync(DeleteVehiclesEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        var entity = await _dataService.DeleteAsync(@event.Id, cancellationToken);
+
+        if (!entity.IsSuccess)
+        {
+            return entity.Exception!;
+        }
+
+        return entity;
+    }
+
+    public async Task<Result<VehicleResponse>> UpdateAsync(UpdateVehiclesEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        var entity = await _dataService.UpdateAsync(@event.Id, @event.LicensePlate, cancellationToken);
+
+        if (!entity.IsSuccess)
+        {
+            return entity.Exception!;
+        }
 
         return entity.Value!.ToResponse();
     }

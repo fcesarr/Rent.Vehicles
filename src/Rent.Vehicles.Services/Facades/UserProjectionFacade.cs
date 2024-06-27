@@ -1,13 +1,9 @@
 using System.Linq.Expressions;
 
 using Rent.Vehicles.Entities.Projections;
-using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Messages.Projections.Events;
-using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Services.DataServices.Interfaces;
-using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Services.Facades;
@@ -24,7 +20,7 @@ public class UserProjectionFacade : IUserProjectionFacade
     public Task<Result<UserResponse>> CreateAsync(CreateUserProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-       throw new NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public Task<Result<UserResponse>> GetAsync(Expression<Func<UserProjection, bool>> predicate,

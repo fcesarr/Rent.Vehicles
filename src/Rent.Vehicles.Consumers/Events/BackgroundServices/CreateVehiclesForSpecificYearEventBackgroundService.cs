@@ -28,11 +28,7 @@ public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerEventP
     {
         return
         [
-            new CreateVehiclesForSpecificYearProjectionEvent
-            {
-                Id = @event.Id,
-                SagaId = @event.SagaId
-            }
+            new CreateVehiclesForSpecificYearProjectionEvent { Id = @event.Id, SagaId = @event.SagaId }
         ];
     }
 

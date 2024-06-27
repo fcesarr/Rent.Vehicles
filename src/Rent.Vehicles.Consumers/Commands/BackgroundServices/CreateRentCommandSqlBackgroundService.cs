@@ -42,7 +42,7 @@ public class CreateRentCommandSqlBackgroundService : HandlerCommandPublishEventB
             .ServiceProvider
             .GetRequiredService<ICommandDataService>();
 
-        Command entity = new()
+        var entity = new Command
         {
             SagaId = command.SagaId,
             ActionType = ActionType.Create,

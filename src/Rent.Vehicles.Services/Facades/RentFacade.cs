@@ -16,11 +16,12 @@ public class RentFacade : IRentFacade
 
     private readonly IUnitOfWork _unitOfWork;
 
-    private readonly IVehicleDataService _vehicleService;
-
     private readonly IUserDataService _userService;
 
-    public RentFacade(IRentDataService dataService, IDataService<RentalPlane> rentalPlaneDataService, IUnitOfWork unitOfWork, IVehicleDataService vehicleService, IUserDataService userService)
+    private readonly IVehicleDataService _vehicleService;
+
+    public RentFacade(IRentDataService dataService, IDataService<RentalPlane> rentalPlaneDataService,
+        IUnitOfWork unitOfWork, IVehicleDataService vehicleService, IUserDataService userService)
     {
         _dataService = dataService;
         _rentalPlaneDataService = rentalPlaneDataService;
@@ -46,8 +47,10 @@ public class RentFacade : IRentFacade
 
             var user = await _userService.GetAsync(x => x.Id == @event.UserId, cancellationToken);
 
-            if(!user.IsSuccess)
+            if (!user.IsSuccess)
+            {
                 throw user.Exception!;
+            }
 
             var vehicle = await _vehicleService.GetAsync(x => !x.IsRented, cancellationToken);
 
@@ -110,8 +113,10 @@ public class RentFacade : IRentFacade
 
             var user = await _userService.GetAsync(x => x.Id == entity.Value!.UserId, cancellationToken);
 
-            if(!user.IsSuccess)
+            if (!user.IsSuccess)
+            {
                 throw user.Exception!;
+            }
 
             var vehicle =
                 await _vehicleService.GetAsync(x => x.Id == entity.Value!.VehicleId, cancellationToken);

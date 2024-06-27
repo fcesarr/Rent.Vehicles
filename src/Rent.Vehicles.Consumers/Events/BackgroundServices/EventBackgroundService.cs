@@ -2,12 +2,9 @@ using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Lib.Types;
-using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Services;
-using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Facades.Interfaces;
 
-using EventEntity = Rent.Vehicles.Entities.Event;
 using Event = Rent.Vehicles.Messages.Events.Event;
 
 
@@ -30,21 +27,9 @@ public class EventBackgroundService : HandlerEventBackgroundService<Event>
         CancellationToken cancellationToken = default)
     {
         var _service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IDataService<EventEntity>>();
+            .GetRequiredService<IEventFacade>();
 
-        var entity = await _service.CreateAsync(new EventEntity
-        {
-            SagaId = @event.SagaId,
-            Name = @event.Type,
-            StatusType = @event.StatusType switch
-            {
-                StatusType.Success => Entities.Types.StatusType.Success,
-                StatusType.Fail or _ => Entities.Types.StatusType.Fail
-            },
-            Message = @event.Message,
-            SerializerType = SerializerType.MessagePack,
-            Data = await _serializer.SerializeAsync(@event, cancellationToken)
-        }, cancellationToken);
+        var entity = await _service.CreateAsync(@event, cancellationToken);
 
         if (!entity.IsSuccess)
         {

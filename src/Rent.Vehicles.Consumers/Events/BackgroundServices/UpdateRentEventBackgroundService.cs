@@ -3,6 +3,7 @@ using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
@@ -28,19 +29,20 @@ public class UpdateRentEventBackgroundService : HandlerEventServicePublishEventB
     {
         return
         [
+            new UpdateRentProjectionEvent { Id = @event.Id, SagaId = @event.SagaId }
         ];
     }
 
     protected override async Task<Result<Task>> HandlerMessageAsync(UpdateRentEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IRentFacade>();
+        var service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IRentFacade>();
 
-        var user = await _service.UpdateAsync(@event, cancellationToken);
+        var entity = await service.UpdateAsync(@event, cancellationToken);
 
-        if (!user.IsSuccess)
+        if (!entity.IsSuccess)
         {
-            return user.Exception!;
+            return entity.Exception!;
         }
 
         return Task.CompletedTask;

@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Rent.Vehicles.Api.Extensions;
-using Rent.Vehicles.Api.Responses;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Responses;
 using Rent.Vehicles.Services.Validators.Interfaces;
+
+using CommandResponse = Rent.Vehicles.Api.Responses.CommandResponse;
 
 namespace Rent.Vehicles.Api.Controllers;
 
@@ -23,7 +24,10 @@ public class UserController : Controller
 
     private readonly IValidator<UpdateUserLicenseImageCommand> _updateImageCommandValidator;
 
-    public UserController(IValidator<CreateUserCommand> createCommandValidator, IUserFacade facade, IUserProjectionFacade projectionFacade, IPublisher publisher, IValidator<UpdateUserCommand> updateCommandValidator, IValidator<UpdateUserLicenseImageCommand> updateImageCommandValidator)
+    public UserController(IValidator<CreateUserCommand> createCommandValidator, IUserFacade facade,
+        IUserProjectionFacade projectionFacade, IPublisher publisher,
+        IValidator<UpdateUserCommand> updateCommandValidator,
+        IValidator<UpdateUserLicenseImageCommand> updateImageCommandValidator)
     {
         _createCommandValidator = createCommandValidator;
         _facade = facade;

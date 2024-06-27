@@ -1,14 +1,16 @@
 using System.Linq.Expressions;
 
-using Rent.Vehicles.Entities;
+using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Services.Facades.Interfaces;
 
 public interface IEventFacade
 {
-    Task<Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Event, bool>> predicate,
+    Task<Result<EventResponse>> CreateAsync(Event @event, CancellationToken cancellationToken = default);
+
+    Task<Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Entities.Event, bool>> predicate,
         bool descending = false,
-        Expression<Func<Event, dynamic>>? orderBy = default,
+        Expression<Func<Entities.Event, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default);
 }

@@ -6,7 +6,7 @@ using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
-using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Facades.Interfaces;
 
 using Event = Rent.Vehicles.Messages.Event;
 
@@ -37,9 +37,9 @@ public class DeleteVehiclesEventBackgroundService : HandlerEventServicePublishEv
         CancellationToken cancellationToken = default)
     {
         var _service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IVehicleDataService>();
+            .GetRequiredService<IVehicleFacade>();
 
-        var entity = await _service.DeleteAsync(@event.Id, cancellationToken);
+        var entity = await _service.DeleteAsync(@event, cancellationToken);
 
         if (!entity.IsSuccess)
         {

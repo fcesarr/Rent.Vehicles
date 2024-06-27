@@ -1,9 +1,4 @@
-using Microsoft.Extensions.Logging;
-
-using Rent.Vehicles.Entities;
 using Rent.Vehicles.Messages.Events;
-using Rent.Vehicles.Messages.Types;
-using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
@@ -73,7 +68,8 @@ public class UserFacade : IUserFacade
         return entityResult.Value!.ToResponse();
     }
 
-    public async Task<Result<UserResponse>> UpdateAsync(UpdateUserEvent @event, CancellationToken cancellationToken = default)
+    public async Task<Result<UserResponse>> UpdateAsync(UpdateUserEvent @event,
+        CancellationToken cancellationToken = default)
     {
         var entity = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 

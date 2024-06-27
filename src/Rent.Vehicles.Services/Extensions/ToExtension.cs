@@ -1,13 +1,17 @@
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Entities.Types;
+using Rent.Vehicles.Lib.Types;
 using Rent.Vehicles.Messages.Events;
-using Rent.Vehicles.Messages.Projections.Events;
-using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Services.Responses;
+
+using Event = Rent.Vehicles.Entities.Event;
+using StatusType = Rent.Vehicles.Messages.Types.StatusType;
+using VehicleType = Rent.Vehicles.Messages.Types.VehicleType;
 
 namespace Rent.Vehicles.Services.Extensions;
 
-public static class EntityExtension
+public static class ToExtension
 {
     public static RentResponse ToResponse(this Entities.Rent entity, Vehicle vehicle, User user)
     {
@@ -83,6 +87,33 @@ public static class EntityExtension
         };
     }
 
+    public static EventResponse ToResponse(this Event entity)
+    {
+        return new EventResponse
+        {
+            Id = entity.Id,
+            SagaId = entity.SagaId,
+            StatusType = entity.StatusType,
+            SerializerType = entity.SerializerType,
+            Name = entity.Name,
+            Message = entity.Message,
+            Created = entity.Created
+        };
+    }
+
+    public static CommandResponse ToResponse(this Command entity)
+    {
+        return new CommandResponse
+        {
+            Id = entity.Id,
+            SagaId = entity.SagaId,
+            ActionType = entity.ActionType,
+            SerializerType = entity.SerializerType,
+            EntityType = entity.EntityType,
+            Type = entity.Type
+        };
+    }
+
     public static User ToEntity(this CreateUserEvent @event, string licensePath)
     {
         return new User
@@ -127,6 +158,42 @@ public static class EntityExtension
         };
     }
 
+    public static Event ToEntity(this Messages.Events.Event @event,
+        IEnumerable<byte> data)
+    {
+        return new Event
+        {
+            SagaId = @event.SagaId,
+            Name = @event.Type,
+            StatusType = @event.StatusType switch
+            {
+                StatusType.Success => Entities.Types.StatusType.Success,
+                StatusType.Fail or _ => Entities.Types.StatusType.Fail
+            },
+            Message = @event.Message,
+            SerializerType = SerializerType.MessagePack,
+            Data = data.ToList()
+        };
+    }
+
+    public static Command ToEntity(this Messages.Command command,
+        ActionType actionType,
+        SerializerType serializerType,
+        EntityType entityType,
+        string type,
+        IEnumerable<byte> data)
+    {
+        return new Command
+        {
+            SagaId = command.SagaId,
+            ActionType = actionType,
+            SerializerType = serializerType,
+            EntityType = entityType,
+            Type = type,
+            Data = data.ToList()
+        };
+    }
+
     public static T ToProjection<T>(this Vehicle entity) where T : VehicleProjection, new()
     {
         return new T
@@ -139,14 +206,13 @@ public static class EntityExtension
         };
     }
 
-    private static Entities.Types.LicenseType TreatType(this Messages.Types.LicenseType type)
+    private static LicenseType TreatType(this Messages.Types.LicenseType type)
     {
         return type switch
         {
-            LicenseType.B => Entities.Types.LicenseType.B,
-            LicenseType.AB => Entities.Types.LicenseType.AB,
-            LicenseType.A or _ => Entities.Types.LicenseType.A
+            Messages.Types.LicenseType.B => LicenseType.B,
+            Messages.Types.LicenseType.AB => LicenseType.AB,
+            Messages.Types.LicenseType.A or _ => LicenseType.A
         };
     }
-
 }
