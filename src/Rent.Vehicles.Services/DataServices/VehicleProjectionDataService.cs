@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities.Projections;
@@ -21,13 +20,17 @@ public class VehicleProjectionDataService : DataService<VehicleProjection>, IVeh
         string licensePlate,
         CancellationToken cancellationToken = default)
     {
-        var entity = await GetAsync(x => x.Id == id, cancellationToken);
+        Result<VehicleProjection> entity = await GetAsync(x => x.Id == id, cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
+        {
             return Result<VehicleProjection>.Failure(entity.Exception);
+        }
 
-        if(entity.Value is null)
+        if (entity.Value is null)
+        {
             return Result<VehicleProjection>.Failure(new NullException("Vehicle not found."));
+        }
 
         return await UpdateAsync(entity.Value, cancellationToken);
     }

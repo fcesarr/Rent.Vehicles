@@ -1,13 +1,13 @@
-using Rent.Vehicles.Entities;
-using RabbitMQ.Client;
+using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
+using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.Interfaces;
+
+using Event = Rent.Vehicles.Messages.Event;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -19,29 +19,31 @@ public class DeleteVehiclesEventBackgroundService : HandlerEventServicePublishEv
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
+        serviceScopeFactory)
     {
     }
 
-    protected override IEnumerable<Messages.Event> CreateEventToPublish(DeleteVehiclesEvent @event)
+    protected override IEnumerable<Event> CreateEventToPublish(DeleteVehiclesEvent @event)
     {
-        return [
-            new DeleteVehiclesProjectionEvent
-            {
-                Id = @event.Id,
-                SagaId = @event.SagaId
-            }
+        return
+        [
+            new DeleteVehiclesProjectionEvent { Id = @event.Id, SagaId = @event.SagaId }
         ];
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesEvent @event,
+        CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IVehicleDataService>();
+        IVehicleDataService _service = _serviceScopeFactory.CreateScope().ServiceProvider
+            .GetRequiredService<IVehicleDataService>();
 
-        var entity = await _service.DeleteAsync(@event.Id, cancellationToken);
+        Result<bool> entity = await _service.DeleteAsync(@event.Id, cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
+        {
             return entity.Exception!;
+        }
 
         return Task.CompletedTask;
     }

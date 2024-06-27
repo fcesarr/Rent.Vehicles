@@ -21,10 +21,13 @@ public class EventFacade : IEventFacade
         Expression<Func<Event, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default)
     {
-        var entities = await _dataService.FindAsync(predicate, false, orderBy, cancellationToken);
+        Result<IEnumerable<Event>>
+            entities = await _dataService.FindAsync(predicate, false, orderBy, cancellationToken);
 
-        if(!entities.IsSuccess)
+        if (!entities.IsSuccess)
+        {
             return entities.Exception!;
+        }
 
         return entities.Value?.Select(x => new EventResponse
         {

@@ -1,4 +1,3 @@
-
 using Rent.Vehicles.Services.Exceptions;
 
 namespace Rent.Vehicles.Consumers.Exceptions;

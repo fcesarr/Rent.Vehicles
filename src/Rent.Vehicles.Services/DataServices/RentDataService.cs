@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
@@ -16,11 +15,12 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
     {
     }
 
-    public async Task<Result<Entities.Rent>> CreateAsync(RentalPlane rentalPlane, Guid userId, Guid vehicleId, CancellationToken cancellationToken = default)
+    public async Task<Result<Entities.Rent>> CreateAsync(RentalPlane rentalPlane, Guid userId, Guid vehicleId,
+        CancellationToken cancellationToken = default)
     {
-        var startDate = DateTime.Now.Date.AddDays(1);
+        DateTime startDate = DateTime.Now.Date.AddDays(1);
 
-        var entity = new Entities.Rent
+        Entities.Rent entity = new()
         {
             NumberOfDays = rentalPlane.NumberOfDays,
             DailyCost = rentalPlane.DailyCost,
@@ -37,52 +37,60 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
         return await CreateAsync(entity, cancellationToken);
     }
 
-    public async Task<Result<Entities.Rent>> EstimateCostAsync(Guid id, DateTime endDate, CancellationToken cancellationToken = default)
+    public async Task<Result<Entities.Rent>> EstimateCostAsync(Guid id, DateTime endDate,
+        CancellationToken cancellationToken = default)
     {
-        var entity = await GetAsync(x => x.Id == id, cancellationToken);
+        Result<Entities.Rent> entity = await GetAsync(x => x.Id == id, cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
+        {
             return entity.Exception!;
+        }
 
-        var entityToUpdate = Update(entity.Value!, endDate);
-        
-        var result = await _validator.ValidateAsync(entityToUpdate, cancellationToken);
+        Entities.Rent entityToUpdate = Update(entity.Value!, endDate);
 
-        if(!result.IsValid)
+        ValidationResult<Entities.Rent> result = await _validator.ValidateAsync(entityToUpdate, cancellationToken);
+
+        if (!result.IsValid)
+        {
             return result.Exception;
+        }
 
         return entityToUpdate;
     }
 
-    public async Task<Result<Entities.Rent>> UpdateAsync(Guid id, DateTime endDate, CancellationToken cancellationToken = default)
+    public async Task<Result<Entities.Rent>> UpdateAsync(Guid id, DateTime endDate,
+        CancellationToken cancellationToken = default)
     {
-        var entity = await GetAsync(x => x.Id == id, cancellationToken);
+        Result<Entities.Rent> entity = await GetAsync(x => x.Id == id, cancellationToken);
 
-         if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
+        {
             return entity.Exception!;
-        
-        var entityToUpdate = Update(entity.Value!, endDate);
+        }
+
+        Entities.Rent entityToUpdate = Update(entity.Value!, endDate);
 
         return await UpdateAsync(entityToUpdate, cancellationToken);
     }
 
     private Entities.Rent Update(Entities.Rent entity, DateTime endDate)
     {
-        if(endDate.Date.Ticks < entity.EstimatedDate.Date.Ticks)
+        if (endDate.Date.Ticks < entity.EstimatedDate.Date.Ticks)
         {
-            var diff = entity.EstimatedDate.Date - endDate.Date;
+            TimeSpan diff = entity.EstimatedDate.Date - endDate.Date;
 
-            var numberOfDays = (entity.NumberOfDays - diff.Days);
+            int numberOfDays = entity.NumberOfDays - diff.Days;
 
-            var cost = entity.DailyCost * numberOfDays;
+            decimal cost = entity.DailyCost * numberOfDays;
 
-            entity.Cost = cost + ((diff.Days * entity.DailyCost) * entity.PreEndDatePercentageFine);
+            entity.Cost = cost + (diff.Days * entity.DailyCost * entity.PreEndDatePercentageFine);
         }
-        else if(endDate.Date.Ticks > entity.EstimatedDate.Date.Ticks)
+        else if (endDate.Date.Ticks > entity.EstimatedDate.Date.Ticks)
         {
-            var diff = endDate.Date - entity.EstimatedDate.Date;
+            TimeSpan diff = endDate.Date - entity.EstimatedDate.Date;
 
-            var cost = entity.PostEndDateFine * diff.Days;
+            decimal cost = entity.PostEndDateFine * diff.Days;
 
             entity.Cost += cost;
         }

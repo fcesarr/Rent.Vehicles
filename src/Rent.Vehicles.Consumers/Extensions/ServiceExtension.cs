@@ -1,4 +1,3 @@
-
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Services;
@@ -14,36 +13,47 @@ public static class ServiceExtension
 {
     public static IServiceCollection AddDataDomain<TEntity>(this IServiceCollection services)
         where TEntity : Entity
-        => services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
+    {
+        return services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
             .AddScoped<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
             .AddScoped<IDataService<TEntity>, DataService<TEntity>>();
+    }
 
-    public static IServiceCollection AddDataDomain<TEntity, TIValidator, TValidatorImplementation, TIService, TServiceImplementation>(this IServiceCollection services) 
+    public static IServiceCollection AddDataDomain<TEntity, TIValidator, TValidatorImplementation, TIService,
+        TServiceImplementation>(this IServiceCollection services)
         where TEntity : Entity
         where TIValidator : class, IValidator<TEntity>
         where TValidatorImplementation : Validator<TEntity>, TIValidator
         where TIService : class, IDataService<TEntity>
         where TServiceImplementation : DataService<TEntity>, TIService
-        => services.AddScoped<TIValidator, TValidatorImplementation>()
+    {
+        return services.AddScoped<TIValidator, TValidatorImplementation>()
             .AddScoped<IRepository<TEntity>, EntityFrameworkRepository<TEntity>>()
             .AddScoped<TIService, TServiceImplementation>();
+    }
 
     public static IServiceCollection AddProjectionDomain<TEntity>(this IServiceCollection services)
         where TEntity : Entity
-        => services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
+    {
+        return services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
             .AddScoped<IRepository<TEntity>, MongoRepository<TEntity>>()
             .AddScoped<IDataService<TEntity>, DataService<TEntity>>();
+    }
 
-    public static IServiceCollection AddProjectionDomain<TEntity, TIService, TServiceImplementation>(this IServiceCollection services) 
+    public static IServiceCollection AddProjectionDomain<TEntity, TIService, TServiceImplementation>(
+        this IServiceCollection services)
         where TEntity : Entity
         where TIService : class, IDataService<TEntity>
         where TServiceImplementation : DataService<TEntity>, TIService
-        => services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
+    {
+        return services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
             .AddScoped<IRepository<TEntity>, MongoRepository<TEntity>>()
             .AddScoped<TIService, TServiceImplementation>();
+    }
 
     public static IServiceCollection AddDefaultSerializer<TImplementation>(this IServiceCollection services)
         where TImplementation : class, ISerializer
-        => services.AddSingleton<ISerializer, TImplementation>();
-
+    {
+        return services.AddSingleton<ISerializer, TImplementation>();
+    }
 }

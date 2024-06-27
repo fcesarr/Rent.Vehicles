@@ -1,18 +1,19 @@
-using RabbitMQ.Client;
-
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Messages;
 using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
-public abstract class HandlerEventServicePublishBackgroundService<TEventToConsume> : HandlerEventPublishBackgroundService<TEventToConsume>
-    where TEventToConsume : Messages.Event
+public abstract class
+    HandlerEventServicePublishBackgroundService<TEventToConsume> : HandlerEventPublishBackgroundService<TEventToConsume>
+    where TEventToConsume : Event
 {
     protected IServiceScopeFactory _serviceScopeFactory;
 
-    protected HandlerEventServicePublishBackgroundService(ILogger<HandlerEventServicePublishBackgroundService<TEventToConsume>> logger,
+    protected HandlerEventServicePublishBackgroundService(
+        ILogger<HandlerEventServicePublishBackgroundService<TEventToConsume>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -21,6 +22,4 @@ public abstract class HandlerEventServicePublishBackgroundService<TEventToConsum
     {
         _serviceScopeFactory = serviceScopeFactory;
     }
-
-
 }

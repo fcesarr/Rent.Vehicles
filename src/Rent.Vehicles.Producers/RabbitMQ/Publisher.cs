@@ -1,4 +1,3 @@
-
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Lib.Serializers.Interfaces;
@@ -19,27 +18,30 @@ public class Publisher : IPublisher
         _serializer = serializer;
     }
 
-    public async Task PublishCommandAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default) where TCommand : Command
+    public async Task PublishCommandAsync<TCommand>(TCommand command, CancellationToken cancellationToken = default)
+        where TCommand : Command
     {
-        _channel.BasicPublish(exchange: string.Empty,
-            routingKey:  command.GetType().Name,
-            basicProperties: null,
-            body: await _serializer.SerializeAsync(command, cancellationToken));
+        _channel.BasicPublish(string.Empty,
+            command.GetType().Name,
+            null,
+            await _serializer.SerializeAsync(command, cancellationToken));
     }
 
-    public async Task PublishEventAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : Event
+    public async Task PublishEventAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
+        where TEvent : Event
     {
-        _channel.BasicPublish(exchange: @event.GetType().Name,
-            routingKey: string.Empty,
-            basicProperties: null,
-            body: await _serializer.SerializeAsync(@event, cancellationToken));
+        _channel.BasicPublish(@event.GetType().Name,
+            string.Empty,
+            null,
+            await _serializer.SerializeAsync(@event, cancellationToken));
     }
 
-    public async Task PublishSingleEventAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : Event
+    public async Task PublishSingleEventAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
+        where TEvent : Event
     {
-        _channel.BasicPublish(exchange: string.Empty,
-            routingKey: @event.GetType().Name,
-            basicProperties: null,
-            body: await _serializer.SerializeAsync(@event, @event.GetType(), cancellationToken));
+        _channel.BasicPublish(string.Empty,
+            @event.GetType().Name,
+            null,
+            await _serializer.SerializeAsync(@event, @event.GetType(), cancellationToken));
     }
 }

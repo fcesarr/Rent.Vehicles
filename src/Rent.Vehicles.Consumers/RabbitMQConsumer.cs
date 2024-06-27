@@ -1,4 +1,3 @@
-
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.Interfaces;
@@ -19,23 +18,23 @@ public class RabbitMQConsumer : IConsumer
 
     public Task<ConsumerResponse?> ConsumeAsync(CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => {
-            var basicGetResult = _model.BasicGet(_name, false);
+        return Task.Run(() =>
+        {
+            BasicGetResult? basicGetResult = _model.BasicGet(_name, false);
 
-            if(basicGetResult == null)
-                return null;
-
-            return new ConsumerResponse
+            if (basicGetResult == null)
             {
-                Id = basicGetResult.DeliveryTag,
-                Data = basicGetResult.Body.ToArray()
-            };
+                return null;
+            }
+
+            return new ConsumerResponse { Id = basicGetResult.DeliveryTag, Data = basicGetResult.Body.ToArray() };
         }, cancellationToken);
     }
 
     public Task AckAsync(dynamic id, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => {
+        return Task.Run(() =>
+        {
             _model.BasicAck(id, false);
 
             return Task.CompletedTask;
@@ -45,15 +44,16 @@ public class RabbitMQConsumer : IConsumer
     public Task SubscribeAsync(string name, CancellationToken cancellationToken = default)
     {
         _name = name;
-        return Task.Run(() => _model.QueueDeclare(queue: name,
-                durable: true,
-                exclusive: false,
-                autoDelete: false), cancellationToken);
+        return Task.Run(() => _model.QueueDeclare(name,
+            true,
+            false,
+            false), cancellationToken);
     }
 
     public Task RemoveAsync(dynamic id, CancellationToken cancellationToken = default)
     {
-         return Task.Run(() => {
+        return Task.Run(() =>
+        {
             _model.BasicReject(id, false);
 
             return Task.CompletedTask;
@@ -62,7 +62,8 @@ public class RabbitMQConsumer : IConsumer
 
     public Task NackAsync(dynamic id, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => {
+        return Task.Run(() =>
+        {
             _model.BasicNack(id, false, true);
 
             return Task.CompletedTask;

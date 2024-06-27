@@ -2,9 +2,9 @@ namespace Rent.Vehicles.Services;
 
 public record Result<T>
 {
+    public readonly Exception? Exception;
     public readonly bool IsSuccess;
     public readonly T? Value;
-    public readonly Exception? Exception;
 
     protected Result(bool isSuccess, T? value, Exception? exception)
     {
@@ -15,12 +15,12 @@ public record Result<T>
 
     public static implicit operator Result<T>(T value)
     {
-        return Result<T>.Success(value);
+        return Success(value);
     }
 
     public static implicit operator Result<T>(Exception exception)
     {
-        return Result<T>.Failure(exception);
+        return Failure(exception);
     }
 
     public static Result<T> Success(T value)

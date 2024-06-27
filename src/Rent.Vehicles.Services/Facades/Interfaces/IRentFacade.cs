@@ -1,4 +1,3 @@
-
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Services.Responses;
 
@@ -10,5 +9,6 @@ public interface IRentFacade
 
     Task<Result<RentResponse>> UpdateAsync(UpdateRentEvent @event, CancellationToken cancellationToken = default);
 
-    Task<Result<CostResponse>> EstimateCostAsync(Guid id, DateTime endDate, CancellationToken cancellationToken = default);
+    Task<Result<CostResponse>> EstimateCostAsync(Guid id, DateTime endDate,
+        CancellationToken cancellationToken = default);
 }

@@ -4,5 +4,4 @@ namespace Rent.Vehicles.Services.Validators.Interfaces;
 
 public interface IVehicleValidator : IValidator<Vehicle>
 {
-    
 }

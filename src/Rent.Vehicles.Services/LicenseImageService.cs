@@ -1,10 +1,9 @@
-
 using Microsoft.Extensions.Options;
 
+using Rent.Vehicles.Lib.Extensions;
 using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Settings;
-using Rent.Vehicles.Lib.Extensions;
 
 namespace Rent.Vehicles.Services;
 
@@ -25,29 +24,34 @@ public class LicenseImageService : ILicenseImageService
     {
         byte[] fileBytes = Convert.FromBase64String(licenseImage);
 
-        var filePath = await GetPathAsync(licenseImage, cancellationToken);
+        Result<string> filePath = await GetPathAsync(licenseImage, cancellationToken);
 
-        if(!filePath.IsSuccess)
+        if (!filePath.IsSuccess)
+        {
             return filePath.Exception!;
+        }
 
         await _uploadService.UploadAsync(filePath.Value!, fileBytes, cancellationToken);
-        
+
         return Task.CompletedTask;
-    }   
+    }
 
     public Task<Result<string>> GetPathAsync(string licenseImage, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => {
+        return Task.Run(() =>
+        {
             byte[] fileBytes = Convert.FromBase64String(licenseImage);
 
-            var fileExtension = GetFileExtension(fileBytes);
+            string? fileExtension = GetFileExtension(fileBytes);
 
             if (fileExtension == null)
+            {
                 return Result<string>.Failure(new NullException("Extensão não suportada."));
+            }
 
-            var fileName = fileBytes.ByteToMD5String();
+            string fileName = fileBytes.ByteToMD5String();
 
-            var filePath = $"{_licenseImageServiceSetting.Path}/{fileName}.{fileExtension}";
+            string filePath = $"{_licenseImageServiceSetting.Path}/{fileName}.{fileExtension}";
 
             return filePath;
         }, cancellationToken);
@@ -55,7 +59,7 @@ public class LicenseImageService : ILicenseImageService
 
     private string? GetFileExtension(byte[] bytes)
     {
-        foreach (var signature in _licenseImageServiceSetting.Formats)
+        foreach (KeyValuePair<string, byte[]> signature in _licenseImageServiceSetting.Formats)
         {
             byte[] sigBytes = signature.Value;
             if (bytes.Length >= sigBytes.Length)
@@ -69,6 +73,7 @@ public class LicenseImageService : ILicenseImageService
                         break;
                     }
                 }
+
                 if (isMatch)
                 {
                     return signature.Key;

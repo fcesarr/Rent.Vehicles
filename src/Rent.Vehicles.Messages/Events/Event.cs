@@ -8,11 +8,23 @@ namespace Rent.Vehicles.Messages.Events;
 public record Event : Messages.Event
 {
     [Key(1)]
-    public required string Type { get; set; }
+    public required string Type
+    {
+        get;
+        set;
+    }
 
     [Key(2)]
-    public required StatusType StatusType { get; set; }
+    public required StatusType StatusType
+    {
+        get;
+        set;
+    }
 
     [Key(3)]
-    public required string Message { get; set; }
+    public required string Message
+    {
+        get;
+        set;
+    }
 }

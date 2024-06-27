@@ -8,6 +8,5 @@ public class DateTimeMinorCurrentDateAttribute : ValidationAttribute
     {
         DateTime d = Convert.ToDateTime(value);
         return d.Date >= DateTime.Now.Date;
-
     }
 }

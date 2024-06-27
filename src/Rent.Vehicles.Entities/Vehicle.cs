@@ -7,13 +7,33 @@ namespace Rent.Vehicles.Entities;
 [Table("vehicles", Schema = "vehicles")]
 public class Vehicle : Entity
 {
-    public int Year { get; init; }
-    
-    public required string Model { get; init; }
+    public int Year
+    {
+        get;
+        init;
+    }
 
-    public required string LicensePlate { get; set; }
+    public required string Model
+    {
+        get;
+        init;
+    }
 
-    public VehicleType Type { get; init; }
+    public required string LicensePlate
+    {
+        get;
+        set;
+    }
 
-    public bool IsRented { get; set; } = false;
+    public VehicleType Type
+    {
+        get;
+        init;
+    }
+
+    public bool IsRented
+    {
+        get;
+        set;
+    } = false;
 }

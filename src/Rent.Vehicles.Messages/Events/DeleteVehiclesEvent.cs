@@ -6,5 +6,9 @@ namespace Rent.Vehicles.Messages.Events;
 public record DeleteVehiclesEvent : Messages.Event
 {
     [Key(1)]
-    public required Guid Id { get; init; }
+    public required Guid Id
+    {
+        get;
+        init;
+    }
 }

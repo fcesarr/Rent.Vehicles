@@ -1,7 +1,3 @@
-
-using System.Security.Cryptography;
-
-using Rent.Vehicles.Consumers.Exceptions;
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Responses;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
@@ -13,18 +9,17 @@ using Rent.Vehicles.Services.Exceptions;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
-public abstract class HandlerMessageBackgroundService<TEventToConsume> : BackgroundService 
+public abstract class HandlerMessageBackgroundService<TEventToConsume> : BackgroundService
     where TEventToConsume : Message
 {
-    protected readonly ILogger<HandlerMessageBackgroundService<TEventToConsume>> _logger;
-
     protected readonly IConsumer _channel;
+    protected readonly ILogger<HandlerMessageBackgroundService<TEventToConsume>> _logger;
 
     private readonly IPeriodicTimer _periodicTimer;
 
-    protected readonly ISerializer _serializer;
-
     private readonly IDictionary<string, int> _retry = new Dictionary<string, int>();
+
+    protected readonly ISerializer _serializer;
 
     protected HandlerMessageBackgroundService(ILogger<HandlerMessageBackgroundService<TEventToConsume>> logger,
         IConsumer channel,
@@ -46,25 +41,30 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while(await _periodicTimer.WaitForNextTickAsync(cancellationToken))
+        while (await _periodicTimer.WaitForNextTickAsync(cancellationToken))
         {
             try
             {
                 ConsumerResponse? consumerResponse = await _channel.ConsumeAsync(cancellationToken);
 
-                if(consumerResponse == null)
+                if (consumerResponse == null)
+                {
                     continue;
+                }
 
-                var bytes = consumerResponse.Data;
+                byte[] bytes = consumerResponse.Data;
 
-                var message = await _serializer.DeserializeAsync<TEventToConsume>(bytes, cancellationToken);
+                TEventToConsume? message =
+                    await _serializer.DeserializeAsync<TEventToConsume>(bytes, cancellationToken);
 
-                if(message == null)
+                if (message == null)
+                {
                     continue;
-                
-                var result = await HandlerAsync(message, cancellationToken);
+                }
 
-                if(!result.IsSuccess)
+                Result<Task> result = await HandlerAsync(message, cancellationToken);
+
+                if (!result.IsSuccess)
                 {
                     await (result.Exception switch
                     {
@@ -80,7 +80,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
                 await _channel.AckAsync(consumerResponse.Id, cancellationToken);
             }
             catch (Exception ex)
-            {   
+            {
                 await TreatNoRetryExceptionAsync(ex);
             }
         }
@@ -94,11 +94,10 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     }
 
     private async Task TreatRetryExceptionAsync(ConsumerResponse consumerResponse,
-        Exception exception, 
+        Exception exception,
         CancellationToken cancellationToken = default)
     {
-        
-        var hash = consumerResponse.Data.ByteToMD5String();
+        string hash = consumerResponse.Data.ByteToMD5String();
 
         if (_retry.TryGetValue(hash, out int count) || _retry.TryAdd(hash, 0))
         {
@@ -107,7 +106,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
         _logger.LogError(exception, exception.Message);
 
-        if(count < 3)
+        if (count < 3)
         {
             await _channel.NackAsync(consumerResponse.Id, cancellationToken);
             return;
@@ -116,8 +115,12 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         await _channel.RemoveAsync(consumerResponse.Id, cancellationToken);
     }
 
-    protected virtual async Task<Result<Task>> HandlerAsync(TEventToConsume message, CancellationToken cancellationToken = default)
-        => await HandlerMessageAsync(message, cancellationToken);
-    
-    protected abstract Task<Result<Task>> HandlerMessageAsync(TEventToConsume message, CancellationToken cancellationToken = default);
+    protected virtual async Task<Result<Task>> HandlerAsync(TEventToConsume message,
+        CancellationToken cancellationToken = default)
+    {
+        return await HandlerMessageAsync(message, cancellationToken);
+    }
+
+    protected abstract Task<Result<Task>> HandlerMessageAsync(TEventToConsume message,
+        CancellationToken cancellationToken = default);
 }

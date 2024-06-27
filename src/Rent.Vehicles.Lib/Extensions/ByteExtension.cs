@@ -21,14 +21,12 @@ public static class ByteExtension
 
     private static string ToString(this byte[] bytes)
     {
-        var stringBuilder = new StringBuilder();
-        foreach (var @byte in bytes)
+        StringBuilder stringBuilder = new();
+        foreach (byte @byte in bytes)
         {
             stringBuilder.Append(@byte.ToString("x2"));
         }
 
         return stringBuilder.ToString();
     }
-
-    
 }

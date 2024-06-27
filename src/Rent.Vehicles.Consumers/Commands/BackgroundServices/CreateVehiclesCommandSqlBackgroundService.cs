@@ -1,17 +1,15 @@
-using Rent.Vehicles.Messages.Commands;
-using Rent.Vehicles.Entities;
-using RabbitMQ.Client;
-using Rent.Vehicles.Consumers.Utils.Interfaces;
-using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Messages.Events;
-using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Consumers.Interfaces;
+using Rent.Vehicles.Consumers.Utils.Interfaces;
+using Rent.Vehicles.Entities;
+using Rent.Vehicles.Entities.Types;
+using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Lib.Types;
+using Rent.Vehicles.Messages.Commands;
+using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.DataServices.Interfaces;
-using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Services.Repositories.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
@@ -24,7 +22,8 @@ public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
+        serviceScopeFactory)
     {
     }
 
@@ -32,7 +31,7 @@ public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
     {
         return new CreateVehiclesEvent
         {
-            Id = command.Id, 
+            Id = command.Id,
             Year = command.Year,
             Model = command.Model,
             LicensePlate = command.LicensePlate,
@@ -44,20 +43,20 @@ public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
-        var service = _serviceScopeFactory.CreateScope()
+        ICommandDataService service = _serviceScopeFactory.CreateScope()
             .ServiceProvider
             .GetRequiredService<ICommandDataService>();
 
-        var entity = new Command
+        Command entity = new()
         {
             SagaId = command.SagaId,
-            ActionType = Entities.Types.ActionType.Create,
-            SerializerType = Lib.Types.SerializerType.MessagePack,
-            EntityType = Entities.Types.EntityType.Vehicles,
+            ActionType = ActionType.Create,
+            SerializerType = SerializerType.MessagePack,
+            EntityType = EntityType.Vehicles,
             Type = typeof(CreateVehiclesEvent).Name,
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
-        
+
         return service.CreateAsync(entity, cancellationToken);
     }
 }

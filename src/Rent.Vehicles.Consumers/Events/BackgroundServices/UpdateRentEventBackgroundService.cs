@@ -1,14 +1,14 @@
-using Rent.Vehicles.Entities;
-using RabbitMQ.Client;
+using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
+using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.Facades.Interfaces;
+using Rent.Vehicles.Services.Responses;
+
+using Event = Rent.Vehicles.Messages.Event;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -20,25 +20,29 @@ public class UpdateRentEventBackgroundService : HandlerEventServicePublishEventB
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
+        serviceScopeFactory)
     {
     }
 
-    protected override IEnumerable<Messages.Event> CreateEventToPublish(UpdateRentEvent @event)
+    protected override IEnumerable<Event> CreateEventToPublish(UpdateRentEvent @event)
     {
-        return [
-            
+        return
+        [
         ];
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(UpdateRentEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(UpdateRentEvent @event,
+        CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IRentFacade>();
+        IRentFacade _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IRentFacade>();
 
-        var user = await _service.UpdateAsync(@event, cancellationToken);
+        Result<RentResponse> user = await _service.UpdateAsync(@event, cancellationToken);
 
-        if(!user.IsSuccess)
+        if (!user.IsSuccess)
+        {
             return user.Exception!;
+        }
 
         return Task.CompletedTask;
     }

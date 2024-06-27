@@ -1,4 +1,3 @@
-
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Utils;
@@ -13,5 +12,7 @@ public class PeriodicTimer : IPeriodicTimer
     }
 
     public ValueTask<bool> WaitForNextTickAsync(CancellationToken cancellationToken = default)
-        => _periodicTimer.WaitForNextTickAsync(cancellationToken);
+    {
+        return _periodicTimer.WaitForNextTickAsync(cancellationToken);
+    }
 }

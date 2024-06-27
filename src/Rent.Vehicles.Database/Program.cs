@@ -1,26 +1,29 @@
-﻿using DbUp;
 using System.Reflection;
 
-var connectionString =
+using DbUp;
+using DbUp.Engine;
+
+string connectionString =
     args.FirstOrDefault()
-    ?? "Server=localhost;Port=5432;User Id=postgres;Password=postgres;Database=rent-vehicles;Timeout=1024;CommandTimeout=10000;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=20;Application Name=Rent.Vehicles.Database";
+    ??
+    "Server=localhost;Port=5432;User Id=postgres;Password=postgres;Database=rent-vehicles;Timeout=1024;CommandTimeout=10000;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=20;Application Name=Rent.Vehicles.Database";
 
 EnsureDatabase.For.PostgresqlDatabase(connectionString);
 
-var upgrader =
+UpgradeEngine? upgrader =
     DeployChanges.To
         .PostgresqlDatabase(connectionString)
         .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
         .LogToConsole()
         .Build();
 
-var result = upgrader.PerformUpgrade();
+DatabaseUpgradeResult? result = upgrader.PerformUpgrade();
 
 if (!result.Successful)
 {
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine(result.Error);
-    Console.ResetColor();      
+    Console.ResetColor();
     return -1;
 }
 

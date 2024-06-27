@@ -1,15 +1,25 @@
 using System.ComponentModel.DataAnnotations;
 
+using MessagePack;
+
 namespace Rent.Vehicles.Messages.Commands;
 
-[MessagePack.MessagePackObject]
+[MessagePackObject]
 public record UpdateVehiclesCommand : Command
 {
     [MessagePack.Key(1)]
     [Required]
-    public required Guid Id { get; init; }
+    public required Guid Id
+    {
+        get;
+        init;
+    }
 
     [MessagePack.Key(2)]
     [Required]
-    public required string LicensePlate { get; init; }
+    public required string LicensePlate
+    {
+        get;
+        init;
+    }
 }

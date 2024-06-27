@@ -1,7 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -10,12 +8,13 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
-
 using RabbitMQ.Client;
 
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Entities.Contexts;
+using Rent.Vehicles.Entities.Contexts.Interfaces;
+using Rent.Vehicles.Entities.Extensions;
 using Rent.Vehicles.Entities.Projections;
-using Rent.Vehicles.Entities.Types;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Commands;
@@ -23,38 +22,38 @@ using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Producers.RabbitMQ;
 using Rent.Vehicles.Services;
-using Rent.Vehicles.Services.Exceptions;
+using Rent.Vehicles.Services.DataServices;
+using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Facades;
+using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
-using Rent.Vehicles.Entities.Extensions;
-using Rent.Vehicles.Entities.Contexts.Interfaces;
-using Rent.Vehicles.Entities.Contexts;
-using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Services.Facades;
-using Rent.Vehicles.Services.DataServices.Interfaces;
-using Rent.Vehicles.Services.DataServices;
-using Rent.Vehicles.Api.Extensions;
-using Microsoft.AspNetCore.Builder;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IPublisher, Publisher>()
     .AddSingleton<ISerializer, MessagePackSerializer>()
-    .AddSingleton<IModel>(service => {
-        var factory = new ConnectionFactory { HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda" };
-        var connection = factory.CreateConnection();
+    .AddSingleton<IModel>(service =>
+    {
+        ConnectionFactory factory = new()
+        {
+            HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda"
+        };
+        IConnection? connection = factory.CreateConnection();
         return connection.CreateModel();
     })
-    .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
-    .AddSingleton<IMongoDatabase>(service => {
-        var configuration = service.GetRequiredService<IConfiguration>();
+    .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
+                                                               string.Empty)
+    .AddSingleton<IMongoDatabase>(service =>
+    {
+        IConfiguration configuration = service.GetRequiredService<IConfiguration>();
 
-        var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
+        string connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
 
-        var client = new MongoClient(connectionString);
+        MongoClient client = new(connectionString);
 
         return client.GetDatabase("rent");
     })
@@ -62,14 +61,13 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
     .AddScoped<IRepository<Event>, EntityFrameworkRepository<Event>>()
     .AddScoped<IDataService<Event>, DataService<Event>>()
     .AddScoped<IEventFacade, EventFacade>()
-    .AddScoped<IUserValidator,  UserValidator>()
+    .AddScoped<IUserValidator, UserValidator>()
     .AddScoped<ILicenseImageService, LicenseImageService>()
     .AddScoped<IUploadService, FileUploadService>()
     .AddScoped<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
     .AddScoped<IRepository<User>, EntityFrameworkRepository<User>>()
     .AddScoped<IUserDataService, UserDataService>()
     .AddScoped<IUserFacade, UserFacade>()
-
     .AddScoped<IRentValidator, RentValidator>()
     .AddScoped<IRepository<Rent.Vehicles.Entities.Rent>, EntityFrameworkRepository<Rent.Vehicles.Entities.Rent>>()
     .AddScoped<IRentDataService, RentDataService>()
@@ -82,7 +80,7 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
     .AddScoped<IRepository<Vehicle>, EntityFrameworkRepository<Vehicle>>()
     .AddScoped<IRepository<VehicleProjection>, MongoRepository<VehicleProjection>>()
     .AddScoped<IDataService<VehicleProjection>, DataService<VehicleProjection>>()
-    .AddScoped<IValidator<VehicleProjection>, Validator<VehicleProjection>>()
+    .AddScoped<IValidator<VehicleProjection>, Rent.Vehicles.Services.Validators.Validator<VehicleProjection>>()
     .AddScoped<IValidator<CreateUserCommand>, Rent.Vehicles.Api.Validators.Validator<CreateUserCommand>>()
     .AddScoped<IValidator<UpdateUserCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateUserCommand>>()
     .AddScoped<IValidator<CreateRentCommand>, Rent.Vehicles.Api.Validators.Validator<CreateRentCommand>>()
@@ -98,33 +96,36 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c => {
+builder.Services.AddSwaggerGen(c =>
+{
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Example API", Version = "v1" });
 
-    c.MapType<Rent.Vehicles.Messages.Types.VehicleType>(() => new OpenApiSchema
+    c.MapType<VehicleType>(() => new OpenApiSchema
     {
         Type = "string",
-        Enum = Enum.GetNames(typeof(Rent.Vehicles.Messages.Types.VehicleType))
+        Enum = Enum.GetNames(typeof(VehicleType))
             .Select(name => new OpenApiString(name))
             .Cast<IOpenApiAny>()
             .ToList()
     });
-    c.MapType<Rent.Vehicles.Messages.Types.LicenseType>(() => new OpenApiSchema
+    c.MapType<LicenseType>(() => new OpenApiSchema
     {
         Type = "string",
-        Enum = Enum.GetNames(typeof(Rent.Vehicles.Messages.Types.LicenseType))
+        Enum = Enum.GetNames(typeof(LicenseType))
             .Select(name => new OpenApiString(name))
             .Cast<IOpenApiAny>()
             .ToList()
     });
 });
 
-builder.Services.AddProblemDetails(options => 
+builder.Services.AddProblemDetails(options =>
 {
-    options.CustomizeProblemDetails = problemDetaisContext => {
-        var webHostEnvironment = problemDetaisContext.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+    options.CustomizeProblemDetails = problemDetaisContext =>
+    {
+        IWebHostEnvironment webHostEnvironment =
+            problemDetaisContext.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
-        if(problemDetaisContext.HttpContext.Response.StatusCode == StatusCodes.Status500InternalServerError 
+        if (problemDetaisContext.HttpContext.Response.StatusCode == StatusCodes.Status500InternalServerError
             && !webHostEnvironment.IsDevelopment())
         {
             problemDetaisContext.ProblemDetails.Detail = null;
@@ -144,7 +145,7 @@ BsonClassMap.RegisterClassMap<Event>(map =>
 });
 
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

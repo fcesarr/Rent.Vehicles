@@ -12,14 +12,18 @@ public class Entity
     [BsonId]
     [BsonRepresentation(BsonType.String)]
     [Key]
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id
+    {
+        get;
+        set;
+    } = Guid.NewGuid();
 
     [BsonElement("Created")]
     [Required]
     public DateTime Created
-	{
-		get => _created;
+    {
+        get => _created;
 
-		private set => _created = value == default ? DateTime.UtcNow : value;
-	}
+        private set => _created = value == default ? DateTime.UtcNow : value;
+    }
 }

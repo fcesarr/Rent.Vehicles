@@ -1,14 +1,14 @@
-using Rent.Vehicles.Entities;
-using RabbitMQ.Client;
+using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
+using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.Facades.Interfaces;
+using Rent.Vehicles.Services.Responses;
+
+using Event = Rent.Vehicles.Messages.Event;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
@@ -20,13 +20,15 @@ public class CreateUserEventBackgroundService : HandlerEventServicePublishEventB
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
+        serviceScopeFactory)
     {
     }
 
-    protected override IEnumerable<Messages.Event> CreateEventToPublish(CreateUserEvent @event)
+    protected override IEnumerable<Event> CreateEventToPublish(CreateUserEvent @event)
     {
-        return [
+        return
+        [
             new CreateUserProjectionEvent
             {
                 Id = @event.Id,
@@ -37,22 +39,21 @@ public class CreateUserEventBackgroundService : HandlerEventServicePublishEventB
                 LicenseImage = @event.LicenseImage,
                 SagaId = @event.SagaId
             },
-            new UploadUserLicenseImageEvent
-            {
-                LicenseImage = @event.LicenseImage,
-                SagaId = @event.SagaId
-            }
+            new UploadUserLicenseImageEvent { LicenseImage = @event.LicenseImage, SagaId = @event.SagaId }
         ];
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event,
+        CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IUserFacade>();
+        IUserFacade _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IUserFacade>();
 
-        var user = await _service.CreateAsync(@event, cancellationToken);
+        Result<UserResponse> user = await _service.CreateAsync(@event, cancellationToken);
 
-        if(!user.IsSuccess)
+        if (!user.IsSuccess)
+        {
             return user.Exception!;
+        }
 
         return Task.CompletedTask;
     }

@@ -12,5 +12,6 @@ public interface IUserFacade
 
     Task<Result<UserResponse>> UpdateAsync(UpdateUserEvent @event, CancellationToken cancellationToken = default);
 
-    Task<Result<UserResponse>> GetAsync(Expression<Func<User, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Result<UserResponse>> GetAsync(Expression<Func<User, bool>> predicate,
+        CancellationToken cancellationToken = default);
 }

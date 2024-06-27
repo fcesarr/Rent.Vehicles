@@ -1,10 +1,10 @@
-
 using Microsoft.AspNetCore.Mvc;
 
 using Rent.Vehicles.Api.Extensions;
 using Rent.Vehicles.Api.Responses;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Responses;
 using Rent.Vehicles.Services.Validators.Interfaces;
@@ -16,13 +16,12 @@ namespace Rent.Vehicles.Api.Controllers;
 [Route("api/[controller]")]
 public class UserController : Controller
 {
-    private readonly IPublisher _publisher;
-
     private readonly IValidator<CreateUserCommand> _createCommandValidator;
 
-    private readonly IValidator<UpdateUserCommand> _updateCommandValidator;
-
     private readonly IUserFacade _facade;
+    private readonly IPublisher _publisher;
+
+    private readonly IValidator<UpdateUserCommand> _updateCommandValidator;
 
     public UserController(IPublisher publisher,
         IValidator<CreateUserCommand> createCommandValidator,
@@ -36,19 +35,21 @@ public class UserController : Controller
     }
 
     [HttpPost]
-	[ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(CommandResponse))]
+    [ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(CommandResponse))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<IResult> PostAsync([FromBody]CreateUserCommand command,
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IResult> PostAsync([FromBody] CreateUserCommand command,
         CancellationToken cancellationToken = default)
     {
         command.SagaId = Guid.NewGuid();
 
-        var result = await _createCommandValidator
+        ValidationResult<CreateUserCommand> result = await _createCommandValidator
             .ValidateAsync(command, cancellationToken);
 
-        if(!result.IsValid)
+        if (!result.IsValid)
+        {
             return result.Exception.TreatExceptionToResult(HttpContext);
+        }
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
@@ -58,19 +59,21 @@ public class UserController : Controller
     }
 
     [HttpPut]
-	[ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(CommandResponse))]
+    [ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(CommandResponse))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<IResult> PutAsync([FromBody]UpdateUserCommand command,
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IResult> PutAsync([FromBody] UpdateUserCommand command,
         CancellationToken cancellationToken = default)
     {
         command.SagaId = Guid.NewGuid();
 
-        var result = await _updateCommandValidator
+        ValidationResult<UpdateUserCommand> result = await _updateCommandValidator
             .ValidateAsync(command, cancellationToken);
 
-        if(!result.IsValid)
+        if (!result.IsValid)
+        {
             return result.Exception.TreatExceptionToResult(HttpContext);
+        }
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
@@ -80,17 +83,19 @@ public class UserController : Controller
     }
 
     [HttpGet("{id:guid}")]
-	[ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(UserResponse))]
+    [ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(UserResponse))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public async Task<IResult> GetAsync([FromRoute]Guid id,
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IResult> GetAsync([FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
-        var entity = await _facade.GetAsync(x => x.Id == id, cancellationToken);
+        Result<UserResponse> entity = await _facade.GetAsync(x => x.Id == id, cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
+        {
             return entity.Exception!.TreatExceptionToResult(HttpContext);
+        }
 
         return Results.Ok(entity.Value);
     }

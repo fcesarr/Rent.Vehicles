@@ -1,19 +1,22 @@
-
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Messages;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
-public abstract class HandlerCommandPublishEventBackgroundService<TCommandToConsume, TEventToPublish> : HandlerCommandPublishBackgroundService<TCommandToConsume>
-    where TCommandToConsume : Messages.Command
-    where TEventToPublish : Messages.Event
+public abstract class
+    HandlerCommandPublishEventBackgroundService<TCommandToConsume, TEventToPublish> :
+    HandlerCommandPublishBackgroundService<TCommandToConsume>
+    where TCommandToConsume : Command
+    where TEventToPublish : Event
 {
     protected IServiceScopeFactory _serviceScopeFactory;
 
-    protected HandlerCommandPublishEventBackgroundService(ILogger<HandlerCommandPublishEventBackgroundService<TCommandToConsume, TEventToPublish>> logger,
+    protected HandlerCommandPublishEventBackgroundService(
+        ILogger<HandlerCommandPublishEventBackgroundService<TCommandToConsume, TEventToPublish>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -23,20 +26,21 @@ public abstract class HandlerCommandPublishEventBackgroundService<TCommandToCons
         _serviceScopeFactory = serviceScopeFactory;
     }
 
-    protected override async Task<Result<Task>> HandlerAsync(TCommandToConsume @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerAsync(TCommandToConsume @event,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            var result = await base.HandlerAsync(@event, cancellationToken);
+            Result<Task> result = await base.HandlerAsync(@event, cancellationToken);
 
-            if(!result.IsSuccess)
+            if (!result.IsSuccess)
             {
                 return result.Exception!;
             }
 
             await result.Value!;
 
-            var eventsToPublish = CreateEventToPublish(@event);
+            TEventToPublish eventsToPublish = CreateEventToPublish(@event);
 
             return PublishAsync(eventsToPublish, cancellationToken);
         }

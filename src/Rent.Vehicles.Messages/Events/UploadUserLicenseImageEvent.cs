@@ -6,5 +6,9 @@ namespace Rent.Vehicles.Messages.Events;
 public record UploadUserLicenseImageEvent : Messages.Event
 {
     [Key(1)]
-    public required string LicenseImage { get; init; }
+    public required string LicenseImage
+    {
+        get;
+        init;
+    }
 }

@@ -1,6 +1,4 @@
-
 using Rent.Vehicles.Entities;
-using Rent.Vehicles.Entities.Projections;
 
 namespace Rent.Vehicles.Services.Interfaces;
 

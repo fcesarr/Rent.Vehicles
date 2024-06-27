@@ -1,16 +1,18 @@
-
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Messages;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
-public abstract class HandlerEventPublishEventBackgroundService<TEventToConsume> : HandlerEventPublishBackgroundService<TEventToConsume>
-    where TEventToConsume : Messages.Event
+public abstract class
+    HandlerEventPublishEventBackgroundService<TEventToConsume> : HandlerEventPublishBackgroundService<TEventToConsume>
+    where TEventToConsume : Event
 {
-    protected HandlerEventPublishEventBackgroundService(ILogger<HandlerEventPublishEventBackgroundService<TEventToConsume>> logger,
+    protected HandlerEventPublishEventBackgroundService(
+        ILogger<HandlerEventPublishEventBackgroundService<TEventToConsume>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -18,20 +20,21 @@ public abstract class HandlerEventPublishEventBackgroundService<TEventToConsume>
     {
     }
 
-    protected override async Task<Result<Task>> HandlerAsync(TEventToConsume @event, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerAsync(TEventToConsume @event,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            var result = await base.HandlerAsync(@event, cancellationToken);
+            Result<Task> result = await base.HandlerAsync(@event, cancellationToken);
 
-            if(!result.IsSuccess)
+            if (!result.IsSuccess)
             {
                 return result.Exception!;
             }
 
             await result.Value!;
 
-            var eventsToPublish = CreateEventToPublish(@event);
+            IEnumerable<Event> eventsToPublish = CreateEventToPublish(@event);
 
             return PublishAsync(eventsToPublish, cancellationToken);
         }
@@ -40,14 +43,14 @@ public abstract class HandlerEventPublishEventBackgroundService<TEventToConsume>
             return ex;
         }
     }
- 
-    protected abstract IEnumerable<Messages.Event> CreateEventToPublish(TEventToConsume @event);
 
-    protected virtual async Task PublishAsync(IEnumerable<Messages.Event> events, CancellationToken cancellationToken = default)
+    protected abstract IEnumerable<Event> CreateEventToPublish(TEventToConsume @event);
+
+    protected virtual async Task PublishAsync(IEnumerable<Event> events, CancellationToken cancellationToken = default)
     {
-        var tasks = new List<Task>();
-        
-        foreach (var @event in events)
+        List<Task> tasks = new();
+
+        foreach (Event @event in events)
         {
             tasks.Add(_publisher.PublishSingleEventAsync(@event, cancellationToken));
         }

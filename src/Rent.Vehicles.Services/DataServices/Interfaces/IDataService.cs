@@ -16,8 +16,9 @@ public interface IDataService<TEntity> where TEntity : Entity
         bool descending = false,
         Expression<Func<TEntity, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default);
-   
+
     Task<Result<TEntity>> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-    Task<Result<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Result<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default);
 }

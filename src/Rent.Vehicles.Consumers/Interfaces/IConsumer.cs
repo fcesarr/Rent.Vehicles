@@ -1,4 +1,3 @@
-
 using Rent.Vehicles.Consumers.Responses;
 
 namespace Rent.Vehicles.Consumers.Interfaces;
@@ -15,5 +14,3 @@ public interface IConsumer
 
     Task RemoveAsync(dynamic id, CancellationToken cancellationToken = default);
 }
-
-

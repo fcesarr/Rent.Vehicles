@@ -1,4 +1,3 @@
-
 namespace Rent.Vehicles.Services.Interfaces;
 
 public interface ILicenseImageService

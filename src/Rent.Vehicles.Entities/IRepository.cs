@@ -4,5 +4,5 @@ namespace Rent.Vehicles.Entities;
 
 public interface IRepository
 {
-	void SetContext(IDbContext context);
+    void SetContext(IDbContext context);
 }

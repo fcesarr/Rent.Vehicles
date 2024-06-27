@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.Repositories.Interfaces;
@@ -26,24 +25,16 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
 
     public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var options = new InsertOneOptions();
+        InsertOneOptions options = new();
 
         await _mongoCollection.InsertOneAsync(entity, options, cancellationToken);
 
         return entity;
     }
 
-    public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        var filter = Builders<TEntity>
-            .Filter.Where(predicate);
-    
-        _ = await _mongoCollection.DeleteManyAsync(filter, cancellationToken);
-    }
-
     public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var filter = Builders<TEntity>
+        FilterDefinition<TEntity>? filter = Builders<TEntity>
             .Filter
             .Where(x => x.Id == entity.Id);
 
@@ -56,34 +47,37 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
         IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
-        var findOptions = new FindOptions<TEntity>();
+        FindOptions<TEntity> findOptions = new();
 
-        if(orderBy is not null)
+        if (orderBy is not null)
         {
-            var sortDefinition = Builders<TEntity>.Sort;
+            SortDefinitionBuilder<TEntity>? sortDefinition = Builders<TEntity>.Sort;
 
-            var sort = sortDefinition.Ascending(orderBy);
+            SortDefinition<TEntity>? sort = sortDefinition.Ascending(orderBy);
 
-            if(descending)
+            if (descending)
+            {
                 sort = sortDefinition.Descending(orderBy);
+            }
 
             findOptions.Sort = sort;
         }
 
-        if(includes is not null)
+        if (includes is not null)
         {
-            var projectionDefinition = Builders<TEntity>.Projection;
+            ProjectionDefinitionBuilder<TEntity>? projectionDefinition = Builders<TEntity>.Projection;
 
-            var projection = projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
+            ProjectionDefinition<TEntity>? projection =
+                projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
 
             findOptions.Projection = projection;
         }
 
-        var filter = Builders<TEntity>.Filter
+        FilterDefinition<TEntity>? filter = Builders<TEntity>.Filter
             .Where(predicate);
-        
-        var cursor =  await _mongoCollection
-            .FindAsync(filter, options: findOptions, cancellationToken: cancellationToken);
+
+        IAsyncCursor<TEntity>? cursor = await _mongoCollection
+            .FindAsync(filter, findOptions, cancellationToken);
 
         return await cursor
             .ToListAsync(cancellationToken);
@@ -97,41 +91,43 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
     {
         try
         {
-            var findOptions = new FindOptions<TEntity>();
+            FindOptions<TEntity> findOptions = new();
 
-            if(orderBy is not null)
+            if (orderBy is not null)
             {
-                var sortDefinition = Builders<TEntity>.Sort;
+                SortDefinitionBuilder<TEntity>? sortDefinition = Builders<TEntity>.Sort;
 
-                var sort = sortDefinition.Ascending(orderBy);
+                SortDefinition<TEntity>? sort = sortDefinition.Ascending(orderBy);
 
-                if(descending)
+                if (descending)
+                {
                     sort = sortDefinition.Descending(orderBy);
+                }
 
                 findOptions.Sort = sort;
             }
 
-            if(includes is not null)
+            if (includes is not null)
             {
-                var projectionDefinition = Builders<TEntity>.Projection;
+                ProjectionDefinitionBuilder<TEntity>? projectionDefinition = Builders<TEntity>.Projection;
 
-                var projection = projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
+                ProjectionDefinition<TEntity>? projection =
+                    projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
 
                 findOptions.Projection = projection;
             }
-            
-            var filter = Builders<TEntity>.Filter
+
+            FilterDefinition<TEntity>? filter = Builders<TEntity>.Filter
                 .Where(predicate);
-            
-            var cursor =  await _mongoCollection
+
+            IAsyncCursor<TEntity>? cursor = await _mongoCollection
                 .FindAsync(filter, cancellationToken: cancellationToken);
-    
+
             return await cursor
                 .FirstOrDefaultAsync(cancellationToken);
         }
         catch (Exception ex)
         {
-            
             _logger.LogError(ex.Message, ex);
         }
 
@@ -140,14 +136,23 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
 
     public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var options = new UpdateOptions();
+        UpdateOptions options = new();
 
-        var filter = Builders<TEntity>
+        FilterDefinition<TEntity>? filter = Builders<TEntity>
             .Filter
             .Where(x => x.Id == entity.Id);
-    
-        await Task.Run(async () => await _mongoCollection.ReplaceOneAsync(filter, entity) , cancellationToken);
+
+        await Task.Run(async () => await _mongoCollection.ReplaceOneAsync(filter, entity), cancellationToken);
 
         return entity;
+    }
+
+    public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        FilterDefinition<TEntity>? filter = Builders<TEntity>
+            .Filter.Where(predicate);
+
+        _ = await _mongoCollection.DeleteManyAsync(filter, cancellationToken);
     }
 }

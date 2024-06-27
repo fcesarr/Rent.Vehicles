@@ -1,8 +1,7 @@
-
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
-using Rent.Vehicles.Entities.Types;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 
@@ -10,12 +9,14 @@ using Event = Rent.Vehicles.Messages.Events.Event;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
-public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : HandlerEventBackgroundService<TEventToConsume>
+public abstract class
+    HandlerEventPublishBackgroundService<TEventToConsume> : HandlerEventBackgroundService<TEventToConsume>
     where TEventToConsume : Messages.Event
 {
     protected readonly IPublisher _publisher;
 
-    protected HandlerEventPublishBackgroundService(ILogger<HandlerEventPublishBackgroundService<TEventToConsume>> logger,
+    protected HandlerEventPublishBackgroundService(
+        ILogger<HandlerEventPublishBackgroundService<TEventToConsume>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -24,27 +25,28 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
         _publisher = publisher;
     }
 
-    protected override async Task<Result<Task>> HandlerAsync(TEventToConsume eventToPublish, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerAsync(TEventToConsume eventToPublish,
+        CancellationToken cancellationToken = default)
     {
-        var @event = new Event
+        Event @event = new()
         {
             SagaId = eventToPublish.SagaId,
             Type = typeof(TEventToConsume).Name,
-            StatusType = Messages.Types.StatusType.Success,
+            StatusType = StatusType.Success,
             Message = string.Empty
         };
 
         try
         {
-            var result = await base.HandlerAsync(eventToPublish, cancellationToken);
-    
-            if(!result.IsSuccess)
+            Result<Task> result = await base.HandlerAsync(eventToPublish, cancellationToken);
+
+            if (!result.IsSuccess)
             {
                 await TreatException(@event, result.Exception!, cancellationToken).Value!;
 
                 return result.Exception!;
             }
-                
+
             await result.Value!;
 
             return _publisher.PublishSingleEventAsync(@event, cancellationToken);
@@ -59,10 +61,7 @@ public abstract class HandlerEventPublishBackgroundService<TEventToConsume> : Ha
         Exception exception,
         CancellationToken cancellationToken = default)
     {
-        return _publisher.PublishSingleEventAsync(@event with
-        {
-            StatusType = Messages.Types.StatusType.Fail,
-            Message = exception.Message
-        }, cancellationToken);  
+        return _publisher.PublishSingleEventAsync(
+            @event with { StatusType = StatusType.Fail, Message = exception.Message }, cancellationToken);
     }
 }

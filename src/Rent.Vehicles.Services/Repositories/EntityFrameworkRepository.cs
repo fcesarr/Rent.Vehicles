@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Contexts.Interfaces;
@@ -18,33 +19,25 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
         _dbContext = dbContextFactory.CreateDbContextAsync().GetAwaiter().GetResult();
     }
 
+    public void SetContext(IDbContext context)
+    {
+        _dbContext = context;
+    }
+
     public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>();
+        DbSet<TEntity> dbSet = _dbContext.Set<TEntity>();
 
-        var entityEntry = await dbSet.AddAsync(entity, cancellationToken);
+        EntityEntry<TEntity> entityEntry = await dbSet.AddAsync(entity, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return entityEntry.Entity;
     }
 
-    public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        var dbSet = _dbContext.Set<TEntity>();
-
-        var entities = await dbSet
-            .Where(predicate)
-            .ToListAsync(cancellationToken);
-
-        await Task.Run(() => dbSet.RemoveRange(entities), cancellationToken);
-        
-        await _dbContext.SaveChangesAsync(cancellationToken);    
-    }
-
     public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>();
+        DbSet<TEntity> dbSet = _dbContext.Set<TEntity>();
 
         await Task.Run(() => dbSet.Remove(entity), cancellationToken);
 
@@ -57,19 +50,19 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
         IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>()
+        IQueryable<TEntity> dbSet = _dbContext.Set<TEntity>()
             .Where(predicate);
 
         if (orderBy is not null)
-		{
-			dbSet = descending ? dbSet.OrderByDescending(orderBy) : dbSet.OrderBy(orderBy);
-		}
+        {
+            dbSet = descending ? dbSet.OrderByDescending(orderBy) : dbSet.OrderBy(orderBy);
+        }
 
         if (includes is not null)
-		{
-			dbSet = includes
-				.Aggregate(dbSet, (current, include) => current.Include(include));
-		}
+        {
+            dbSet = includes
+                .Aggregate(dbSet, (current, include) => current.Include(include));
+        }
 
         return await dbSet
             .ToListAsync(cancellationToken);
@@ -81,37 +74,46 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
         IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>()
+        IQueryable<TEntity> dbSet = _dbContext.Set<TEntity>()
             .Where(predicate);
 
         if (orderBy is not null)
-		{
-			dbSet = descending ? dbSet.OrderByDescending(orderBy) : dbSet.OrderBy(orderBy);
-		}
+        {
+            dbSet = descending ? dbSet.OrderByDescending(orderBy) : dbSet.OrderBy(orderBy);
+        }
 
         if (includes is not null)
-		{
-			dbSet = includes
-				.Aggregate(dbSet, (current, include) => current.Include(include));
-		}
+        {
+            dbSet = includes
+                .Aggregate(dbSet, (current, include) => current.Include(include));
+        }
 
         return await dbSet
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public void SetContext(IDbContext context)
-    {
-        _dbContext = context;
-    }
-
     public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>();
+        DbSet<TEntity> dbSet = _dbContext.Set<TEntity>();
 
-        var entityEntry = await Task.Run(() => dbSet.Update(entity), cancellationToken);
+        EntityEntry<TEntity> entityEntry = await Task.Run(() => dbSet.Update(entity), cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return entityEntry.Entity;
+    }
+
+    public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        DbSet<TEntity> dbSet = _dbContext.Set<TEntity>();
+
+        List<TEntity> entities = await dbSet
+            .Where(predicate)
+            .ToListAsync(cancellationToken);
+
+        await Task.Run(() => dbSet.RemoveRange(entities), cancellationToken);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 }

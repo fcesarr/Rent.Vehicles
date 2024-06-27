@@ -1,10 +1,12 @@
-using Rent.Vehicles.Entities.Types;
-
 namespace Rent.Vehicles.Services.Responses;
 
 public record UserResponse
 {
-    public required Guid Id { get; init; }
+    public required Guid Id
+    {
+        get;
+        init;
+    }
 
     // public required string Name { get; set; }
 

@@ -19,16 +19,11 @@ public sealed class ConnectionFactory<T> : IConnectionFactory where T : DbConnec
 
     public async Task<IDbConnection> GetConnectionAsync(CancellationToken cancellationToken = default)
     {
-        return await Task.Run<IDbConnection>(() => {
-
-            T connection = new()
-            {
-                ConnectionString = _connectionString
-            };
+        return await Task.Run<IDbConnection>(() =>
+        {
+            T connection = new() { ConnectionString = _connectionString };
 
             return connection;
-
         }, cancellationToken);
     }
-
 }

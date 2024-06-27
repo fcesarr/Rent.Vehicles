@@ -1,88 +1,94 @@
-using Rent.Vehicles.Consumers.Utils.Interfaces;
-using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Lib.Serializers;
-using Rent.Vehicles.Services.Interfaces;
+using MongoDB.Driver;
+
 using RabbitMQ.Client;
-using Rent.Vehicles.Entities;
-using Rent.Vehicles.Services.Repositories.Interfaces;
-using Rent.Vehicles.Services.Repositories;
-using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Producers.RabbitMQ;
+
+using Rent.Vehicles.Consumers;
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
-using MongoDB.Driver;
-using Rent.Vehicles.Entities.Contexts;
-using Rent.Vehicles.Entities.Extensions;
-using Rent.Vehicles.Entities.Contexts.Interfaces;
-using Rent.Vehicles.Services.Validators.Interfaces;
-using Rent.Vehicles.Services.Validators;
-using Rent.Vehicles.Messages.Events;
-using Rent.Vehicles.Services;
-using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Consumers.Extensions;
-using Rent.Vehicles.Services.Settings;
-using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Services.DataServices.Interfaces;
-using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Consumers.Interfaces;
-using Rent.Vehicles.Consumers;
+using Rent.Vehicles.Consumers.Utils.Interfaces;
+using Rent.Vehicles.Entities;
+using Rent.Vehicles.Entities.Contexts;
+using Rent.Vehicles.Entities.Contexts.Interfaces;
+using Rent.Vehicles.Entities.Extensions;
+using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Lib.Serializers;
+using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Producers.RabbitMQ;
+using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.DataServices;
+using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Facades;
+using Rent.Vehicles.Services.Facades.Interfaces;
+using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Repositories;
+using Rent.Vehicles.Services.Repositories.Interfaces;
+using Rent.Vehicles.Services.Settings;
+using Rent.Vehicles.Services.Validators;
+using Rent.Vehicles.Services.Validators.Interfaces;
 
-var builder = Host.CreateApplicationBuilder(args);
+HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.Configure<LicenseImageSetting>(builder.Configuration.GetSection("LicenseImageSetting"));
 
 builder.Services
     .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
-    .AddTransient<IModel>(service => {
-        var factory = new ConnectionFactory { 
+    .AddTransient<IModel>(service =>
+    {
+        ConnectionFactory factory = new()
+        {
             HostName = "localhost",
             Port = 5672,
             UserName = "admin",
             Password = "nimda",
             RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
             SocketReadTimeout = TimeSpan.FromSeconds(30),
-            SocketWriteTimeout = TimeSpan.FromSeconds(30)    
+            SocketWriteTimeout = TimeSpan.FromSeconds(30)
         };
-        var connection = factory.CreateConnection();
+        IConnection? connection = factory.CreateConnection();
         return connection.CreateModel();
     })
-    .AddTransient<IConsumer>(service => {
-        var factory = new ConnectionFactory { 
+    .AddTransient<IConsumer>(service =>
+    {
+        ConnectionFactory factory = new()
+        {
             HostName = "localhost",
             Port = 5672,
             UserName = "admin",
             Password = "nimda",
             RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
             SocketReadTimeout = TimeSpan.FromSeconds(30),
-            SocketWriteTimeout = TimeSpan.FromSeconds(30)  
+            SocketWriteTimeout = TimeSpan.FromSeconds(30)
         };
-        var connection = factory.CreateConnection();
+        IConnection? connection = factory.CreateConnection();
         return new RabbitMQConsumer(connection.CreateModel());
     })
-    .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
-    .AddSingleton<IMongoDatabase>(service => {
-        var configuration = service.GetRequiredService<IConfiguration>();
+    .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
+                                                               string.Empty)
+    .AddSingleton<IMongoDatabase>(service =>
+    {
+        IConfiguration configuration = service.GetRequiredService<IConfiguration>();
 
-        var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
+        string connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
 
-        var client = new MongoClient(connectionString);
+        MongoClient client = new(connectionString);
 
         return client.GetDatabase("rent");
     })
-    .AddTransient<IPeriodicTimer>(service => {
-
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(500));
+    .AddTransient<IPeriodicTimer>(service =>
+    {
+        PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(500));
 
         return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
     })
     .AddScoped<IValidator<Command>, Validator<Command>>()
     .AddRepository<IRepository<Command>, EntityFrameworkRepository<Command>>()
     .AddScoped<ICommandDataService, CommandDataService>()
-
     .AddProjectionDomain<VehicleProjection, IVehicleProjectionDataService, VehicleProjectionDataService>()
     .AddProjectionDomain<VehiclesForSpecificYearProjection>()
-    .AddDataDomain<Rent.Vehicles.Entities.Event>()
+    .AddDataDomain<Event>()
     .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()
     .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
     .AddDefaultSerializer<MessagePackSerializer>()
@@ -121,5 +127,5 @@ builder.Services
     .AddHostedService<CreateRentEventBackgroundService>()
     .AddHostedService<UpdateRentEventBackgroundService>();
 
-var host = builder.Build();
+IHost host = builder.Build();
 host.Run();

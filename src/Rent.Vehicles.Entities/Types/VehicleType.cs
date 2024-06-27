@@ -1,4 +1,4 @@
-﻿namespace Rent.Vehicles.Entities.Types;
+namespace Rent.Vehicles.Entities.Types;
 
 public enum VehicleType
 {
