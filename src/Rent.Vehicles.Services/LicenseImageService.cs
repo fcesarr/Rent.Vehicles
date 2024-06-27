@@ -22,9 +22,9 @@ public class LicenseImageService : ILicenseImageService
 
     public async Task<Result<Task>> UploadAsync(string licenseImage, CancellationToken cancellationToken = default)
     {
-        byte[] fileBytes = Convert.FromBase64String(licenseImage);
+        var fileBytes = Convert.FromBase64String(licenseImage);
 
-        Result<string> filePath = await GetPathAsync(licenseImage, cancellationToken);
+        var filePath = await GetPathAsync(licenseImage, cancellationToken);
 
         if (!filePath.IsSuccess)
         {
@@ -40,18 +40,18 @@ public class LicenseImageService : ILicenseImageService
     {
         return Task.Run(() =>
         {
-            byte[] fileBytes = Convert.FromBase64String(licenseImage);
+            var fileBytes = Convert.FromBase64String(licenseImage);
 
-            string? fileExtension = GetFileExtension(fileBytes);
+            var fileExtension = GetFileExtension(fileBytes);
 
             if (fileExtension == null)
             {
                 return Result<string>.Failure(new NullException("Extensão não suportada."));
             }
 
-            string fileName = fileBytes.ByteToMD5String();
+            var fileName = fileBytes.ByteToMD5String();
 
-            string filePath = $"{_licenseImageServiceSetting.Path}/{fileName}.{fileExtension}";
+            var filePath = $"{_licenseImageServiceSetting.Path}/{fileName}.{fileExtension}";
 
             return filePath;
         }, cancellationToken);
@@ -59,13 +59,13 @@ public class LicenseImageService : ILicenseImageService
 
     private string? GetFileExtension(byte[] bytes)
     {
-        foreach (KeyValuePair<string, byte[]> signature in _licenseImageServiceSetting.Formats)
+        foreach (var signature in _licenseImageServiceSetting.Formats)
         {
-            byte[] sigBytes = signature.Value;
+            var sigBytes = signature.Value;
             if (bytes.Length >= sigBytes.Length)
             {
-                bool isMatch = true;
-                for (int i = 0; i < sigBytes.Length; i++)
+                var isMatch = true;
+                for (var i = 0; i < sigBytes.Length; i++)
                 {
                     if (bytes[i] != sigBytes[i])
                     {

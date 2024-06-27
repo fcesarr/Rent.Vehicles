@@ -26,7 +26,7 @@ public class CreateUserProjectionEventBackgroundService : HandlerEventServicePub
     protected override Task<Result<Task>> HandlerMessageAsync(CreateUserProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        IUserProjectionDataService service = _serviceScopeFactory.CreateScope().ServiceProvider
+        var service = _serviceScopeFactory.CreateScope().ServiceProvider
             .GetRequiredService<IUserProjectionDataService>();
 
         return Task.Run(() => Result<Task>.Failure(new Exception()), cancellationToken);

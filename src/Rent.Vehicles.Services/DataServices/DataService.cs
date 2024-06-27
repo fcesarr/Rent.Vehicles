@@ -29,7 +29,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
 
     public async Task<Result<TEntity>> CreateAsync(TEntity? entity, CancellationToken cancellationToken = default)
     {
-        ValidationResult<TEntity> result = await _validator.ValidateAsync(entity, cancellationToken);
+        var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if (!result.IsValid)
         {
@@ -41,7 +41,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
 
     public async Task<Result<bool>> DeleteAsync(TEntity? entity, CancellationToken cancellationToken = default)
     {
-        ValidationResult<TEntity> result = await _validator.ValidateAsync(entity, cancellationToken);
+        var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if (!result.IsValid)
         {
@@ -58,13 +58,13 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         Expression<Func<TEntity, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default)
     {
-        IEnumerable<TEntity> entities =
+        var entities =
             await _repository.FindAsync(predicate, descending, orderBy, cancellationToken: cancellationToken);
 
         if (!entities.Any())
         {
             return Result<IEnumerable<TEntity>>.Failure(
-                new EmptyException($"Entities {typeof(TEntity).Name} is empty"));
+                new EmptyException($"Entities {nameof(TEntity)} is empty"));
         }
 
         return entities
@@ -74,11 +74,11 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
     public async Task<Result<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
-        TEntity? entity = await _repository.GetAsync(predicate, cancellationToken: cancellationToken);
+        var entity = await _repository.GetAsync(predicate, cancellationToken: cancellationToken);
 
         if (entity == null)
         {
-            return Result<TEntity>.Failure(new NullException($"Entity {typeof(TEntity).Name} not found"));
+            return Result<TEntity>.Failure(new NullException($"Entity {nameof(TEntity)} not found"));
         }
 
         return entity;
@@ -86,7 +86,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
 
     public async Task<Result<TEntity>> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        ValidationResult<TEntity> result = await _validator.ValidateAsync(entity, cancellationToken);
+        var result = await _validator.ValidateAsync(entity, cancellationToken);
 
         if (!result.IsValid)
         {
@@ -98,7 +98,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
 
     public async Task<Result<bool>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        Result<TEntity> entity = await GetAsync(x => x.Id == id, cancellationToken);
+        var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
         if (!entity.IsSuccess)
         {

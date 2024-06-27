@@ -44,7 +44,7 @@ public class CreateUserCommandSqlBackgroundService : HandlerCommandPublishEventB
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserCommand command,
         CancellationToken cancellationToken = default)
     {
-        ICommandDataService service = _serviceScopeFactory.CreateScope()
+        var service = _serviceScopeFactory.CreateScope()
             .ServiceProvider
             .GetRequiredService<ICommandDataService>();
 
@@ -54,7 +54,7 @@ public class CreateUserCommandSqlBackgroundService : HandlerCommandPublishEventB
             ActionType = ActionType.Create,
             SerializerType = SerializerType.MessagePack,
             EntityType = EntityType.User,
-            Type = typeof(CreateUserEvent).Name,
+            Type = nameof(CreateUserEvent),
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
 

@@ -43,7 +43,7 @@ public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
-        ICommandDataService service = _serviceScopeFactory.CreateScope()
+        var service = _serviceScopeFactory.CreateScope()
             .ServiceProvider
             .GetRequiredService<ICommandDataService>();
 
@@ -53,7 +53,7 @@ public class CreateVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
             ActionType = ActionType.Create,
             SerializerType = SerializerType.MessagePack,
             EntityType = EntityType.Vehicles,
-            Type = typeof(CreateVehiclesEvent).Name,
+            Type = nameof(CreateVehiclesEvent),
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
 

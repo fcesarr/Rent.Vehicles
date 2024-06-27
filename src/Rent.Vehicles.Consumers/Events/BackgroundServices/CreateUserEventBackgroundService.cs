@@ -6,7 +6,6 @@ using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Services.Responses;
 
 using Event = Rent.Vehicles.Messages.Event;
 
@@ -46,12 +45,12 @@ public class CreateUserEventBackgroundService : HandlerEventServicePublishEventB
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
-        IUserFacade service = _serviceScopeFactory
+        var service = _serviceScopeFactory
             .CreateScope()
             .ServiceProvider
             .GetRequiredService<IUserFacade>();
 
-        Result<UserResponse> user = await service.CreateAsync(@event, cancellationToken);
+        var user = await service.CreateAsync(@event, cancellationToken);
 
         if (!user.IsSuccess)
         {

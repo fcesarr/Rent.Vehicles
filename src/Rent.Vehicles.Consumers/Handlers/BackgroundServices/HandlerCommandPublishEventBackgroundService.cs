@@ -31,7 +31,7 @@ public abstract class
     {
         try
         {
-            Result<Task> result = await base.HandlerAsync(@event, cancellationToken);
+            var result = await base.HandlerAsync(@event, cancellationToken);
 
             if (!result.IsSuccess)
             {
@@ -40,7 +40,7 @@ public abstract class
 
             await result.Value!;
 
-            TEventToPublish eventsToPublish = CreateEventToPublish(@event);
+            var eventsToPublish = CreateEventToPublish(@event);
 
             return PublishAsync(eventsToPublish, cancellationToken);
         }

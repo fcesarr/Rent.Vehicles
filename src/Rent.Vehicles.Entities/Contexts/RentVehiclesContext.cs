@@ -51,7 +51,7 @@ public class RentVehiclesContext : DbContext, IDbContext, IUnitOfWorkerContext
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        IDbContextTransaction transaction = await Database.BeginTransactionAsync(cancellationToken);
+        var transaction = await Database.BeginTransactionAsync(cancellationToken);
         await Database.UseTransactionAsync(transaction.GetDbTransaction(), cancellationToken);
     }
 

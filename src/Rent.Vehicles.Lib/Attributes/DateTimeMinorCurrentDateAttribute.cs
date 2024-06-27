@@ -6,7 +6,7 @@ public class DateTimeMinorCurrentDateAttribute : ValidationAttribute
 {
     public override bool IsValid(object? value)
     {
-        DateTime d = Convert.ToDateTime(value);
+        var d = Convert.ToDateTime(value);
         return d.Date >= DateTime.Now.Date;
     }
 }

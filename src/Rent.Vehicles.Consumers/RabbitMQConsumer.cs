@@ -20,7 +20,7 @@ public class RabbitMQConsumer : IConsumer
     {
         return Task.Run(() =>
         {
-            BasicGetResult? basicGetResult = _model.BasicGet(_name, false);
+            var basicGetResult = _model.BasicGet(_name, false);
 
             if (basicGetResult == null)
             {

@@ -6,7 +6,6 @@ using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Services.Responses;
 
 using Event = Rent.Vehicles.Messages.Event;
 
@@ -35,9 +34,9 @@ public class UpdateRentEventBackgroundService : HandlerEventServicePublishEventB
     protected override async Task<Result<Task>> HandlerMessageAsync(UpdateRentEvent @event,
         CancellationToken cancellationToken = default)
     {
-        IRentFacade _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IRentFacade>();
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IRentFacade>();
 
-        Result<RentResponse> user = await _service.UpdateAsync(@event, cancellationToken);
+        var user = await _service.UpdateAsync(@event, cancellationToken);
 
         if (!user.IsSuccess)
         {

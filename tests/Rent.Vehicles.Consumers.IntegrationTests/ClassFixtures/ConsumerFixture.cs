@@ -75,7 +75,7 @@ public class ConsumerFixture<TBackgroundService, TCommand, TEntity> : IDisposabl
         var bytes = await _serializer!.SerializeAsync(message, cancellationToken);
 
         _model?.BasicPublish(exchange: string.Empty,
-            routingKey: typeof(TCommand).Name,
+            routingKey: nameof(TCommand),
             basicProperties: null,
             body: bytes);
     }

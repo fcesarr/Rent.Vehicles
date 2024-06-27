@@ -19,7 +19,7 @@ public class Validator<TCommand> : IValidator<TCommand> where TCommand : Command
 
             if (command is null)
             {
-                validationResult.Exception = new ValidationException($"Error on Validate {typeof(TCommand).Name}",
+                validationResult.Exception = new ValidationException($"Error on Validate {nameof(TCommand)}",
                     new Dictionary<string, string[]>());
                 return validationResult;
             }
@@ -27,13 +27,13 @@ public class Validator<TCommand> : IValidator<TCommand> where TCommand : Command
             ValidationContext context = new(command);
             List<ValidationResult> results = new();
 
-            bool isValid = Validator.TryValidateObject(command, context, results, true);
+            var isValid = Validator.TryValidateObject(command, context, results, true);
 
             validationResult.IsValid = isValid;
 
             if (!isValid)
             {
-                Dictionary<string, string[]> errors = results.SelectMany(result =>
+                var errors = results.SelectMany(result =>
                         result.MemberNames.Select(memberName =>
                             new Tuple<string, string>(memberName, result.ErrorMessage ?? string.Empty)))
                     .GroupBy(x => x.Item1)
@@ -42,7 +42,7 @@ public class Validator<TCommand> : IValidator<TCommand> where TCommand : Command
                         g => g.Select(x => x.Item2).ToArray()
                     );
 
-                validationResult.Exception = new ValidationException($"Error on Validate {typeof(TCommand).Name}",
+                validationResult.Exception = new ValidationException($"Error on Validate {nameof(TCommand)}",
                     errors);
             }
 

@@ -35,7 +35,7 @@ public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
     protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
-        ICommandDataService service = _serviceScopeFactory.CreateScope()
+        var service = _serviceScopeFactory.CreateScope()
             .ServiceProvider
             .GetRequiredService<ICommandDataService>();
 
@@ -45,7 +45,7 @@ public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
             ActionType = ActionType.Delete,
             SerializerType = SerializerType.MessagePack,
             EntityType = EntityType.Vehicles,
-            Type = typeof(DeleteVehiclesEvent).Name,
+            Type = nameof(DeleteVehiclesEvent),
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
 

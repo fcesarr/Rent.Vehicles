@@ -1,10 +1,6 @@
-using System.Linq.Expressions;
-
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
-using Rent.Vehicles.Entities.Projections;
-using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Services.DataServices.Interfaces;
@@ -17,9 +13,9 @@ namespace Rent.Vehicles.Services.Facades;
 public class UserFacade : IUserFacade
 {
     private readonly IUserDataService _dataService;
-    private readonly IUserProjectionDataService _projectionDataService;
     private readonly ILicenseImageService _licenseImageService;
     private readonly ILogger<UserFacade> _logger;
+    private readonly IUserProjectionDataService _projectionDataService;
 
     public UserFacade(ILogger<UserFacade> logger,
         IUserDataService dataService,
@@ -33,7 +29,7 @@ public class UserFacade : IUserFacade
     public async Task<Result<UserResponse>> CreateAsync(CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
-        Result<string> licensePathResult =
+        var licensePathResult =
             await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
 
         if (!licensePathResult.IsSuccess)
@@ -49,7 +45,7 @@ public class UserFacade : IUserFacade
     public async Task<Result<UserResponse>> UpdateAsync(UpdateUserLicenseImageEvent @event,
         CancellationToken cancellationToken = default)
     {
-        Result<User> entity = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
+        var entity = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 
         if (!entity.IsSuccess)
         {
@@ -68,7 +64,7 @@ public class UserFacade : IUserFacade
         CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
-        Result<User> entity = await _dataService.CreateAsync(new User
+        var entity = await _dataService.CreateAsync(new User
         {
             Id = @event.Id,
             Name = @event.Name,
@@ -106,7 +102,7 @@ public class UserFacade : IUserFacade
         UpdateUserLicenseImageEvent @event,
         CancellationToken cancellationToken = default)
     {
-        Result<string> licensePathResult =
+        var licensePathResult =
             await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
 
         if (!licensePathResult.IsSuccess)
@@ -116,7 +112,7 @@ public class UserFacade : IUserFacade
 
         entity.LicensePath = licensePathResult.Value!;
 
-        Result<User> entityResult = await _dataService.UpdateAsync(entity, cancellationToken);
+        var entityResult = await _dataService.UpdateAsync(entity, cancellationToken);
 
         if (!entityResult.IsSuccess)
         {

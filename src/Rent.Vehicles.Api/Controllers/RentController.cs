@@ -5,7 +5,6 @@ using Rent.Vehicles.Api.Responses;
 using Rent.Vehicles.Lib.Attributes;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Responses;
 using Rent.Vehicles.Services.Validators.Interfaces;
@@ -44,7 +43,7 @@ public class RentController : Controller
     {
         command.SagaId = Guid.NewGuid();
 
-        ValidationResult<CreateRentCommand> result = await _createCommandValidator
+        var result = await _createCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if (!result.IsValid)
@@ -54,7 +53,7 @@ public class RentController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        string locationUri = $"/Events/status/{command.SagaId}";
+        var locationUri = $"/Events/status/{command.SagaId}";
 
         return Results.Accepted(locationUri, new CommandResponse(command.Id));
     }
@@ -68,7 +67,7 @@ public class RentController : Controller
     {
         command.SagaId = Guid.NewGuid();
 
-        ValidationResult<UpdateRentCommand> result = await _updateCommandValidator
+        var result = await _updateCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if (!result.IsValid)
@@ -78,7 +77,7 @@ public class RentController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        string locationUri = $"/Events/status/{command.SagaId}";
+        var locationUri = $"/Events/status/{command.SagaId}";
 
         return Results.Accepted(locationUri, new CommandResponse(command.Id));
     }
@@ -93,7 +92,7 @@ public class RentController : Controller
         DateTime estimatedDate,
         CancellationToken cancellationToken = default)
     {
-        Result<CostResponse> cost = await _rentFacade.EstimateCostAsync(id, estimatedDate, cancellationToken);
+        var cost = await _rentFacade.EstimateCostAsync(id, estimatedDate, cancellationToken);
 
         if (!cost.IsSuccess)
         {

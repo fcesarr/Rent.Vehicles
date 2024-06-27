@@ -29,7 +29,7 @@ using Rent.Vehicles.Services.Settings;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
-HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.Configure<LicenseImageSetting>(builder.Configuration.GetSection("LicenseImageSetting"));
 
@@ -47,7 +47,7 @@ builder.Services
             SocketReadTimeout = TimeSpan.FromSeconds(30),
             SocketWriteTimeout = TimeSpan.FromSeconds(30)
         };
-        IConnection? connection = factory.CreateConnection();
+        var connection = factory.CreateConnection();
         return connection.CreateModel();
     })
     .AddTransient<IConsumer>(service =>
@@ -62,16 +62,16 @@ builder.Services
             SocketReadTimeout = TimeSpan.FromSeconds(30),
             SocketWriteTimeout = TimeSpan.FromSeconds(30)
         };
-        IConnection? connection = factory.CreateConnection();
+        var connection = factory.CreateConnection();
         return new RabbitMQConsumer(connection.CreateModel());
     })
     .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
                                                                string.Empty)
     .AddSingleton<IMongoDatabase>(service =>
     {
-        IConfiguration configuration = service.GetRequiredService<IConfiguration>();
+        var configuration = service.GetRequiredService<IConfiguration>();
 
-        string connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
+        var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
 
         MongoClient client = new(connectionString);
 
@@ -127,5 +127,5 @@ builder.Services
     .AddHostedService<CreateRentEventBackgroundService>()
     .AddHostedService<UpdateRentEventBackgroundService>();
 
-IHost host = builder.Build();
+var host = builder.Build();
 host.Run();

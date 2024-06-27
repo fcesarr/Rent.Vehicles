@@ -1,5 +1,4 @@
 using FluentValidation;
-using FluentValidation.Results;
 
 using Rent.Vehicles.Services.Validators.Interfaces;
 
@@ -16,12 +15,12 @@ public class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValida
 
         if (instance is null)
         {
-            validationResult.Exception = new ValidationException($"Error on Validate {typeof(TEntity).Name}",
+            validationResult.Exception = new ValidationException($"Error on Validate {nameof(TEntity)}",
                 new Dictionary<string, string[]>());
             return validationResult;
         }
 
-        ValidationResult? result = await base.ValidateAsync(instance,
+        var result = await base.ValidateAsync(instance,
             cancellationToken);
 
         validationResult.IsValid = result.IsValid;
@@ -29,7 +28,7 @@ public class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValida
         if (!result.IsValid)
         {
             validationResult.Exception =
-                new ValidationException($"Error on Validate {typeof(TEntity).Name}", result.ToDictionary());
+                new ValidationException($"Error on Validate {nameof(TEntity)}", result.ToDictionary());
 
             return validationResult;
         }

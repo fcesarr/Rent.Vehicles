@@ -20,7 +20,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
     {
         _logger = logger;
         _mongoCollection = mongoDatabase
-            .GetCollection<TEntity>($"{typeof(TEntity).Name.ToLower()}s");
+            .GetCollection<TEntity>($"{nameof(TEntity).ToLower()}s");
     }
 
     public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -34,7 +34,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
 
     public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        FilterDefinition<TEntity>? filter = Builders<TEntity>
+        var filter = Builders<TEntity>
             .Filter
             .Where(x => x.Id == entity.Id);
 
@@ -51,9 +51,9 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
 
         if (orderBy is not null)
         {
-            SortDefinitionBuilder<TEntity>? sortDefinition = Builders<TEntity>.Sort;
+            var sortDefinition = Builders<TEntity>.Sort;
 
-            SortDefinition<TEntity>? sort = sortDefinition.Ascending(orderBy);
+            var sort = sortDefinition.Ascending(orderBy);
 
             if (descending)
             {
@@ -65,18 +65,18 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
 
         if (includes is not null)
         {
-            ProjectionDefinitionBuilder<TEntity>? projectionDefinition = Builders<TEntity>.Projection;
+            var projectionDefinition = Builders<TEntity>.Projection;
 
-            ProjectionDefinition<TEntity>? projection =
+            var projection =
                 projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
 
             findOptions.Projection = projection;
         }
 
-        FilterDefinition<TEntity>? filter = Builders<TEntity>.Filter
+        var filter = Builders<TEntity>.Filter
             .Where(predicate);
 
-        IAsyncCursor<TEntity>? cursor = await _mongoCollection
+        var cursor = await _mongoCollection
             .FindAsync(filter, findOptions, cancellationToken);
 
         return await cursor
@@ -95,9 +95,9 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
 
             if (orderBy is not null)
             {
-                SortDefinitionBuilder<TEntity>? sortDefinition = Builders<TEntity>.Sort;
+                var sortDefinition = Builders<TEntity>.Sort;
 
-                SortDefinition<TEntity>? sort = sortDefinition.Ascending(orderBy);
+                var sort = sortDefinition.Ascending(orderBy);
 
                 if (descending)
                 {
@@ -109,18 +109,18 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
 
             if (includes is not null)
             {
-                ProjectionDefinitionBuilder<TEntity>? projectionDefinition = Builders<TEntity>.Projection;
+                var projectionDefinition = Builders<TEntity>.Projection;
 
-                ProjectionDefinition<TEntity>? projection =
+                var projection =
                     projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
 
                 findOptions.Projection = projection;
             }
 
-            FilterDefinition<TEntity>? filter = Builders<TEntity>.Filter
+            var filter = Builders<TEntity>.Filter
                 .Where(predicate);
 
-            IAsyncCursor<TEntity>? cursor = await _mongoCollection
+            var cursor = await _mongoCollection
                 .FindAsync(filter, cancellationToken: cancellationToken);
 
             return await cursor
@@ -138,7 +138,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
     {
         UpdateOptions options = new();
 
-        FilterDefinition<TEntity>? filter = Builders<TEntity>
+        var filter = Builders<TEntity>
             .Filter
             .Where(x => x.Id == entity.Id);
 
@@ -150,7 +150,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
     public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
-        FilterDefinition<TEntity>? filter = Builders<TEntity>
+        var filter = Builders<TEntity>
             .Filter.Where(predicate);
 
         _ = await _mongoCollection.DeleteManyAsync(filter, cancellationToken);

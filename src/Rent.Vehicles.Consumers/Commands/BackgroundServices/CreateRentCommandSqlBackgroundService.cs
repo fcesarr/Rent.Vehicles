@@ -38,7 +38,7 @@ public class CreateRentCommandSqlBackgroundService : HandlerCommandPublishEventB
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateRentCommand command,
         CancellationToken cancellationToken = default)
     {
-        ICommandDataService service = _serviceScopeFactory.CreateScope()
+        var service = _serviceScopeFactory.CreateScope()
             .ServiceProvider
             .GetRequiredService<ICommandDataService>();
 
@@ -48,7 +48,7 @@ public class CreateRentCommandSqlBackgroundService : HandlerCommandPublishEventB
             ActionType = ActionType.Create,
             SerializerType = SerializerType.MessagePack,
             EntityType = EntityType.Rent,
-            Type = typeof(CreateRentEvent).Name,
+            Type = nameof(CreateRentEvent),
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
 

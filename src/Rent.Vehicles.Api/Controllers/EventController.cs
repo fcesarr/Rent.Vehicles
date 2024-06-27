@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Rent.Vehicles.Api.Extensions;
-using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Responses;
 
@@ -27,7 +26,7 @@ public class EventController : Controller
     public async Task<IResult> GetLicensePlateAsync([FromRoute] Guid sagaId,
         CancellationToken cancellationToken = default)
     {
-        Result<IEnumerable<EventResponse>> entities =
+        var entities =
             await _facade.FindAsync(x => x.SagaId == sagaId, true, x => x.Created, cancellationToken);
 
         if (!entities.IsSuccess)

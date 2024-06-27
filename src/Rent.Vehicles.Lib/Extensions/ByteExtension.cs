@@ -22,7 +22,7 @@ public static class ByteExtension
     private static string ToString(this byte[] bytes)
     {
         StringBuilder stringBuilder = new();
-        foreach (byte @byte in bytes)
+        foreach (var @byte in bytes)
         {
             stringBuilder.Append(@byte.ToString("x2"));
         }

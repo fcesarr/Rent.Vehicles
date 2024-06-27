@@ -18,7 +18,7 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
     public async Task<Result<Entities.Rent>> CreateAsync(RentalPlane rentalPlane, Guid userId, Guid vehicleId,
         CancellationToken cancellationToken = default)
     {
-        DateTime startDate = DateTime.Now.Date.AddDays(1);
+        var startDate = DateTime.Now.Date.AddDays(1);
 
         Entities.Rent entity = new()
         {
@@ -40,16 +40,16 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
     public async Task<Result<Entities.Rent>> EstimateCostAsync(Guid id, DateTime endDate,
         CancellationToken cancellationToken = default)
     {
-        Result<Entities.Rent> entity = await GetAsync(x => x.Id == id, cancellationToken);
+        var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
         if (!entity.IsSuccess)
         {
             return entity.Exception!;
         }
 
-        Entities.Rent entityToUpdate = Update(entity.Value!, endDate);
+        var entityToUpdate = Update(entity.Value!, endDate);
 
-        ValidationResult<Entities.Rent> result = await _validator.ValidateAsync(entityToUpdate, cancellationToken);
+        var result = await _validator.ValidateAsync(entityToUpdate, cancellationToken);
 
         if (!result.IsValid)
         {
@@ -62,14 +62,14 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
     public async Task<Result<Entities.Rent>> UpdateAsync(Guid id, DateTime endDate,
         CancellationToken cancellationToken = default)
     {
-        Result<Entities.Rent> entity = await GetAsync(x => x.Id == id, cancellationToken);
+        var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
         if (!entity.IsSuccess)
         {
             return entity.Exception!;
         }
 
-        Entities.Rent entityToUpdate = Update(entity.Value!, endDate);
+        var entityToUpdate = Update(entity.Value!, endDate);
 
         return await UpdateAsync(entityToUpdate, cancellationToken);
     }
@@ -78,19 +78,19 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
     {
         if (endDate.Date.Ticks < entity.EstimatedDate.Date.Ticks)
         {
-            TimeSpan diff = entity.EstimatedDate.Date - endDate.Date;
+            var diff = entity.EstimatedDate.Date - endDate.Date;
 
-            int numberOfDays = entity.NumberOfDays - diff.Days;
+            var numberOfDays = entity.NumberOfDays - diff.Days;
 
-            decimal cost = entity.DailyCost * numberOfDays;
+            var cost = entity.DailyCost * numberOfDays;
 
             entity.Cost = cost + (diff.Days * entity.DailyCost * entity.PreEndDatePercentageFine);
         }
         else if (endDate.Date.Ticks > entity.EstimatedDate.Date.Ticks)
         {
-            TimeSpan diff = endDate.Date - entity.EstimatedDate.Date;
+            var diff = endDate.Date - entity.EstimatedDate.Date;
 
-            decimal cost = entity.PostEndDateFine * diff.Days;
+            var cost = entity.PostEndDateFine * diff.Days;
 
             entity.Cost += cost;
         }

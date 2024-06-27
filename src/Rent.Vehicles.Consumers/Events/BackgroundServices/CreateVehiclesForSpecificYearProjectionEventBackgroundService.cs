@@ -30,10 +30,10 @@ public class CreateVehiclesForSpecificYearProjectionEventBackgroundService : Han
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesForSpecificYearProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        IDataService<VehiclesForSpecificYearProjection> _service = _serviceScopeFactory.CreateScope().ServiceProvider
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider
             .GetRequiredService<IDataService<VehiclesForSpecificYearProjection>>();
 
-        Result<VehiclesForSpecificYearProjection> entity = await _service.CreateAsync(
+        var entity = await _service.CreateAsync(
             new VehiclesForSpecificYearProjection
             {
                 Id = @event.Id,

@@ -32,7 +32,7 @@ using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<IPublisher, Publisher>()
     .AddSingleton<ISerializer, MessagePackSerializer>()
@@ -42,16 +42,16 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
         {
             HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda"
         };
-        IConnection? connection = factory.CreateConnection();
+        var connection = factory.CreateConnection();
         return connection.CreateModel();
     })
     .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
                                                                string.Empty)
     .AddSingleton<IMongoDatabase>(service =>
     {
-        IConfiguration configuration = service.GetRequiredService<IConfiguration>();
+        var configuration = service.GetRequiredService<IConfiguration>();
 
-        string connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
+        var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
 
         MongoClient client = new(connectionString);
 
@@ -122,7 +122,7 @@ builder.Services.AddProblemDetails(options =>
 {
     options.CustomizeProblemDetails = problemDetaisContext =>
     {
-        IWebHostEnvironment webHostEnvironment =
+        var webHostEnvironment =
             problemDetaisContext.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
         if (problemDetaisContext.HttpContext.Response.StatusCode == StatusCodes.Status500InternalServerError
@@ -145,7 +145,7 @@ BsonClassMap.RegisterClassMap<Event>(map =>
 });
 
 
-WebApplication app = builder.Build();
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -34,7 +34,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
-        _channel.SubscribeAsync(typeof(TEventToConsume).Name, cancellationToken);
+        _channel.SubscribeAsync(nameof(TEventToConsume), cancellationToken);
 
         return base.StartAsync(cancellationToken);
     }
@@ -45,16 +45,16 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         {
             try
             {
-                ConsumerResponse? consumerResponse = await _channel.ConsumeAsync(cancellationToken);
+                var consumerResponse = await _channel.ConsumeAsync(cancellationToken);
 
                 if (consumerResponse == null)
                 {
                     continue;
                 }
 
-                byte[] bytes = consumerResponse.Data;
+                var bytes = consumerResponse.Data;
 
-                TEventToConsume? message =
+                var message =
                     await _serializer.DeserializeAsync<TEventToConsume>(bytes, cancellationToken);
 
                 if (message == null)
@@ -62,7 +62,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
                     continue;
                 }
 
-                Result<Task> result = await HandlerAsync(message, cancellationToken);
+                var result = await HandlerAsync(message, cancellationToken);
 
                 if (!result.IsSuccess)
                 {
@@ -97,9 +97,9 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         Exception exception,
         CancellationToken cancellationToken = default)
     {
-        string hash = consumerResponse.Data.ByteToMD5String();
+        var hash = consumerResponse.Data.ByteToMD5String();
 
-        if (_retry.TryGetValue(hash, out int count) || _retry.TryAdd(hash, 0))
+        if (_retry.TryGetValue(hash, out var count) || _retry.TryAdd(hash, 0))
         {
             _retry[hash] = ++count;
         }

@@ -1,4 +1,3 @@
-
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
@@ -20,5 +19,4 @@ public class UserDataService : DataService<User>, IUserDataService
     {
         throw new NotImplementedException();
     }
-
 }

@@ -25,7 +25,7 @@ public abstract class
     {
         try
         {
-            Result<Task> result = await base.HandlerAsync(@event, cancellationToken);
+            var result = await base.HandlerAsync(@event, cancellationToken);
 
             if (!result.IsSuccess)
             {
@@ -34,7 +34,7 @@ public abstract class
 
             await result.Value!;
 
-            IEnumerable<Event> eventsToPublish = CreateEventToPublish(@event);
+            var eventsToPublish = CreateEventToPublish(@event);
 
             return PublishAsync(eventsToPublish, cancellationToken);
         }
@@ -50,7 +50,7 @@ public abstract class
     {
         List<Task> tasks = new();
 
-        foreach (Event @event in events)
+        foreach (var @event in events)
         {
             tasks.Add(_publisher.PublishSingleEventAsync(@event, cancellationToken));
         }

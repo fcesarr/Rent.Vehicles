@@ -4,7 +4,6 @@ using Rent.Vehicles.Api.Extensions;
 using Rent.Vehicles.Api.Responses;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Responses;
 using Rent.Vehicles.Services.Validators.Interfaces;
@@ -16,13 +15,14 @@ namespace Rent.Vehicles.Api.Controllers;
 [Route("api/[controller]")]
 public class UserController : Controller
 {
+    private readonly IValidator<CreateUserCommand> _createCommandValidator;
     private readonly IUserFacade _facade;
     private readonly IUserProjectionFacade _projectionFacade;
     private readonly IPublisher _publisher;
-    private readonly IValidator<CreateUserCommand> _createCommandValidator;
     private readonly IValidator<UpdateUserCommand> _updateCommandValidator;
 
-    public UserController(IUserFacade facade, IUserProjectionFacade projectionFacade, IPublisher publisher, IValidator<CreateUserCommand> createCommandValidator, IValidator<UpdateUserCommand> updateCommandValidator)
+    public UserController(IUserFacade facade, IUserProjectionFacade projectionFacade, IPublisher publisher,
+        IValidator<CreateUserCommand> createCommandValidator, IValidator<UpdateUserCommand> updateCommandValidator)
     {
         _facade = facade;
         _projectionFacade = projectionFacade;
@@ -40,7 +40,7 @@ public class UserController : Controller
     {
         command.SagaId = Guid.NewGuid();
 
-        ValidationResult<CreateUserCommand> result = await _createCommandValidator
+        var result = await _createCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if (!result.IsValid)
@@ -50,7 +50,7 @@ public class UserController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        string locationUri = $"/Events/status/{command.SagaId}";
+        var locationUri = $"/Events/status/{command.SagaId}";
 
         return Results.Accepted(locationUri, new CommandResponse(command.Id));
     }
@@ -64,7 +64,7 @@ public class UserController : Controller
     {
         command.SagaId = Guid.NewGuid();
 
-        ValidationResult<UpdateUserCommand> result = await _updateCommandValidator
+        var result = await _updateCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if (!result.IsValid)
@@ -74,7 +74,7 @@ public class UserController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        string locationUri = $"/Events/status/{command.SagaId}";
+        var locationUri = $"/Events/status/{command.SagaId}";
 
         return Results.Accepted(locationUri, new CommandResponse(command.Id));
     }
@@ -87,7 +87,7 @@ public class UserController : Controller
     public async Task<IResult> GetAsync([FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
-        Result<UserResponse> entity = await _projectionFacade.GetAsync(x => x.Id == id, cancellationToken);
+        var entity = await _projectionFacade.GetAsync(x => x.Id == id, cancellationToken);
 
         if (!entity.IsSuccess)
         {

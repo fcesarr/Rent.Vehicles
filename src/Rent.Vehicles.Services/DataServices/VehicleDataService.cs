@@ -20,7 +20,7 @@ public class VehicleDataService : DataService<Vehicle>, IVehicleDataService
         string licensePlate,
         CancellationToken cancellationToken = default)
     {
-        Result<Vehicle> entity = await GetAsync(x => x.Id == id, cancellationToken);
+        var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
         if (!entity.IsSuccess)
         {

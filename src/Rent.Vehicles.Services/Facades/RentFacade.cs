@@ -35,7 +35,7 @@ public class RentFacade : IRentFacade
         {
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-            Result<RentalPlane> rentalPlane =
+            var rentalPlane =
                 await _rentalPlaneDataService.GetAsync(x => x.Id == @event.RentPlaneId, cancellationToken);
 
             if (!rentalPlane.IsSuccess)
@@ -43,14 +43,14 @@ public class RentFacade : IRentFacade
                 throw rentalPlane.Exception!;
             }
 
-            Result<Vehicle> vehicle = await _vehicleService.GetAsync(x => !x.IsRented, cancellationToken);
+            var vehicle = await _vehicleService.GetAsync(x => !x.IsRented, cancellationToken);
 
             if (!vehicle.IsSuccess)
             {
                 throw vehicle.Exception!;
             }
 
-            Result<Entities.Rent> entity = await _dataService.CreateAsync(rentalPlane.Value,
+            var entity = await _dataService.CreateAsync(rentalPlane.Value,
                 @event.UserId,
                 vehicle.Value.Id,
                 cancellationToken);
@@ -104,7 +104,7 @@ public class RentFacade : IRentFacade
     public async Task<Result<CostResponse>> EstimateCostAsync(Guid id, DateTime endDate,
         CancellationToken cancellationToken = default)
     {
-        Result<Entities.Rent> entity = await _dataService.EstimateCostAsync(id, endDate, cancellationToken);
+        var entity = await _dataService.EstimateCostAsync(id, endDate, cancellationToken);
 
         if (!entity.IsSuccess)
         {
@@ -121,9 +121,9 @@ public class RentFacade : IRentFacade
         {
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-            Result<Entities.Rent> entity = await _dataService.UpdateAsync(@event.Id, @event.EndDate, cancellationToken);
+            var entity = await _dataService.UpdateAsync(@event.Id, @event.EndDate, cancellationToken);
 
-            Result<Vehicle> vehicle =
+            var vehicle =
                 await _vehicleService.GetAsync(x => x.Id == entity.Value.VehicleId, cancellationToken);
 
             if (!vehicle.IsSuccess)

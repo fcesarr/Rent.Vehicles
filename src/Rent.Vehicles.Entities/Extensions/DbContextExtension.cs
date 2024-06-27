@@ -32,24 +32,24 @@ public static class DbContextExtension
             })
             .AddSingleton<IDbContextFactory>(service =>
             {
-                IDbContextFactory<TImplementation> implementation =
+                var implementation =
                     service.GetRequiredService<IDbContextFactory<TImplementation>>();
 
                 return new DbContextFactory<TImplementation>(implementation);
             })
             .AddScoped<TInterface, TImplementation>(service =>
             {
-                IDbContextFactory<TImplementation> factory =
+                var factory =
                     service.GetRequiredService<IDbContextFactory<TImplementation>>();
-                TImplementation context = factory.CreateDbContext();
+                var context = factory.CreateDbContext();
 
                 return context;
             })
             .AddScoped<IUnitOfWorkerContext, TImplementation>(service =>
             {
-                IDbContextFactory<TImplementation> factory =
+                var factory =
                     service.GetRequiredService<IDbContextFactory<TImplementation>>();
-                TImplementation context = factory.CreateDbContext();
+                var context = factory.CreateDbContext();
 
                 return context;
             })

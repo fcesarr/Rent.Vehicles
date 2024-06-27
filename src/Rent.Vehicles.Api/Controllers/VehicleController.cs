@@ -5,7 +5,6 @@ using Rent.Vehicles.Api.Responses;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
@@ -45,7 +44,7 @@ public class VehicleController : Controller
     {
         command.SagaId = Guid.NewGuid();
 
-        ValidationResult<CreateVehiclesCommand> result = await _createCommandValidator
+        var result = await _createCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if (!result.IsValid)
@@ -55,7 +54,7 @@ public class VehicleController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        string locationUri = $"/Events/status/{command.SagaId}";
+        var locationUri = $"/Events/status/{command.SagaId}";
 
         return Results.Accepted(locationUri, new CommandResponse(command.Id));
     }
@@ -69,7 +68,7 @@ public class VehicleController : Controller
     {
         command.SagaId = Guid.NewGuid();
 
-        ValidationResult<UpdateVehiclesCommand> result = await _updateCommandValidator
+        var result = await _updateCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if (!result.IsValid)
@@ -80,7 +79,7 @@ public class VehicleController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        string locationUri = $"/Events/status/{command.SagaId}";
+        var locationUri = $"/Events/status/{command.SagaId}";
 
         return Results.Accepted(locationUri, new CommandResponse(command.Id));
     }
@@ -94,7 +93,7 @@ public class VehicleController : Controller
     {
         command.SagaId = Guid.NewGuid();
 
-        ValidationResult<DeleteVehiclesCommand> result = await _deleteCommandValidator
+        var result = await _deleteCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if (!result.IsValid)
@@ -105,7 +104,7 @@ public class VehicleController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        string locationUri = $"/Events/status/{command.SagaId}";
+        var locationUri = $"/Events/status/{command.SagaId}";
 
         return Results.Accepted(locationUri, new CommandResponse(command.Id));
     }
@@ -118,7 +117,7 @@ public class VehicleController : Controller
     public async Task<IResult> GetAsync([FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
-        Result<VehicleProjection> entity = await _dataService.GetAsync(x => x.Id == id, cancellationToken);
+        var entity = await _dataService.GetAsync(x => x.Id == id, cancellationToken);
 
         if (!entity.IsSuccess)
         {
@@ -136,7 +135,7 @@ public class VehicleController : Controller
     public async Task<IResult> GetLicensePlateAsync([FromRoute] string licensePlate,
         CancellationToken cancellationToken = default)
     {
-        Result<VehicleProjection> entity =
+        var entity =
             await _dataService.GetAsync(x => x.LicensePlate == licensePlate, cancellationToken);
 
         if (!entity.IsSuccess)

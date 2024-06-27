@@ -18,11 +18,14 @@ indent_size = 4
 tab_width = 4
 
 # New line preferences
-end_of_line = crlf
-insert_final_newline = false
+end_of_line = lf
+insert_final_newline = true
 
 #### .NET Coding Conventions ####
 [*.{cs,vb}]
+
+dotnet_diagnostic.IDE0290.severity = none
+dotnet_analyzer_diagnostic.category-Style.severity = none
 
 # Organize usings
 dotnet_separate_import_directive_groups = true
@@ -55,7 +58,7 @@ dotnet_style_explicit_tuple_names = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 dotnet_style_object_initializer = true:suggestion
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
-dotnet_style_prefer_auto_properties = true:suggestion
+dotnet_style_prefer_auto_properties = false
 dotnet_style_prefer_compound_assignment = true:suggestion
 dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
 dotnet_style_prefer_conditional_expression_over_return = true:suggestion
@@ -64,6 +67,9 @@ dotnet_style_prefer_inferred_tuple_names = true:suggestion
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_simplified_interpolation = true:suggestion
+dotnet_style_prefer_var_for_locals = true:suggestion
+dotnet_style_prefer_var_for_built_in_types = true:suggestion
+dotnet_style_prefer_var_for_complex_types = true:suggestion
 
 # Field preferences
 dotnet_style_readonly_field = true:warning
@@ -77,10 +83,14 @@ dotnet_remove_unnecessary_suppression_exclusions = none
 #### C# Coding Conventions ####
 [*.cs]
 
+# ReSharper settings
+resharper_convert_to_primary_constructor_highlighting = none
+resharper_use_name_of_instead_of_type_of_highlighting = warning
+
 # var preferences
-csharp_style_var_elsewhere = false:silent
-csharp_style_var_for_built_in_types = false:silent
-csharp_style_var_when_type_is_apparent = false:silent
+csharp_style_var_elsewhere = true:silent
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_when_type_is_apparent = true:silent
 
 # Expression-bodied members
 csharp_style_expression_bodied_accessors = true:silent

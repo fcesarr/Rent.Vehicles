@@ -31,14 +31,14 @@ public abstract class
         Event @event = new()
         {
             SagaId = eventToPublish.SagaId,
-            Type = typeof(TEventToConsume).Name,
+            Type = nameof(TEventToConsume),
             StatusType = StatusType.Success,
             Message = string.Empty
         };
 
         try
         {
-            Result<Task> result = await base.HandlerAsync(eventToPublish, cancellationToken);
+            var result = await base.HandlerAsync(eventToPublish, cancellationToken);
 
             if (!result.IsSuccess)
             {

@@ -29,10 +29,10 @@ public class EventBackgroundService : HandlerEventBackgroundService<Event>
     protected override async Task<Result<Task>> HandlerMessageAsync(Event @event,
         CancellationToken cancellationToken = default)
     {
-        IDataService<EventEntity> _service = _serviceScopeFactory.CreateScope().ServiceProvider
+        var _service = _serviceScopeFactory.CreateScope().ServiceProvider
             .GetRequiredService<IDataService<EventEntity>>();
 
-        Result<EventEntity> entity = await _service.CreateAsync(new EventEntity
+        var entity = await _service.CreateAsync(new EventEntity
         {
             SagaId = @event.SagaId,
             Name = @event.Type,

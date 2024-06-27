@@ -22,9 +22,10 @@ public class UserProjectionFacade : IUserProjectionFacade
         _licenseImageService = licenseImageService;
     }
 
-    public async Task<Result<UserResponse>> CreateAsync(CreateUserProjectionEvent @event, CancellationToken cancellationToken = default)
+    public async Task<Result<UserResponse>> CreateAsync(CreateUserProjectionEvent @event,
+        CancellationToken cancellationToken = default)
     {
-        Result<string> licensePathResult =
+        var licensePathResult =
             await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
 
         if (!licensePathResult.IsSuccess)
@@ -37,11 +38,23 @@ public class UserProjectionFacade : IUserProjectionFacade
             cancellationToken);
     }
 
+    public Task<Result<UserResponse>> GetAsync(Expression<Func<UserProjection, bool>> predicate,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result<UserResponse>> UpdateAsync(UpdateUserProjectionEvent @event,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<Result<UserResponse>> CreateAsync(string licensePath,
         CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
-        Result<UserProjection> entity = await _dataService.CreateAsync(new UserProjection
+        var entity = await _dataService.CreateAsync(new UserProjection
         {
             Id = @event.Id,
             Name = @event.Name,
@@ -73,15 +86,5 @@ public class UserProjectionFacade : IUserProjectionFacade
             // Birthday = entity.Value.Birthday,
             // Created = entity.Value.Created
         };
-    }
-
-    public Task<Result<UserResponse>> GetAsync(Expression<Func<UserProjection, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<Result<UserResponse>> UpdateAsync(UpdateUserProjectionEvent @event, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
     }
 }

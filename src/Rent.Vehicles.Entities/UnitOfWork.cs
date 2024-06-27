@@ -18,7 +18,7 @@ public class UnitOfWork : IUnitOfWork
     {
         await _context.BeginTransactionAsync(cancellationToken);
 
-        foreach (IRepository repository in _repositories.Values)
+        foreach (var repository in _repositories.Values)
         {
             repository.SetContext(_context);
         }
