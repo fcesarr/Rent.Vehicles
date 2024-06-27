@@ -46,9 +46,12 @@ public class CreateUserEventBackgroundService : HandlerEventServicePublishEventB
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
-        IUserFacade _service = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<IUserFacade>();
+        IUserFacade service = _serviceScopeFactory
+            .CreateScope()
+            .ServiceProvider
+            .GetRequiredService<IUserFacade>();
 
-        Result<UserResponse> user = await _service.CreateAsync(@event, cancellationToken);
+        Result<UserResponse> user = await service.CreateAsync(@event, cancellationToken);
 
         if (!user.IsSuccess)
         {

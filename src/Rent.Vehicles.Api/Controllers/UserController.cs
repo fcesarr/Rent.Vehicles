@@ -16,22 +16,19 @@ namespace Rent.Vehicles.Api.Controllers;
 [Route("api/[controller]")]
 public class UserController : Controller
 {
-    private readonly IValidator<CreateUserCommand> _createCommandValidator;
-
     private readonly IUserFacade _facade;
+    private readonly IUserProjectionFacade _projectionFacade;
     private readonly IPublisher _publisher;
-
+    private readonly IValidator<CreateUserCommand> _createCommandValidator;
     private readonly IValidator<UpdateUserCommand> _updateCommandValidator;
 
-    public UserController(IPublisher publisher,
-        IValidator<CreateUserCommand> createCommandValidator,
-        IValidator<UpdateUserCommand> updateCommandValidator,
-        IUserFacade facade)
+    public UserController(IUserFacade facade, IUserProjectionFacade projectionFacade, IPublisher publisher, IValidator<CreateUserCommand> createCommandValidator, IValidator<UpdateUserCommand> updateCommandValidator)
     {
+        _facade = facade;
+        _projectionFacade = projectionFacade;
         _publisher = publisher;
         _createCommandValidator = createCommandValidator;
         _updateCommandValidator = updateCommandValidator;
-        _facade = facade;
     }
 
     [HttpPost]
@@ -90,7 +87,7 @@ public class UserController : Controller
     public async Task<IResult> GetAsync([FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
-        Result<UserResponse> entity = await _facade.GetAsync(x => x.Id == id, cancellationToken);
+        Result<UserResponse> entity = await _projectionFacade.GetAsync(x => x.Id == id, cancellationToken);
 
         if (!entity.IsSuccess)
         {

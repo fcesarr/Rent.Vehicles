@@ -48,11 +48,4 @@ public record UpdateUserEvent : Messages.Event
         get;
         set;
     }
-
-    [Key(7)]
-    public required string LicenseImage
-    {
-        get;
-        set;
-    }
 }

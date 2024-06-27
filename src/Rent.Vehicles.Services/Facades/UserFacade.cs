@@ -3,8 +3,11 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Messages.Types;
+using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Responses;
@@ -14,7 +17,7 @@ namespace Rent.Vehicles.Services.Facades;
 public class UserFacade : IUserFacade
 {
     private readonly IUserDataService _dataService;
-
+    private readonly IUserProjectionDataService _projectionDataService;
     private readonly ILicenseImageService _licenseImageService;
     private readonly ILogger<UserFacade> _logger;
 
@@ -38,12 +41,12 @@ public class UserFacade : IUserFacade
             return licensePathResult.Exception!;
         }
 
-        return await TreatCreateUserEventToResponseAsync(licensePathResult.Value!,
+        return await CreateAsync(licensePathResult.Value!,
             @event,
             cancellationToken);
     }
 
-    public async Task<Result<UserResponse>> UpdateAsync(UpdateUserEvent @event,
+    public async Task<Result<UserResponse>> UpdateAsync(UpdateUserLicenseImageEvent @event,
         CancellationToken cancellationToken = default)
     {
         Result<User> entity = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
@@ -53,33 +56,15 @@ public class UserFacade : IUserFacade
             return entity.Exception!;
         }
 
-        return await TreatUpdateUserEventToResponseAsync(entity.Value!, @event, cancellationToken);
+        return await UpdateAsync(entity.Value!, @event, cancellationToken);
     }
 
-    public async Task<Result<UserResponse>> GetAsync(Expression<Func<User, bool>> predicate,
-        CancellationToken cancellationToken = default)
+    public Task<Result<UserResponse>> UpdateAsync(UpdateUserEvent @event, CancellationToken cancellationToken = default)
     {
-        Result<User> entity = await _dataService.GetAsync(predicate, cancellationToken);
-
-        if (!entity.IsSuccess)
-        {
-            return entity.Exception!;
-        }
-
-        return new UserResponse
-        {
-            Id = entity.Value!.Id
-            // Number = entity.Value.Number,
-            // Name = entity.Value.Name,
-            // LicenseNumber = entity.Value.LicenseNumber,
-            // LicenseType = entity.Value.LicenseType,
-            // LicensePath = entity.Value.LicensePath,
-            // Birthday = entity.Value.Birthday,
-            // Created = entity.Value.Created
-        };
+        throw new NotImplementedException();
     }
 
-    private async Task<Result<UserResponse>> TreatCreateUserEventToResponseAsync(string licensePath,
+    private async Task<Result<UserResponse>> CreateAsync(string licensePath,
         CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
@@ -117,8 +102,8 @@ public class UserFacade : IUserFacade
         };
     }
 
-    private async Task<Result<UserResponse>> TreatUpdateUserEventToResponseAsync(User entity,
-        UpdateUserEvent @event,
+    private async Task<Result<UserResponse>> UpdateAsync(User entity,
+        UpdateUserLicenseImageEvent @event,
         CancellationToken cancellationToken = default)
     {
         Result<string> licensePathResult =

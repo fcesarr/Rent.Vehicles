@@ -1,3 +1,4 @@
+
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
@@ -14,4 +15,10 @@ public class UserDataService : DataService<User>, IUserDataService
         IRepository<User> repository) : base(logger, validator, repository)
     {
     }
+
+    public Task<Result<User>> UpdateAsync(Guid id, string licenseImage, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
 }

@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Services.Responses;
 
@@ -12,6 +13,5 @@ public interface IUserFacade
 
     Task<Result<UserResponse>> UpdateAsync(UpdateUserEvent @event, CancellationToken cancellationToken = default);
 
-    Task<Result<UserResponse>> GetAsync(Expression<Func<User, bool>> predicate,
-        CancellationToken cancellationToken = default);
+    Task<Result<UserResponse>> UpdateAsync(UpdateUserLicenseImageEvent @event, CancellationToken cancellationToken = default);
 }
