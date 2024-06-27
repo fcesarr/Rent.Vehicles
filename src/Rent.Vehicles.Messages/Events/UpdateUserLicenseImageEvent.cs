@@ -5,18 +5,16 @@ using MessagePack;
 namespace Rent.Vehicles.Messages.Events;
 
 [MessagePackObject]
-public record UpdateUserLicenseImageEvent
+public record UpdateUserLicenseImageEvent : Messages.Event
 {
     [MessagePack.Key(1)]
-    [Required]
     public required Guid Id
     {
         get;
         init;
     }
 
-    [MessagePack.Key(7)]
-    [Required]
+    [MessagePack.Key(2)]
     [Base64String]
     public required string LicenseImage
     {

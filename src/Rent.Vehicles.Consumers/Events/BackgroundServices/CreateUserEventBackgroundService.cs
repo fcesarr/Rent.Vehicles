@@ -3,6 +3,7 @@ using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
@@ -31,14 +32,13 @@ public class CreateUserEventBackgroundService : HandlerEventServicePublishEventB
             new CreateUserProjectionEvent
             {
                 Id = @event.Id,
-                Name = @event.Name,
-                Number = @event.Number,
-                Birthday = @event.Birthday,
-                LicenseNumber = @event.LicenseNumber,
-                LicenseImage = @event.LicenseImage,
                 SagaId = @event.SagaId
             },
-            new UploadUserLicenseImageEvent { LicenseImage = @event.LicenseImage, SagaId = @event.SagaId }
+            new UploadUserLicenseImageEvent 
+            { 
+                LicenseImage = @event.LicenseImage, 
+                SagaId = @event.SagaId 
+            }
         ];
     }
 

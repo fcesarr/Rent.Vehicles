@@ -21,14 +21,16 @@ public class UserController : Controller
     private readonly IPublisher _publisher;
     private readonly IValidator<UpdateUserCommand> _updateCommandValidator;
 
-    public UserController(IUserFacade facade, IUserProjectionFacade projectionFacade, IPublisher publisher,
-        IValidator<CreateUserCommand> createCommandValidator, IValidator<UpdateUserCommand> updateCommandValidator)
+    private readonly IValidator<UpdateUserLicenseImageCommand> _updateImageCommandValidator;
+
+    public UserController(IValidator<CreateUserCommand> createCommandValidator, IUserFacade facade, IUserProjectionFacade projectionFacade, IPublisher publisher, IValidator<UpdateUserCommand> updateCommandValidator, IValidator<UpdateUserLicenseImageCommand> updateImageCommandValidator)
     {
+        _createCommandValidator = createCommandValidator;
         _facade = facade;
         _projectionFacade = projectionFacade;
         _publisher = publisher;
-        _createCommandValidator = createCommandValidator;
         _updateCommandValidator = updateCommandValidator;
+        _updateImageCommandValidator = updateImageCommandValidator;
     }
 
     [HttpPost]
@@ -65,6 +67,30 @@ public class UserController : Controller
         command.SagaId = Guid.NewGuid();
 
         var result = await _updateCommandValidator
+            .ValidateAsync(command, cancellationToken);
+
+        if (!result.IsValid)
+        {
+            return result.Exception.TreatExceptionToResult(HttpContext);
+        }
+
+        await _publisher.PublishCommandAsync(command, cancellationToken);
+
+        var locationUri = $"/Events/status/{command.SagaId}";
+
+        return Results.Accepted(locationUri, new CommandResponse(command.Id));
+    }
+
+    [HttpPut("upload")]
+    [ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(CommandResponse))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IResult> PutUploadAsync([FromBody] UpdateUserLicenseImageCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        command.SagaId = Guid.NewGuid();
+
+        var result = await _updateImageCommandValidator
             .ValidateAsync(command, cancellationToken);
 
         if (!result.IsValid)

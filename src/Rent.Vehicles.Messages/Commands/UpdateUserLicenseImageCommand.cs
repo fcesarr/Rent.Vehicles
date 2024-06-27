@@ -5,7 +5,7 @@ using MessagePack;
 namespace Rent.Vehicles.Messages.Commands;
 
 [MessagePackObject]
-public record UpdateUserLicenseImageCommand
+public record UpdateUserLicenseImageCommand : Command
 {
     [MessagePack.Key(1)]
     [Required]
@@ -15,7 +15,7 @@ public record UpdateUserLicenseImageCommand
         init;
     }
 
-    [MessagePack.Key(7)]
+    [MessagePack.Key(2)]
     [Required]
     [Base64String]
     public required string LicenseImage

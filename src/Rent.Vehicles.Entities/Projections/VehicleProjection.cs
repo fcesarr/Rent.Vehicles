@@ -33,4 +33,11 @@ public class VehicleProjection : Entity
         get;
         init;
     }
+
+    [BsonElement("IsRented")]
+    public bool IsRented
+    {
+        get;
+        set;
+    } = false;
 }

@@ -13,7 +13,7 @@ public record UpdateRentEvent : Messages.Event
     }
 
     [Key(2)]
-    public required DateTime EndDate
+    public required DateTime EstimatedDate
     {
         get;
         set;

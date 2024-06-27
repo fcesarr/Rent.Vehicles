@@ -29,7 +29,7 @@ public class UpdateRentCommandSqlBackgroundService : HandlerCommandPublishEventB
 
     protected override UpdateRentEvent CreateEventToPublish(UpdateRentCommand command)
     {
-        return new UpdateRentEvent { Id = command.Id, EndDate = command.EstimatedDate, SagaId = command.SagaId };
+        return new UpdateRentEvent { Id = command.Id, EstimatedDate = command.EstimatedDate, SagaId = command.SagaId };
     }
 
     protected override async Task<Result<Task>> HandlerMessageAsync(UpdateRentCommand command,

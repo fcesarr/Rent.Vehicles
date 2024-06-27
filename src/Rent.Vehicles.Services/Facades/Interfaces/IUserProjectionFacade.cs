@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Services.Facades.Interfaces;

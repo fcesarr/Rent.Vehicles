@@ -4,16 +4,17 @@ using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 
 public class CreateVehiclesForSpecificYearProjectionEventBackgroundService : HandlerEventServicePublishBackgroundService
-<
-    CreateVehiclesForSpecificYearProjectionEvent>
+<CreateVehiclesForSpecificYearProjectionEvent>
 {
     public CreateVehiclesForSpecificYearProjectionEventBackgroundService(
         ILogger<CreateVehiclesForSpecificYearProjectionEventBackgroundService> logger,
@@ -30,25 +31,10 @@ public class CreateVehiclesForSpecificYearProjectionEventBackgroundService : Han
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesForSpecificYearProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IDataService<VehiclesForSpecificYearProjection>>();
+        var service = _serviceScopeFactory.CreateScope().ServiceProvider
+            .GetRequiredService<IVehiclesForSpecificYearProjectionFacade>();
 
-        var entity = await _service.CreateAsync(
-            new VehiclesForSpecificYearProjection
-            {
-                Id = @event.Id,
-                Year = @event.Year,
-                Model = @event.Model,
-                LicensePlate = @event.LicensePlate,
-                Type = @event.Type switch
-                {
-                    VehicleType.B => Entities.Types.VehicleType.B,
-                    VehicleType.C => Entities.Types.VehicleType.C,
-                    VehicleType.D => Entities.Types.VehicleType.D,
-                    VehicleType.E => Entities.Types.VehicleType.E,
-                    VehicleType.A or _ => Entities.Types.VehicleType.A
-                }
-            }, cancellationToken);
+        var entity = await service.CreateAsync(@event, cancellationToken);
 
         if (!entity.IsSuccess)
         {

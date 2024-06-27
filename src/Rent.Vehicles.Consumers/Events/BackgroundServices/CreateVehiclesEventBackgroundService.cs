@@ -4,9 +4,11 @@ using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 
 using Event = Rent.Vehicles.Messages.Event;
@@ -34,19 +36,12 @@ public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEv
             new CreateVehiclesProjectionEvent
             {
                 Id = @event.Id,
-                Year = @event.Year,
-                Model = @event.Model,
-                LicensePlate = @event.LicensePlate,
-                Type = @event.Type,
                 SagaId = @event.SagaId
             },
             new CreateVehiclesForSpecificYearEvent
             {
                 Id = @event.Id,
                 Year = @event.Year,
-                Model = @event.Model,
-                LicensePlate = @event.LicensePlate,
-                Type = @event.Type,
                 SagaId = @event.SagaId
             }
         ];
@@ -55,24 +50,10 @@ public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEv
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IVehicleDataService>();
+        var service = _serviceScopeFactory.CreateScope().ServiceProvider
+            .GetRequiredService<IVehicleFacade>();
 
-        var entity = await _service.CreateAsync(new Vehicle
-        {
-            Id = @event.Id,
-            Year = @event.Year,
-            Model = @event.Model,
-            LicensePlate = @event.LicensePlate,
-            Type = @event.Type switch
-            {
-                VehicleType.B => Entities.Types.VehicleType.B,
-                VehicleType.C => Entities.Types.VehicleType.C,
-                VehicleType.D => Entities.Types.VehicleType.D,
-                VehicleType.E => Entities.Types.VehicleType.E,
-                VehicleType.A or _ => Entities.Types.VehicleType.A
-            }
-        }, cancellationToken);
+        var entity = await service.CreateAsync(@event, cancellationToken);
 
         if (!entity.IsSuccess)
         {

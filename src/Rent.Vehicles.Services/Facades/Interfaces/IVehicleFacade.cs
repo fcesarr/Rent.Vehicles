@@ -1,0 +1,9 @@
+using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Services.Responses;
+
+namespace Rent.Vehicles.Services.Facades.Interfaces;
+
+public interface IVehicleFacade
+{
+    Task<Result<VehicleResponse>> CreateAsync(CreateVehiclesEvent @event, CancellationToken cancellationToken = default);
+}

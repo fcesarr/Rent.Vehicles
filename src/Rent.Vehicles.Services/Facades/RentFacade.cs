@@ -1,6 +1,7 @@
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Responses;
@@ -17,15 +18,15 @@ public class RentFacade : IRentFacade
 
     private readonly IVehicleDataService _vehicleService;
 
-    public RentFacade(IRentDataService dataService,
-        IDataService<RentalPlane> rentalPlaneDataService,
-        IVehicleDataService vehicleService,
-        IUnitOfWork unitOfWork)
+    private readonly IUserDataService _userService;
+
+    public RentFacade(IRentDataService dataService, IDataService<RentalPlane> rentalPlaneDataService, IUnitOfWork unitOfWork, IVehicleDataService vehicleService, IUserDataService userService)
     {
         _dataService = dataService;
         _rentalPlaneDataService = rentalPlaneDataService;
-        _vehicleService = vehicleService;
         _unitOfWork = unitOfWork;
+        _vehicleService = vehicleService;
+        _userService = userService;
     }
 
     public async Task<Result<RentResponse>> CreateAsync(CreateRentEvent @event,
@@ -43,6 +44,11 @@ public class RentFacade : IRentFacade
                 throw rentalPlane.Exception!;
             }
 
+            var user = await _userService.GetAsync(x => x.Id == @event.UserId, cancellationToken);
+
+            if(!user.IsSuccess)
+                throw user.Exception!;
+
             var vehicle = await _vehicleService.GetAsync(x => !x.IsRented, cancellationToken);
 
             if (!vehicle.IsSuccess)
@@ -50,9 +56,9 @@ public class RentFacade : IRentFacade
                 throw vehicle.Exception!;
             }
 
-            var entity = await _dataService.CreateAsync(rentalPlane.Value,
+            var entity = await _dataService.CreateAsync(rentalPlane.Value!,
                 @event.UserId,
-                vehicle.Value.Id,
+                vehicle.Value!.Id,
                 cancellationToken);
 
             if (!entity.IsSuccess)
@@ -60,9 +66,9 @@ public class RentFacade : IRentFacade
                 throw entity.Exception!;
             }
 
-            vehicle.Value.IsRented = true;
+            vehicle.Value!.IsRented = true;
 
-            vehicle = await _vehicleService.UpdateAsync(vehicle.Value, cancellationToken);
+            vehicle = await _vehicleService.UpdateAsync(vehicle.Value!, cancellationToken);
 
             if (!vehicle.IsSuccess)
             {
@@ -71,28 +77,7 @@ public class RentFacade : IRentFacade
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return new RentResponse
-            {
-                Id = entity.Value!.Id,
-                NumberOfDays = entity.Value!.NumberOfDays,
-                DailyCost = entity.Value!.DailyCost,
-                Vehicle = new VehicleResponse
-                {
-                    Id = vehicle.Value.Id,
-                    Year = vehicle.Value.Year,
-                    Model = vehicle.Value.Model,
-                    LicensePlate = vehicle.Value.LicensePlate,
-                    Type = vehicle.Value.Type.ToString(),
-                    IsRented = vehicle.Value.IsRented
-                },
-                User = new UserResponse { Id = entity.Value.User.Id },
-                StartDate = entity.Value!.StartDate,
-                PreEndDatePercentageFine = entity.Value!.PreEndDatePercentageFine,
-                PostEndDateFine = entity.Value!.PostEndDateFine,
-                EstimatedDate = entity.Value!.EstimatedDate,
-                EndDate = entity.Value!.EndDate,
-                Cost = entity.Value!.Cost
-            };
+            return entity.Value!.ToResponse(vehicle.Value!, user.Value!);
         }
         catch (Exception ex)
         {
@@ -101,10 +86,10 @@ public class RentFacade : IRentFacade
         }
     }
 
-    public async Task<Result<CostResponse>> EstimateCostAsync(Guid id, DateTime endDate,
+    public async Task<Result<CostResponse>> EstimateCostAsync(Guid id, DateTime estimatedDate,
         CancellationToken cancellationToken = default)
     {
-        var entity = await _dataService.EstimateCostAsync(id, endDate, cancellationToken);
+        var entity = await _dataService.EstimateCostAsync(id, estimatedDate, cancellationToken);
 
         if (!entity.IsSuccess)
         {
@@ -121,44 +106,33 @@ public class RentFacade : IRentFacade
         {
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
-            var entity = await _dataService.UpdateAsync(@event.Id, @event.EndDate, cancellationToken);
+            var entity = await _dataService.UpdateAsync(@event.Id, @event.EstimatedDate, cancellationToken);
+
+            var user = await _userService.GetAsync(x => x.Id == entity.Value!.UserId, cancellationToken);
+
+            if(!user.IsSuccess)
+                throw user.Exception!;
 
             var vehicle =
-                await _vehicleService.GetAsync(x => x.Id == entity.Value.VehicleId, cancellationToken);
+                await _vehicleService.GetAsync(x => x.Id == entity.Value!.VehicleId, cancellationToken);
 
             if (!vehicle.IsSuccess)
             {
                 throw entity.Exception!;
             }
 
-            vehicle.Value.IsRented = false;
+            vehicle.Value!.IsRented = true;
 
-            await _vehicleService.UpdateAsync(vehicle.Value, cancellationToken);
+            vehicle = await _vehicleService.UpdateAsync(vehicle.Value!, cancellationToken);
+
+            if (!vehicle.IsSuccess)
+            {
+                throw vehicle.Exception!;
+            }
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            return new RentResponse
-            {
-                Id = entity.Value!.Id,
-                NumberOfDays = entity.Value!.NumberOfDays,
-                DailyCost = entity.Value!.DailyCost,
-                Vehicle = new VehicleResponse
-                {
-                    Id = vehicle.Value.Id,
-                    Year = vehicle.Value.Year,
-                    Model = vehicle.Value.Model,
-                    LicensePlate = vehicle.Value.LicensePlate,
-                    Type = vehicle.Value.Type.ToString(),
-                    IsRented = vehicle.Value.IsRented
-                },
-                User = new UserResponse { Id = entity.Value.User.Id },
-                StartDate = entity.Value!.StartDate,
-                PreEndDatePercentageFine = entity.Value!.PreEndDatePercentageFine,
-                PostEndDateFine = entity.Value!.PostEndDateFine,
-                EstimatedDate = entity.Value!.EstimatedDate,
-                EndDate = entity.Value!.EndDate,
-                Cost = entity.Value!.Cost
-            };
+            return entity.Value!.ToResponse(vehicle.Value!, user.Value!);
         }
         catch (Exception ex)
         {

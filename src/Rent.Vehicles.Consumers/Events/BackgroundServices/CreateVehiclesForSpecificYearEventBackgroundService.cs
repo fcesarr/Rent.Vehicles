@@ -4,6 +4,7 @@ using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 
@@ -30,10 +31,6 @@ public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerEventP
             new CreateVehiclesForSpecificYearProjectionEvent
             {
                 Id = @event.Id,
-                Year = @event.Year,
-                Model = @event.Model,
-                LicensePlate = @event.LicensePlate,
-                Type = @event.Type,
                 SagaId = @event.SagaId
             }
         ];
