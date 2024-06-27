@@ -1,3 +1,3 @@
 namespace Rent.Vehicles.Services.Responses;
 
-public record CostResponse(decimal Cost, DateTime endDate);
+public record CostResponse(decimal Cost);

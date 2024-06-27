@@ -33,6 +33,8 @@ public class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValida
 		{
 			validationResult.Exception =
 				new ValidationException($"Error on Validate {typeof(TEntity).Name}", result.ToDictionary());
+            
+            return validationResult;
 		}
 
         validationResult.Instance = instance;

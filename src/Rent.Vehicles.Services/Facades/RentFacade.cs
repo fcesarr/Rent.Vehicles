@@ -63,7 +63,31 @@ public class RentFacade : IRentFacade
     
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
     
-            return new RentResponse();
+            return new RentResponse
+            {
+                Id = entity.Value!.Id,
+                NumberOfDays = entity.Value!.NumberOfDays,
+                DailyCost = entity.Value!.DailyCost,
+                Vehicle = new VehicleResponse
+                {
+                    Id = vehicle.Value.Id,
+                    Year = vehicle.Value.Year,
+                    Model = vehicle.Value.Model,
+                    LicensePlate = vehicle.Value.LicensePlate,
+                    Type = vehicle.Value.Type.ToString(),
+                    IsRented = vehicle.Value.IsRented
+                },
+                User = new UserResponse
+                {
+                    Id = entity.Value.User.Id
+                },
+                StartDate = entity.Value!.StartDate,
+                PreEndDatePercentageFine = entity.Value!.PreEndDatePercentageFine,
+                PostEndDateFine = entity.Value!.PostEndDateFine,
+                EstimatedDate = entity.Value!.EstimatedDate,
+                EndDate = entity.Value!.EndDate,
+                Cost = entity.Value!.Cost
+            };
         }
         catch (Exception ex)
         {
@@ -79,7 +103,7 @@ public class RentFacade : IRentFacade
         if(!entity.IsSuccess)
             return entity.Exception!;
 
-        return new CostResponse(entity.Value.Cost, entity.Value.EndDate);
+        return new CostResponse(entity.Value!.Cost);
     }
 
     public async Task<Result<RentResponse>> UpdateAsync(UpdateRentEvent @event, CancellationToken cancellationToken = default)
@@ -101,7 +125,31 @@ public class RentFacade : IRentFacade
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
     
-            return new RentResponse();
+            return new RentResponse
+            {
+                Id = entity.Value!.Id,
+                NumberOfDays = entity.Value!.NumberOfDays,
+                DailyCost = entity.Value!.DailyCost,
+                Vehicle = new VehicleResponse
+                {
+                    Id = vehicle.Value.Id,
+                    Year = vehicle.Value.Year,
+                    Model = vehicle.Value.Model,
+                    LicensePlate = vehicle.Value.LicensePlate,
+                    Type = vehicle.Value.Type.ToString(),
+                    IsRented = vehicle.Value.IsRented
+                },
+                User = new UserResponse
+                {
+                    Id = entity.Value.User.Id
+                },
+                StartDate = entity.Value!.StartDate,
+                PreEndDatePercentageFine = entity.Value!.PreEndDatePercentageFine,
+                PostEndDateFine = entity.Value!.PostEndDateFine,
+                EstimatedDate = entity.Value!.EstimatedDate,
+                EndDate = entity.Value!.EndDate,
+                Cost = entity.Value!.Cost
+            };
         }
         catch (Exception ex)
         {

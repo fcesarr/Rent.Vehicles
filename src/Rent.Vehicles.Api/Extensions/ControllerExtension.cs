@@ -17,26 +17,20 @@ public static class ControllerExtension
             Exception = exception,
             ProblemDetails = exception switch
             {
-                ValidationException validationException => new ValidationProblemDetails(validationException.GetErros())
-                {
-                    Detail = exception.Message
-                },
+                ValidationException validationException => new ValidationProblemDetails(validationException.GetErros()),
                 NullException nullException => new ProblemDetails
                 {
                     Status = (int)HttpStatusCode.NotFound,
-                    Detail = nullException.Message
                 },
                 EmptyException emptyException => new ProblemDetails
                 {
                     Status = (int)HttpStatusCode.NoContent,
-                    Detail = emptyException.Message
                 },
-                _ => new ProblemDetails
-                {
-                    Detail = exception.Message
-                }
+                _ => new ProblemDetails()
             }
         };
+
+        problemDetailsContext.ProblemDetails.Detail = exception.Message;
 
         return Results.Problem(problemDetailsContext.ProblemDetails);
     }

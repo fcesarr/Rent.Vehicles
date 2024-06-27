@@ -6,9 +6,9 @@ namespace Rent.Vehicles.Services.Repositories.Interfaces;
 
 public interface IRepository<TEntity> where TEntity : Entity
 {
-    Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
+    Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-    Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
+    Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 

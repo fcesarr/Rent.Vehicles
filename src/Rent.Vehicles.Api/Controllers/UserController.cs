@@ -62,7 +62,6 @@ public class UserController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IResult> PutAsync([FromBody]UpdateUserCommand command,
-        HttpContext context,
         CancellationToken cancellationToken = default)
     {
         command.SagaId = Guid.NewGuid();
@@ -72,7 +71,6 @@ public class UserController : Controller
 
         if(!result.IsValid)
             return result.Exception.TreatExceptionToResult(HttpContext);
-
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 

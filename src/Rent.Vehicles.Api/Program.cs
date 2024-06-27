@@ -37,6 +37,7 @@ using Rent.Vehicles.Services.Facades;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Api.Extensions;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,7 +63,6 @@ builder.Services.AddSingleton<IPublisher, Publisher>()
     .AddScoped<IDataService<Event>, DataService<Event>>()
     .AddScoped<IEventFacade, EventFacade>()
     .AddScoped<IUserValidator,  UserValidator>()
-    .AddScoped<IBase64StringValidator, Base64StringValidator>()
     .AddScoped<ILicenseImageService, LicenseImageService>()
     .AddScoped<IUploadService, FileUploadService>()
     .AddScoped<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
@@ -119,14 +119,17 @@ builder.Services.AddSwaggerGen(c => {
     });
 });
 
-builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = problemDetaisContext => {
-    var webHostEnvironment = problemDetaisContext.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+builder.Services.AddProblemDetails(options => 
+{
+    options.CustomizeProblemDetails = problemDetaisContext => {
+        var webHostEnvironment = problemDetaisContext.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
-    if(problemDetaisContext.HttpContext.Response.StatusCode == StatusCodes.Status500InternalServerError 
-        && !webHostEnvironment.IsDevelopment())
-    {
-        problemDetaisContext.ProblemDetails.Detail = null;
-    }
+        if(problemDetaisContext.HttpContext.Response.StatusCode == StatusCodes.Status500InternalServerError 
+            && !webHostEnvironment.IsDevelopment())
+        {
+            problemDetaisContext.ProblemDetails.Detail = null;
+        }
+    };
 });
 
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -160,8 +163,3 @@ app.UseRouting();
 app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

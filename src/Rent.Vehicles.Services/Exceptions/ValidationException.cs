@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Rent.Vehicles.Services.Exceptions;
 
 [ExcludeFromCodeCoverage]
-public class ValidationException : Exception
+public class ValidationException : NoRetryException
 {
 	private readonly IDictionary<string, string[]> _erros;
 

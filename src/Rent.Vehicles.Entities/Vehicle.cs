@@ -7,7 +7,6 @@ namespace Rent.Vehicles.Entities;
 [Table("vehicles", Schema = "vehicles")]
 public class Vehicle : Entity
 {
-
     public int Year { get; init; }
     
     public required string Model { get; init; }

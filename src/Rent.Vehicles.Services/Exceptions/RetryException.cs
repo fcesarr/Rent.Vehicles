@@ -1,4 +1,4 @@
-namespace Rent.Vehicles.Consumers.Exceptions;
+namespace Rent.Vehicles.Services.Exceptions;
 
 public class RetryException : Exception
 {

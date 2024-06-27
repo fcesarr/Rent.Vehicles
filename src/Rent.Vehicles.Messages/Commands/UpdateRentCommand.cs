@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+
+using Rent.Vehicles.Lib.Attributes;
+
 
 namespace Rent.Vehicles.Messages.Commands;
 
@@ -12,5 +14,6 @@ public record UpdateRentCommand : Command
 
     [MessagePack.Key(2)]
     [Required]
-    public required DateTime EndDate { get; set; }
+    [DateTimeMinorCurrentDate(ErrorMessage ="Invalid date")]
+    public required DateTime EstimatedDate { get; set; }
 }

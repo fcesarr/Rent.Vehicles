@@ -25,19 +25,33 @@ public class LicenseImageService : ILicenseImageService
     {
         byte[] fileBytes = Convert.FromBase64String(licenseImage);
 
-        var fileExtension = GetFileExtension(fileBytes);
+        var filePath = await GetPathAsync(licenseImage, cancellationToken);
 
-        if (fileExtension == null)
-            return Result<Task>.Failure(new NullException());
+        if(!filePath.IsSuccess)
+            return filePath.Exception!;
 
-        var fileName = fileBytes.ByteToMD5String();
-
-        var filePath = $"{_licenseImageServiceSetting.Path}/{fileName}.{fileExtension}";
-
-        await _uploadService.UploadAsync(filePath, fileBytes, cancellationToken);
+        await _uploadService.UploadAsync(filePath.Value!, fileBytes, cancellationToken);
         
         return Task.CompletedTask;
     }   
+
+    public Task<Result<string>> GetPathAsync(string licenseImage, CancellationToken cancellationToken = default)
+    {
+        return Task.Run(() => {
+            byte[] fileBytes = Convert.FromBase64String(licenseImage);
+
+            var fileExtension = GetFileExtension(fileBytes);
+
+            if (fileExtension == null)
+                return Result<string>.Failure(new NullException("Extensão não suportada."));
+
+            var fileName = fileBytes.ByteToMD5String();
+
+            var filePath = $"{_licenseImageServiceSetting.Path}/{fileName}.{fileExtension}";
+
+            return filePath;
+        }, cancellationToken);
+    }
 
     private string? GetFileExtension(byte[] bytes)
     {
@@ -63,23 +77,5 @@ public class LicenseImageService : ILicenseImageService
         }
 
         return null;
-    }
-
-    public Task<Result<string>> GetPathAsync(string licenseImage, CancellationToken cancellationToken = default)
-    {
-        return Task.Run(() => {
-            byte[] fileBytes = Convert.FromBase64String(licenseImage);
-
-            var fileExtension = GetFileExtension(fileBytes);
-
-            if (fileExtension == null)
-                return Result<string>.Failure(new NullException());
-
-            var fileName = fileBytes.ByteToMD5String();
-
-            var filePath = $"{_licenseImageServiceSetting.Path}/{fileName}.{fileExtension}";
-
-            return filePath;
-        }, cancellationToken);
     }
 }

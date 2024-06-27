@@ -96,7 +96,6 @@ builder.Services
     .AddScoped<IDataService<RentalPlane>, DataService<RentalPlane>>()
     .AddScoped<IVehicleDataService, VehicleDataService>()
     .AddScoped<IRentFacade, RentFacade>()
-    .AddSingleton<IBase64StringValidator, Base64StringValidator>()
     .AddSingleton<IUploadService, FileUploadService>()
     .AddSingleton<ILicenseImageService, LicenseImageService>()
     .AddSingleton<ISerializer, MessagePackSerializer>()

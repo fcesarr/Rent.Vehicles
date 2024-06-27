@@ -18,13 +18,15 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
         _dbContext = dbContextFactory.CreateDbContextAsync().GetAwaiter().GetResult();
     }
 
-    public async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         var dbSet = _dbContext.Set<TEntity>();
 
-        _ = await dbSet.AddAsync(entity, cancellationToken);
+        var entityEntry = await dbSet.AddAsync(entity, cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return entityEntry.Entity;
     }
 
     public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
@@ -102,12 +104,14 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
         _dbContext = context;
     }
 
-    public async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         var dbSet = _dbContext.Set<TEntity>();
 
-        await Task.Run(() => dbSet.Update(entity), cancellationToken);
+        var entityEntry = await Task.Run(() => dbSet.Update(entity), cancellationToken);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return entityEntry.Entity;
     }
 }

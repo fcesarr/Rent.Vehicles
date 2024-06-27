@@ -8,8 +8,8 @@ public class RentValidator : Validator<Entities.Rent>, IRentValidator
 {
     public RentValidator()
     {
-        RuleFor(x => x.EndDate)
-            .Must((x, y) => x.StartDate > y)
+        RuleFor(x => x.EstimatedDate)
+            .Must((x, y) => y > x.StartDate)
             .WithMessage("Data estimada de termino menor que a data de inicio");
     }
 }

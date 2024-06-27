@@ -61,7 +61,6 @@ public class VehicleController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IResult> PutAsync([FromBody]UpdateVehiclesCommand command,
-        HttpContext context,
         CancellationToken cancellationToken = default)
     {
         command.SagaId = Guid.NewGuid();
@@ -85,7 +84,6 @@ public class VehicleController : Controller
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public async Task<IResult> DeleteAsync([FromBody]DeleteVehiclesCommand command,
-        HttpContext context,
         CancellationToken cancellationToken = default)
     {
         command.SagaId = Guid.NewGuid();
@@ -122,7 +120,7 @@ public class VehicleController : Controller
         return Results.Ok(entity.Value);
     }
 
-    [HttpGet("{licensePlate:string}")]
+    [HttpGet("{licensePlate}")]
 	[ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(VehicleProjection))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]

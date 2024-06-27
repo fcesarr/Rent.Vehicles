@@ -16,30 +16,21 @@ public class UserFacade : IUserFacade
 {
     private readonly ILogger<UserFacade> _logger;
 
-    private readonly IBase64StringValidator _base64StringValidator;
-
     private readonly IUserDataService _dataService;
 
     private readonly ILicenseImageService _licenseImageService;
 
     public UserFacade(ILogger<UserFacade> logger,
-        IBase64StringValidator validator,
         IUserDataService dataService,
         ILicenseImageService licenseImageService)
     {
         _logger = logger;
-        _base64StringValidator = validator;
         _dataService = dataService;
         _licenseImageService = licenseImageService;
     }
 
     public async Task<Result<UserResponse>> CreateAsync(CreateUserEvent @event, CancellationToken cancellationToken = default)
     {
-        var result = await _base64StringValidator.ValidateAsync(@event.LicenseImage, cancellationToken);
-
-        if(!result.IsValid)
-            return result.Exception!;
-
         var licensePathResult = await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
 
         if(!licensePathResult.IsSuccess)
@@ -75,13 +66,13 @@ public class UserFacade : IUserFacade
         return new UserResponse
         {
             Id = entity.Value!.Id,
-            Number = entity.Value.Number,
-            Name = entity.Value.Name,
-            LicenseNumber = entity.Value.LicenseNumber,
-            LicenseType = entity.Value.LicenseType,
-            LicensePath = entity.Value.LicensePath,
-            Birthday = entity.Value.Birthday,
-            Created = entity.Value.Created
+            // Number = entity.Value.Number,
+            // Name = entity.Value.Name,
+            // LicenseNumber = entity.Value.LicenseNumber,
+            // LicenseType = entity.Value.LicenseType,
+            // LicensePath = entity.Value.LicensePath,
+            // Birthday = entity.Value.Birthday,
+            // Created = entity.Value.Created
         };
     }
 
@@ -99,11 +90,6 @@ public class UserFacade : IUserFacade
         UpdateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var result = await _base64StringValidator.ValidateAsync(@event.LicenseImage, cancellationToken);
-
-        if(!result.IsValid)
-            return result.Exception!;
-
         var licensePathResult = await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
         
         if(!licensePathResult.IsSuccess)
@@ -119,13 +105,13 @@ public class UserFacade : IUserFacade
         return new UserResponse
         {
             Id = entityResult.Value!.Id,
-            Number = entityResult.Value.Number,
-            Name = entityResult.Value.Name,
-            LicenseNumber = entityResult.Value.LicenseNumber,
-            LicenseType = entityResult.Value.LicenseType,
-            LicensePath = entityResult.Value.LicensePath,
-            Birthday = entityResult.Value.Birthday,
-            Created = entityResult.Value.Created
+            // Number = entityResult.Value.Number,
+            // Name = entityResult.Value.Name,
+            // LicenseNumber = entityResult.Value.LicenseNumber,
+            // LicenseType = entityResult.Value.LicenseType,
+            // LicensePath = entityResult.Value.LicensePath,
+            // Birthday = entityResult.Value.Birthday,
+            // Created = entityResult.Value.Created
         };
     }
 
@@ -139,13 +125,13 @@ public class UserFacade : IUserFacade
         return new UserResponse
         {
             Id = entity.Value!.Id,
-            Number = entity.Value.Number,
-            Name = entity.Value.Name,
-            LicenseNumber = entity.Value.LicenseNumber,
-            LicenseType = entity.Value.LicenseType,
-            LicensePath = entity.Value.LicensePath,
-            Birthday = entity.Value.Birthday,
-            Created = entity.Value.Created
+            // Number = entity.Value.Number,
+            // Name = entity.Value.Name,
+            // LicenseNumber = entity.Value.LicenseNumber,
+            // LicenseType = entity.Value.LicenseType,
+            // LicensePath = entity.Value.LicensePath,
+            // Birthday = entity.Value.Birthday,
+            // Created = entity.Value.Created
         };
     }
 }

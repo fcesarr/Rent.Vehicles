@@ -26,7 +26,7 @@ public class VehicleDataService : DataService<Vehicle>, IVehicleDataService
             return Result<Vehicle>.Failure(entity.Exception);
 
         if(entity.Value is null)
-            return Result<Vehicle>.Failure(new NullException());
+            return Result<Vehicle>.Failure(new NullException("Vehicle not found."));
         
 
         return await UpdateAsync(entity.Value, cancellationToken);

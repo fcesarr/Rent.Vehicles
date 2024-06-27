@@ -24,11 +24,13 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
             .GetCollection<TEntity>($"{typeof(TEntity).Name.ToLower()}s");
     }
 
-    public async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         var options = new InsertOneOptions();
 
         await _mongoCollection.InsertOneAsync(entity, options, cancellationToken);
+
+        return entity;
     }
 
     public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
@@ -136,7 +138,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
         return await Task.FromResult(default(TEntity));
     }
 
-    public async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         var options = new UpdateOptions();
 
@@ -145,5 +147,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
             .Where(x => x.Id == entity.Id);
     
         await Task.Run(async () => await _mongoCollection.ReplaceOneAsync(filter, entity) , cancellationToken);
+
+        return entity;
     }
 }

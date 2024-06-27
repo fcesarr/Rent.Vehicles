@@ -35,9 +35,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         if(!result.IsValid)
             return Result<TEntity>.Failure(result.Exception);
 
-        await _repository.CreateAsync(result.Instance, cancellationToken);
-
-        return result.Instance;
+        return await _repository.CreateAsync(result.Instance, cancellationToken);
     }
 
     public async Task<Result<bool>> DeleteAsync(TEntity? entity, CancellationToken cancellationToken = default)
@@ -60,7 +58,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         var entities = await _repository.FindAsync(predicate, descending, orderBy, cancellationToken: cancellationToken);
     
         if(!entities.Any())
-            return Result<IEnumerable<TEntity>>.Failure(new EmptyException());
+            return Result<IEnumerable<TEntity>>.Failure(new EmptyException($"Entities {typeof(TEntity).Name} is empty"));
 
         return entities
             .ToList();
@@ -71,7 +69,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         var entity = await _repository.GetAsync(predicate, cancellationToken: cancellationToken);
 
         if(entity == null)
-            return Result<TEntity>.Failure(new NullException());
+            return Result<TEntity>.Failure(new NullException($"Entity {typeof(TEntity).Name} not found"));
 
         return entity;
     }
@@ -83,9 +81,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         if(!result.IsValid)
             return Result<TEntity>.Failure(result.Exception);
 
-        await _repository.UpdateAsync(result.Instance, cancellationToken);
-
-        return entity;
+        return await _repository.UpdateAsync(result.Instance, cancellationToken);
     }
 
     public async Task<Result<bool>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)

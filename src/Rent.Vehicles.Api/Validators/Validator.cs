@@ -32,15 +32,20 @@ public class Validator<TCommand> : IValidator<TCommand> where TCommand : Command
 
             var isValid = Validator.TryValidateObject(command, context, results, true);
 
-            var errors = results.SelectMany(result => result.MemberNames.Select(memberName => new Tuple<string, string>(memberName, result.ErrorMessage ?? string.Empty) ))
-                .GroupBy(x => x.Item1)
-                .ToDictionary<IGrouping<string, Tuple<string, string>>,string, string[]>(
-                    g => g.Key, 
-                    g => g.Select(x => x.Item2).ToArray()
-                );
+            validationResult.IsValid = isValid;
 
-            validationResult.Exception = new Services.Exceptions.ValidationException($"Error on Validate {typeof(TCommand).Name}",
-                    errors);
+            if(!isValid)
+            {
+                var errors = results.SelectMany(result => result.MemberNames.Select(memberName => new Tuple<string, string>(memberName, result.ErrorMessage ?? string.Empty) ))
+                    .GroupBy(x => x.Item1)
+                    .ToDictionary<IGrouping<string, Tuple<string, string>>,string, string[]>(
+                        g => g.Key, 
+                        g => g.Select(x => x.Item2).ToArray()
+                    );
+
+                validationResult.Exception = new Services.Exceptions.ValidationException($"Error on Validate {typeof(TCommand).Name}",
+                        errors);
+            }
 
             return validationResult;
             //

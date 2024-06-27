@@ -9,6 +9,7 @@ using Rent.Vehicles.Lib.Extensions;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Services;
+using Rent.Vehicles.Services.Exceptions;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 

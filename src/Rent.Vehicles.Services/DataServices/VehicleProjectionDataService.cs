@@ -27,7 +27,7 @@ public class VehicleProjectionDataService : DataService<VehicleProjection>, IVeh
             return Result<VehicleProjection>.Failure(entity.Exception);
 
         if(entity.Value is null)
-            return Result<VehicleProjection>.Failure(new NullException());
+            return Result<VehicleProjection>.Failure(new NullException("Vehicle not found."));
 
         return await UpdateAsync(entity.Value, cancellationToken);
     }
