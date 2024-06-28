@@ -10,6 +10,7 @@ using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Facades.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
@@ -45,18 +46,18 @@ public class CreateVehiclesCommandBackgroundService : HandlerCommandPublishEvent
     {
         var service = _serviceScopeFactory.CreateScope()
             .ServiceProvider
-            .GetRequiredService<ICommandDataService>();
+            .GetRequiredService<ICommandFacade>();
 
-        Command entity = new()
+        var @event = CreateEventToPublish(command);
+
+        var entity = await service.CreateAsync(command, @event, ActionType.Create,
+            EntityType.Vehicles, nameof(CreateVehiclesEvent), cancellationToken);
+
+        if (!entity.IsSuccess)
         {
-            SagaId = command.SagaId,
-            ActionType = ActionType.Create,
-            SerializerType = SerializerType.MessagePack,
-            EntityType = EntityType.Vehicles,
-            Type = nameof(CreateVehiclesEvent),
-            Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
-        };
+            return entity.Exception!;
+        }
 
-        return service.CreateAsync(entity, cancellationToken);
+        return Task.CompletedTask;
     }
 }

@@ -1,6 +1,7 @@
 using MessagePack;
 
 using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Lib.Types;
 
 namespace Rent.Vehicles.Lib.Serializers;
 
@@ -12,6 +13,8 @@ public class MessagePackSerializer : ISerializer
     {
         _options = options ?? MessagePackSerializerOptions.Standard;
     }
+
+    public SerializerType SerializerType => SerializerType.MessagePack;
 
     public async Task<T?> DeserializeAsync<T>(byte[] bytes, CancellationToken cancellationToken = default)
         where T : class

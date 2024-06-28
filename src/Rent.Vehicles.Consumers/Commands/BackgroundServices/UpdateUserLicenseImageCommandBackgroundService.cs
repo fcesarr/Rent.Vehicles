@@ -12,12 +12,12 @@ using Rent.Vehicles.Services.Facades.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
-public class UpdateUserLicenseImageCommandSqlBackgroundService : HandlerCommandPublishEventBackgroundService<
+public class UpdateUserLicenseImageCommandBackgroundService : HandlerCommandPublishEventBackgroundService<
     UpdateUserLicenseImageCommand,
     UpdateUserLicenseImageEvent>
 {
-    public UpdateUserLicenseImageCommandSqlBackgroundService(
-        ILogger<UpdateUserLicenseImageCommandSqlBackgroundService> logger,
+    public UpdateUserLicenseImageCommandBackgroundService(
+        ILogger<UpdateUserLicenseImageCommandBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -44,8 +44,8 @@ public class UpdateUserLicenseImageCommandSqlBackgroundService : HandlerCommandP
 
         var @event = CreateEventToPublish(command);
 
-        var entity = await service.CreateAsync(command, @event, ActionType.Update, SerializerType.MessagePack,
-            EntityType.User, nameof(CreateRentEvent), cancellationToken);
+        var entity = await service.CreateAsync(command, @event, ActionType.Update,
+            EntityType.User, nameof(UpdateUserLicenseImageEvent), cancellationToken);
 
         if (!entity.IsSuccess)
         {

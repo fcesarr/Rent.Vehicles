@@ -24,7 +24,6 @@ public class CommandFacade : ICommandFacade
     public async Task<Result<CommandResponse>> CreateAsync(Command command,
         Event @event,
         ActionType actionType,
-        SerializerType serializerType,
         EntityType entityType,
         string type,
         CancellationToken cancellationToken = default)
@@ -32,7 +31,7 @@ public class CommandFacade : ICommandFacade
         var data = await _serializer.SerializeAsync(@event, @event.GetType(), cancellationToken);
 
         var entity =
-            await _dataService.CreateAsync(command.ToEntity(actionType, serializerType, entityType, type, data),
+            await _dataService.CreateAsync(command.ToEntity(actionType, _serializer.SerializerType, entityType, type, data),
                 cancellationToken);
 
         if (!entity.IsSuccess)

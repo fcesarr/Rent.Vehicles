@@ -10,7 +10,6 @@ public interface ICommandFacade
     Task<Result<CommandResponse>> CreateAsync(Command command,
         Event @event,
         ActionType actionType,
-        SerializerType serializerType,
         EntityType entityType,
         string type,
         CancellationToken cancellationToken = default);
