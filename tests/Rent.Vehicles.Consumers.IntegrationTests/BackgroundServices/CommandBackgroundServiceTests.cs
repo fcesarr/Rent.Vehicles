@@ -7,40 +7,34 @@ using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
 
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
-using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures.RabbitMQ.CollectionFixtures;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Commands;
+using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 
 using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-public abstract class CommandBackgroundServiceTests<TBackgroundService, TCommand, TEntity, TService> : IDisposable 
-    where TBackgroundService : BackgroundService 
-    where TCommand : Messages.Command
-    where TEntity : Entities.Command
-    where TService : IDataService<TEntity>
+public abstract class CommandBackgroundServiceTests<TBackgroundService, TCommand> 
+    where TBackgroundService : BackgroundService
+    where TCommand : Command
 {
-    protected readonly ConsumerFixture<TBackgroundService, TCommand, TEntity, TService> _fixture;
-
-    private readonly ITestOutputHelper _output;
+    protected readonly CommonFixture _classFixture;
 
     public CommandBackgroundServiceTests(
-        ConsumerFixture<TBackgroundService, TCommand, TEntity, TService> fixture,
+        CommonFixture classFixture,
         ITestOutputHelper output)
     {
-        _fixture = fixture;
-        
-        _output = output;
-
-        _fixture.Init(output);
+        _classFixture = classFixture;
+        _classFixture.Init(output);
     }
 
     protected abstract TCommand GetCommand();
 
     [Fact]
-    public async Task SendCreateVehiclesCommandAndVerifyCommandIsCreatedInDatabase()
+    public async Task SendCommandAndVerifyCommandIsCreatedInDatabase()
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
@@ -48,15 +42,18 @@ public abstract class CommandBackgroundServiceTests<TBackgroundService, TCommand
 
         var command = GetCommand();
 
-        await _fixture.SendCommandAsync(command, cancellationTokenSource.Token);
+        await _classFixture.GetRequiredService<IPublisher>()
+            .PublishCommandAsync(command, cancellationTokenSource.Token);
 
-        await _fixture.StartWorkerAsync(cancellationTokenSource.Token);
+        await _classFixture.GetRequiredService<TBackgroundService>()
+            .StartAsync(cancellationTokenSource.Token);
 
         var found = false;
 
         do
         {
-            var result = await _fixture.GetCommandAsync(x => x.SagaId == command.SagaId);
+            var result = await _classFixture.GetRequiredService<ICommandDataService>()
+                .GetAsync(x => x.SagaId == command.SagaId);
 
             found = result!.IsSuccess;
 
@@ -66,11 +63,12 @@ public abstract class CommandBackgroundServiceTests<TBackgroundService, TCommand
         // Assert
         found.Should().BeTrue();
 
-        await _fixture.StopWorkerAsync(cancellationTokenSource.Token);
+        await _classFixture.GetRequiredService<TBackgroundService>()
+            .StopAsync(cancellationTokenSource.Token);
     }
 
     public void Dispose()
     {
-        _fixture.Dispose();
+        _classFixture.Dispose();
     }
 }

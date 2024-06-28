@@ -35,6 +35,8 @@ using Rent.Vehicles.Services.Settings;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
+using Serilog;
+
 using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
@@ -44,7 +46,7 @@ public static class ServiceExtensions
 {
     public static IServiceCollection AddServicesTests(this IServiceCollection services,
         IConfiguration configuration, ITestOutputHelper output)
-            => services.AddLogging(output)
+            => services.AddLogging(configuration)
                 .AddTransient<IConsumer>(service =>
                 {
                     ConnectionFactory factory = new()
@@ -163,6 +165,12 @@ public static class ServiceExtensions
 
 
     
-    private static IServiceCollection AddLogging(this IServiceCollection services, ITestOutputHelper output)
-            => services.AddLogging(configure => configure.AddConsole());
+    private static IServiceCollection AddLogging(this IServiceCollection services,
+        IConfiguration configuration)
+            => services.AddLogging(configure => {
+                var loggerConfiguration = new LoggerConfiguration()
+                    .ReadFrom.Configuration(configuration);
+
+                configure.AddSerilog(loggerConfiguration.CreateLogger(), true);
+            });
 }

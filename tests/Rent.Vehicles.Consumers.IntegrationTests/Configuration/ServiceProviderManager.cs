@@ -17,15 +17,9 @@ public class ServiceProviderManager : IDisposable
 
     public static ServiceProviderManager GetInstance(ITestOutputHelper output)
     {
-        var serviceProvider = RegisterServices(output);
+        if(_serviceProviderManager != null)
+            return _serviceProviderManager;
 
-        _serviceProviderManager = new ServiceProviderManager(serviceProvider);
-
-        return _serviceProviderManager;
-    }
-
-    private static ServiceProvider RegisterServices(ITestOutputHelper output)
-    {
         var configuration = ConfigurationManager.GetInstance()
             .GetConfiguration();
 
@@ -36,8 +30,11 @@ public class ServiceProviderManager : IDisposable
 
         var serviceProvider = services.BuildServiceProvider();
 
-        return serviceProvider;
+        _serviceProviderManager = new ServiceProviderManager(serviceProvider);
+
+        return _serviceProviderManager;
     }
+
 
     public void Dispose()
     {

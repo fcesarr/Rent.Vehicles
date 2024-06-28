@@ -18,23 +18,19 @@ using Xunit.Abstractions;
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
 [Collection(nameof(CommonCollection))]
-public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServiceTests<CreateVehiclesCommandBackgroundService, CreateVehiclesCommand>
+public class UpdateUserLicenseImageCommandBackgroundServiceTests : CommandBackgroundServiceTests<UpdateUserLicenseImageCommandBackgroundService, UpdateUserLicenseImageCommand>
 {
     private readonly Fixture _fixture;
 
-    public CreateVehiclesCommandBackgroundServiceTests(CommonFixture classFixture, ITestOutputHelper output) : base(classFixture, output)
+    public UpdateUserLicenseImageCommandBackgroundServiceTests(CommonFixture classFixture, ITestOutputHelper output) : base(classFixture, output)
     {
         _fixture = new Fixture();
     }
 
-    protected override CreateVehiclesCommand GetCommand()
+    protected override UpdateUserLicenseImageCommand GetCommand()
     {
         return _fixture
-            .Build<CreateVehiclesCommand>()
-            .With(x => x.Year, () => {
-                var random = new Random();
-                return random.Next(2024, 2024);
-            })
+            .Build<UpdateUserLicenseImageCommand>()
             .Create();
     }
 }

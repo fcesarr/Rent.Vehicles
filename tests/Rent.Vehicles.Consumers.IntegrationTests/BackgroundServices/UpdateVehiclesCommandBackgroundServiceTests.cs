@@ -4,7 +4,6 @@ using FluentAssertions;
 
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
-using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures.RabbitMQ.CollectionFixtures;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Services.DataServices.Interfaces;
@@ -13,17 +12,19 @@ using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(UpdateVehiclesCommandBackgroundServiceCollection))]
-public class UpdateVehiclesCommandBackgroundServiceTests : CommandBackgroundServiceTests<UpdateVehiclesCommandBackgroundService, UpdateVehiclesCommand, Entities.Command, ICommandDataService>
+[Collection(nameof(CommonCollection))]
+public class UpdateVehiclesCommandBackgroundServiceTests : CommandBackgroundServiceTests<UpdateVehiclesCommandBackgroundService, UpdateVehiclesCommand>
 {
-    public UpdateVehiclesCommandBackgroundServiceTests(UpdateVehiclesCommandBackgroundServiceFixture fixture, ITestOutputHelper output) : base(fixture, output)
+    private readonly Fixture _fixture;
+
+    public UpdateVehiclesCommandBackgroundServiceTests(CommonFixture classFixture, ITestOutputHelper output) : base(classFixture, output)
     {
+        _fixture = new Fixture();
     }
 
     protected override UpdateVehiclesCommand GetCommand()
     {
         return _fixture
-            .GetFixture()
             .Build<UpdateVehiclesCommand>()
             .Create();
     }
