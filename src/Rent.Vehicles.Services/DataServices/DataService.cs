@@ -93,6 +93,8 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
             return Result<TEntity>.Failure(result.Exception);
         }
 
+        result.Instance.Updated = DateTime.Now;
+
         return await _repository.UpdateAsync(result.Instance, cancellationToken);
     }
 

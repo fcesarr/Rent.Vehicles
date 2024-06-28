@@ -26,4 +26,11 @@ public class Entity
 
         private set => _created = value == default ? DateTime.UtcNow : value;
     }
+
+    [BsonElement("Updated")]
+    public DateTime? Updated
+    {
+        get;
+        set;
+    }
 }
