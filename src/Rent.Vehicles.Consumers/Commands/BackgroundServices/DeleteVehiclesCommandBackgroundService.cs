@@ -13,11 +13,11 @@ using Rent.Vehicles.Services.DataServices.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
-public class CreateUserCommandSqlBackgroundService : HandlerCommandPublishEventBackgroundService<
-    CreateUserCommand,
-    CreateUserEvent>
+public class DeleteVehiclesCommandBackgroundService : HandlerCommandPublishEventBackgroundService<
+    DeleteVehiclesCommand,
+    DeleteVehiclesEvent>
 {
-    public CreateUserCommandSqlBackgroundService(ILogger<CreateUserCommandSqlBackgroundService> logger,
+    public DeleteVehiclesCommandBackgroundService(ILogger<DeleteVehiclesCommandBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -27,21 +27,12 @@ public class CreateUserCommandSqlBackgroundService : HandlerCommandPublishEventB
     {
     }
 
-    protected override CreateUserEvent CreateEventToPublish(CreateUserCommand command)
+    protected override DeleteVehiclesEvent CreateEventToPublish(DeleteVehiclesCommand command)
     {
-        return new CreateUserEvent
-        {
-            Id = command.Id,
-            Name = command.Name,
-            Number = command.Number,
-            Birthday = command.Birthday,
-            LicenseNumber = command.LicenseNumber,
-            LicenseImage = command.LicenseImage,
-            SagaId = command.SagaId
-        };
+        return new DeleteVehiclesEvent { Id = command.Id, SagaId = command.SagaId };
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserCommand command,
+    protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
         var service = _serviceScopeFactory.CreateScope()
@@ -51,10 +42,10 @@ public class CreateUserCommandSqlBackgroundService : HandlerCommandPublishEventB
         Command entity = new()
         {
             SagaId = command.SagaId,
-            ActionType = ActionType.Create,
+            ActionType = ActionType.Delete,
             SerializerType = SerializerType.MessagePack,
-            EntityType = EntityType.User,
-            Type = nameof(CreateUserEvent),
+            EntityType = EntityType.Vehicles,
+            Type = nameof(DeleteVehiclesEvent),
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
 

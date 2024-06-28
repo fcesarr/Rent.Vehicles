@@ -43,7 +43,7 @@ public record UpdateUserEvent : Messages.Event
     }
 
     [Key(6)]
-    public LicenseType LicenseType
+    public required LicenseType LicenseType
     {
         get;
         set;

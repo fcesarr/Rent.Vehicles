@@ -13,11 +13,11 @@ using Rent.Vehicles.Services.DataServices.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
-public class CreateRentCommandSqlBackgroundService : HandlerCommandPublishEventBackgroundService<
-    CreateRentCommand,
-    CreateRentEvent>
+public class CreateUserCommandBackgroundService : HandlerCommandPublishEventBackgroundService<
+    CreateUserCommand,
+    CreateUserEvent>
 {
-    public CreateRentCommandSqlBackgroundService(ILogger<CreateRentCommandSqlBackgroundService> logger,
+    public CreateUserCommandBackgroundService(ILogger<CreateUserCommandBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -27,28 +27,34 @@ public class CreateRentCommandSqlBackgroundService : HandlerCommandPublishEventB
     {
     }
 
-    protected override CreateRentEvent CreateEventToPublish(CreateRentCommand command)
+    protected override CreateUserEvent CreateEventToPublish(CreateUserCommand command)
     {
-        return new CreateRentEvent
+        return new CreateUserEvent
         {
-            Id = command.Id, UserId = command.UserId, RentPlaneId = command.RentPlaneId, SagaId = command.SagaId
+            Id = command.Id,
+            Name = command.Name,
+            Number = command.Number,
+            Birthday = command.Birthday,
+            LicenseNumber = command.LicenseNumber,
+            LicenseImage = command.LicenseImage,
+            SagaId = command.SagaId
         };
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(CreateRentCommand command,
+    protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserCommand command,
         CancellationToken cancellationToken = default)
     {
         var service = _serviceScopeFactory.CreateScope()
             .ServiceProvider
             .GetRequiredService<ICommandDataService>();
 
-        var entity = new Command
+        Command entity = new()
         {
             SagaId = command.SagaId,
             ActionType = ActionType.Create,
             SerializerType = SerializerType.MessagePack,
-            EntityType = EntityType.Rent,
-            Type = nameof(CreateRentEvent),
+            EntityType = EntityType.User,
+            Type = nameof(CreateUserEvent),
             Data = await _serializer.SerializeAsync(CreateEventToPublish(command), cancellationToken)
         };
 

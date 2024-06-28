@@ -13,11 +13,11 @@ using Rent.Vehicles.Services.DataServices.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
-public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandPublishEventBackgroundService<
-    DeleteVehiclesCommand,
-    DeleteVehiclesEvent>
+public class UpdateVehiclesCommandBackgroundService : HandlerCommandPublishEventBackgroundService<
+    UpdateVehiclesCommand,
+    UpdateVehiclesEvent>
 {
-    public DeleteVehiclesCommandSqlBackgroundService(ILogger<DeleteVehiclesCommandSqlBackgroundService> logger,
+    public UpdateVehiclesCommandBackgroundService(ILogger<UpdateVehiclesCommandBackgroundService> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
@@ -27,12 +27,15 @@ public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
     {
     }
 
-    protected override DeleteVehiclesEvent CreateEventToPublish(DeleteVehiclesCommand command)
+    protected override UpdateVehiclesEvent CreateEventToPublish(UpdateVehiclesCommand command)
     {
-        return new DeleteVehiclesEvent { Id = command.Id, SagaId = command.SagaId };
+        return new UpdateVehiclesEvent
+        {
+            Id = command.Id, LicensePlate = command.LicensePlate, SagaId = command.SagaId
+        };
     }
 
-    protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesCommand command,
+    protected override async Task<Result<Task>> HandlerMessageAsync(UpdateVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
         var service = _serviceScopeFactory.CreateScope()
@@ -42,7 +45,7 @@ public class DeleteVehiclesCommandSqlBackgroundService : HandlerCommandPublishEv
         Command entity = new()
         {
             SagaId = command.SagaId,
-            ActionType = ActionType.Delete,
+            ActionType = ActionType.Update,
             SerializerType = SerializerType.MessagePack,
             EntityType = EntityType.Vehicles,
             Type = nameof(DeleteVehiclesEvent),
