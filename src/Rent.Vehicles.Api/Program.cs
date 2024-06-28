@@ -34,7 +34,7 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IPublisher, Publisher>()
+builder.Services.AddSingleton<IPublisher, RabbitMQPublisher>()
     .AddSingleton<ISerializer, MessagePackSerializer>()
     .AddSingleton<IModel>(service =>
     {

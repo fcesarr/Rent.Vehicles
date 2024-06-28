@@ -6,13 +6,13 @@ using Rent.Vehicles.Producers.Interfaces;
 
 namespace Rent.Vehicles.Producers.RabbitMQ;
 
-public class Publisher : IPublisher
+public class RabbitMQPublisher : IPublisher
 {
     private readonly IModel _channel;
 
     private readonly ISerializer _serializer;
 
-    public Publisher(IModel channel, ISerializer serializer)
+    public RabbitMQPublisher(IModel channel, ISerializer serializer)
     {
         _channel = channel;
         _serializer = serializer;

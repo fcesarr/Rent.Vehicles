@@ -40,6 +40,17 @@ public static class ServiceExtension
             .AddScoped<IDataService<TEntity>, DataService<TEntity>>();
     }
 
+    public static IServiceCollection AddProjectionDomain<TEntity, TIService,
+        TServiceImplementation>(this IServiceCollection services)
+        where TEntity : Entity
+        where TIService : class, IDataService<TEntity>
+        where TServiceImplementation : DataService<TEntity>, TIService
+    {
+        return services.AddScoped<IValidator<TEntity>, Validator<TEntity>>()
+            .AddScoped<IRepository<TEntity>, MongoRepository<TEntity>>()
+            .AddScoped<TIService, TServiceImplementation>();
+    }
+
     public static IServiceCollection AddDefaultSerializer<TImplementation>(this IServiceCollection services)
         where TImplementation : class, ISerializer
     {

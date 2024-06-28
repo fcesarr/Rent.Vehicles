@@ -34,22 +34,6 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.Configure<LicenseImageSetting>(builder.Configuration.GetSection("LicenseImageSetting"));
 
 builder.Services
-    .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
-    .AddTransient<IModel>(service =>
-    {
-        ConnectionFactory factory = new()
-        {
-            HostName = "localhost",
-            Port = 5672,
-            UserName = "admin",
-            Password = "nimda",
-            RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
-            SocketReadTimeout = TimeSpan.FromSeconds(30),
-            SocketWriteTimeout = TimeSpan.FromSeconds(30)
-        };
-        var connection = factory.CreateConnection();
-        return connection.CreateModel();
-    })
     .AddTransient<IConsumer>(service =>
     {
         ConnectionFactory factory = new()
@@ -67,6 +51,68 @@ builder.Services
     })
     .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
                                                                string.Empty)
+    .AddTransient<IPeriodicTimer>(service =>
+    {
+        PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(500));
+
+        return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
+    })
+    // UserProjection
+    .AddProjectionDomain<UserProjection, IUserProjectionDataService, UserProjectionDataService>()
+    .AddScoped<IUserProjectionFacade, UserProjectionFacade>()
+    // UserProjection
+    // VehicleProjection
+    .AddProjectionDomain<VehicleProjection>()
+    .AddScoped<IVehicleProjectionFacade, VehicleProjectionFacade>()
+    // VehicleProjection
+    // VehiclesForSpecificYearProjection
+    .AddProjectionDomain<VehiclesForSpecificYearProjection>()
+    .AddScoped<IVehiclesForSpecificYearProjectionFacade, VehiclesForSpecificYearProjectionFacade>()
+    // VehiclesForSpecificYearProjection
+    // Event
+    .AddDataDomain<Event, IValidator<Event>, Validator<Event>, IDataService<Event>, DataService<Event>>()
+    .AddScoped<IEventFacade, EventFacade>()
+    // Event
+    // Command
+    .AddDataDomain<Command, IValidator<Command>, Validator<Command> , ICommandDataService, CommandDataService>()
+    .AddScoped<ICommandFacade,CommandFacade>()
+    // Command
+    // Vehicle
+    .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()
+    .AddScoped<IVehicleFacade, VehicleFacade>()
+    // Vehicle
+    // User
+    .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
+    .AddScoped<IUserFacade, UserFacade>()
+    // User
+    // Rent
+    .AddDataDomain<Rent.Vehicles.Entities.Rent, IRentValidator, RentValidator, IRentDataService, RentDataService>()
+    .AddScoped<IRentFacade, RentFacade>()
+    // Rent
+    // RentPlane
+    .AddDataDomain<RentalPlane, IValidator<RentalPlane>, Validator<RentalPlane>, IDataService<RentalPlane>, DataService<RentalPlane>>()
+    // RentPlane
+    .AddSingleton<IUploadService, FileUploadService>()
+    .AddSingleton<ILicenseImageService, LicenseImageService>()
+    .AddSingleton<IPublisher>(service => 
+    {
+        ConnectionFactory factory = new()
+        {
+            HostName = "localhost",
+            Port = 5672,
+            UserName = "admin",
+            Password = "nimda",
+            RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
+            SocketReadTimeout = TimeSpan.FromSeconds(30),
+            SocketWriteTimeout = TimeSpan.FromSeconds(30)
+        };
+        var connection = factory.CreateConnection();
+
+        var serializer = service.GetRequiredService<ISerializer>();
+        
+        return new RabbitMQPublisher(connection.CreateModel(), serializer);
+    })
+    .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
     .AddSingleton<IMongoDatabase>(service =>
     {
         var configuration = service.GetRequiredService<IConfiguration>();
@@ -77,41 +123,16 @@ builder.Services
 
         return client.GetDatabase("rent");
     })
-    .AddTransient<IPeriodicTimer>(service =>
-    {
-        PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(500));
-
-        return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
-    })
-    .AddScoped<IValidator<Command>, Validator<Command>>()
-    .AddRepository<IRepository<Command>, EntityFrameworkRepository<Command>>()
-    .AddScoped<ICommandDataService, CommandDataService>()
-    .AddProjectionDomain<VehicleProjection>()
-    .AddProjectionDomain<VehiclesForSpecificYearProjection>()
-    .AddDataDomain<Event>()
-    .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()
-    .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
     .AddDefaultSerializer<MessagePackSerializer>()
-    .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
-    .AddScoped<IUserFacade, UserFacade>()
-    .AddScoped<IRentValidator, RentValidator>()
-    .AddScoped<IRepository<Rent.Vehicles.Entities.Rent>, EntityFrameworkRepository<Rent.Vehicles.Entities.Rent>>()
-    .AddScoped<IRentDataService, RentDataService>()
-    .AddScoped<IValidator<RentalPlane>, Validator<RentalPlane>>()
-    .AddScoped<IRepository<RentalPlane>, EntityFrameworkRepository<RentalPlane>>()
-    .AddScoped<IDataService<RentalPlane>, DataService<RentalPlane>>()
-    .AddScoped<IVehicleDataService, VehicleDataService>()
-    .AddScoped<IRentFacade, RentFacade>()
-    .AddSingleton<IUploadService, FileUploadService>()
-    .AddSingleton<ILicenseImageService, LicenseImageService>()
-    .AddSingleton<ISerializer, MessagePackSerializer>()
-    .AddSingleton<IPublisher, Publisher>()
+    .AddHostedService<CreateRentCommandBackgroundService>()
+    .AddHostedService<CreateUserCommandBackgroundService>()
     .AddHostedService<CreateVehiclesCommandBackgroundService>()
     .AddHostedService<DeleteVehiclesCommandBackgroundService>()
-    .AddHostedService<UpdateVehiclesCommandBackgroundService>()
-    .AddHostedService<CreateUserCommandBackgroundService>()
-    .AddHostedService<CreateRentCommandBackgroundService>()
     .AddHostedService<UpdateRentCommandBackgroundService>()
+    .AddHostedService<UpdateUserCommandBackgroundService>()
+    .AddHostedService<UpdateUserLicenseImageCommandBackgroundService>()
+    .AddHostedService<UpdateVehiclesCommandBackgroundService>()
+    .AddHostedService<CreateRentEventBackgroundService>()
     .AddHostedService<CreateUserEventBackgroundService>()
     .AddHostedService<CreateUserProjectionEventBackgroundService>()
     .AddHostedService<CreateVehiclesEventBackgroundService>()
@@ -121,11 +142,13 @@ builder.Services
     .AddHostedService<DeleteVehiclesEventBackgroundService>()
     .AddHostedService<DeleteVehiclesProjectionEventBackgroundService>()
     .AddHostedService<EventBackgroundService>()
+    .AddHostedService<UpdateRentEventBackgroundService>()
+    .AddHostedService<UpdateUserEventBackgroundService>()
+    .AddHostedService<UpdateUserLicenseImageEventBackgroundService>()
+    .AddHostedService<UpdateUserProjectionEventBackgroundService>()
     .AddHostedService<UpdateVehiclesEventBackgroundService>()
     .AddHostedService<UpdateVehiclesProjectionEventBackgroundService>()
-    .AddHostedService<UploadUserLicenseImageEventBackgroundService>()
-    .AddHostedService<CreateRentEventBackgroundService>()
-    .AddHostedService<UpdateRentEventBackgroundService>();
+    .AddHostedService<UploadUserLicenseImageEventBackgroundService>();
 
 var host = builder.Build();
 host.Run();
