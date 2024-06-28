@@ -7,11 +7,9 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services.DataServices;
 
-public class CommandDataService : DataService<Command>, ICommandDataService
+public class EventDataService : DataService<Entities.Event>, IEventDataService
 {
-    public CommandDataService(ILogger<DataService<Command>> logger,
-        ICommandValidator validator,
-        IRepository<Command> repository) : base(logger, validator, repository)
+    public EventDataService(ILogger<EventDataService> logger, IEventValidator validator, IRepository<Event> repository) : base(logger, validator, repository)
     {
     }
 }

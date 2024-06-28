@@ -1,5 +1,6 @@
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages.Projections.Events;
+using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
@@ -9,27 +10,26 @@ namespace Rent.Vehicles.Services.Facades;
 
 public class VehiclesForSpecificYearProjectionFacade : IVehiclesForSpecificYearProjectionFacade
 {
-    private readonly IDataService<VehiclesForSpecificYearProjection> _dataService;
-    private readonly IVehicleDataService _vehicleDataService;
+    private readonly IVehiclesForSpecificYearProjectionDataService _dataProjectionService;
+    private readonly IVehicleDataService _dataService;
 
-    public VehiclesForSpecificYearProjectionFacade(IVehicleDataService vehicleDataService,
-        IDataService<VehiclesForSpecificYearProjection> dataService)
+    public VehiclesForSpecificYearProjectionFacade(IVehiclesForSpecificYearProjectionDataService dataProjectionService, IVehicleDataService dataService)
     {
-        _vehicleDataService = vehicleDataService;
+        _dataProjectionService = dataProjectionService;
         _dataService = dataService;
     }
 
     public async Task<Result<VehicleResponse>> CreateAsync(CreateVehiclesForSpecificYearProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var vehicle = await _vehicleDataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
+        var vehicle = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 
         if (!vehicle.IsSuccess)
         {
             return vehicle.Exception!;
         }
 
-        var entity = await _dataService.CreateAsync(vehicle.Value!.ToProjection<VehiclesForSpecificYearProjection>(),
+        var entity = await _dataProjectionService.CreateAsync(vehicle.Value!.ToProjection<VehiclesForSpecificYearProjection>(),
             cancellationToken);
 
         if (!entity.IsSuccess)

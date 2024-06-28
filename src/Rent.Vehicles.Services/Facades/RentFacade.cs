@@ -12,7 +12,7 @@ public class RentFacade : IRentFacade
 {
     private readonly IRentDataService _dataService;
 
-    private readonly IDataService<RentalPlane> _rentalPlaneDataService;
+    private readonly IRentalPlaneDataService _rentalPlaneDataService;
 
     private readonly IUnitOfWork _unitOfWork;
 
@@ -20,7 +20,7 @@ public class RentFacade : IRentFacade
 
     private readonly IVehicleDataService _vehicleService;
 
-    public RentFacade(IRentDataService dataService, IDataService<RentalPlane> rentalPlaneDataService,
+    public RentFacade(IRentDataService dataService, IRentalPlaneDataService rentalPlaneDataService,
         IUnitOfWork unitOfWork, IVehicleDataService vehicleService, IUserDataService userService)
     {
         _dataService = dataService;

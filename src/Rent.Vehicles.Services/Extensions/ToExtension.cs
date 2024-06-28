@@ -114,6 +114,24 @@ public static class ToExtension
         };
     }
 
+    public static RentResponse ToResponse(this RentProjection projection)
+    {
+        return new RentResponse
+        {
+            Id = projection.Id,
+            NumberOfDays = projection.NumberOfDays,
+            DailyCost = projection.DailyCost,
+            StartDate = projection.StartDate,
+            EndDate = projection.EndDate,
+            EstimatedDate = projection.EstimatedDate,
+            PreEndDatePercentageFine = projection.PreEndDatePercentageFine,
+            PostEndDateFine = projection.PostEndDateFine,
+            Cost = projection.Cost,
+            Vehicle = projection.Vehicle!.ToResponse<VehicleProjection>(),
+            User = projection.User!.ToResponse()
+        };
+    }
+
     public static User ToEntity(this CreateUserEvent @event, string licensePath)
     {
         return new User
@@ -203,6 +221,37 @@ public static class ToExtension
             Model = entity.Model,
             LicensePlate = entity.LicensePlate,
             Type = entity.Type
+        };
+    }
+
+    public static UserProjection ToProjection(this User entity)
+    {
+        return new UserProjection
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            Number = entity.Number,
+            Birthday = entity.Birthday,
+            LicenseNumber = entity.LicenseNumber,
+            LicensePath = entity.LicenseNumber
+        };
+    }
+
+    public static RentProjection ToProjection(this Entities.Rent entity)
+    {
+        return new RentProjection
+        {
+            Id = entity.Id,
+            NumberOfDays = entity.NumberOfDays,
+            DailyCost = entity.DailyCost,
+            StartDate = entity.StartDate,
+            EndDate = entity.EndDate,
+            EstimatedDate = entity.EstimatedDate,
+            PreEndDatePercentageFine = entity.PreEndDatePercentageFine,
+            PostEndDateFine = entity.PostEndDateFine,
+            Cost = entity.Cost,
+            Vehicle = entity.Vehicle!.ToProjection<VehicleProjection>(),
+            User = entity.User!.ToProjection()
         };
     }
 

@@ -6,7 +6,7 @@ namespace Rent.Vehicles.Entities.Projections;
 
 public class UserProjection : Entity
 {
-    [BsonElement("Year")]
+    [BsonElement("Name")]
     public required string Name
     {
         get;

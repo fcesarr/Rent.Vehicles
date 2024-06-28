@@ -2,11 +2,9 @@ using Rent.Vehicles.Entities;
 
 namespace Rent.Vehicles.Services.Interfaces;
 
-public interface IVehicleDataService : IVehicleDataService<Vehicle>;
-
-public interface IVehicleDataService<TEntity> : IDataService<TEntity> where TEntity : Entity
+public interface IVehicleDataService : IDataService<Vehicle>
 {
-    Task<Result<TEntity>> UpdateAsync(Guid id,
+    Task<Result<Vehicle>> UpdateAsync(Guid id,
         string licensePlate,
         CancellationToken cancellationToken = default);
 }

@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
@@ -11,11 +12,11 @@ namespace Rent.Vehicles.Services.Facades;
 
 public class EventFacade : IEventFacade
 {
-    private readonly IDataService<Event> _dataService;
+    private readonly IEventDataService _dataService;
 
     private readonly ISerializer _serializer;
 
-    public EventFacade(IDataService<Event> dataService, ISerializer serializer)
+    public EventFacade(IEventDataService dataService, ISerializer serializer)
     {
         _dataService = dataService;
         _serializer = serializer;

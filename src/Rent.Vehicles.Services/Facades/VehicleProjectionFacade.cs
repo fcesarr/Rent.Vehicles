@@ -9,10 +9,10 @@ namespace Rent.Vehicles.Services.Facades;
 
 public class VehicleProjectionFacade : IVehicleProjectionFacade
 {
-    private readonly IDataService<VehicleProjection> _dataService;
+    private readonly IVehicleProjectionDataService _dataService;
     private readonly IVehicleDataService _vehicleDataService;
 
-    public VehicleProjectionFacade(IVehicleDataService vehicleDataService, IDataService<VehicleProjection> dataService)
+    public VehicleProjectionFacade(IVehicleDataService vehicleDataService, IVehicleProjectionDataService dataService)
     {
         _vehicleDataService = vehicleDataService;
         _dataService = dataService;

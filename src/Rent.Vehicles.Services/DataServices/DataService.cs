@@ -10,7 +10,7 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services;
 
-public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
+public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
 {
     protected readonly ILogger<DataService<TEntity>> _logger;
 
@@ -27,7 +27,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         _repository = repository;
     }
 
-    public async Task<Result<TEntity>> CreateAsync(TEntity? entity, CancellationToken cancellationToken = default)
+    public virtual async Task<Result<TEntity>> CreateAsync(TEntity? entity, CancellationToken cancellationToken = default)
     {
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
@@ -39,7 +39,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         return await _repository.CreateAsync(result.Instance, cancellationToken);
     }
 
-    public async Task<Result<bool>> DeleteAsync(TEntity? entity, CancellationToken cancellationToken = default)
+    public virtual async Task<Result<bool>> DeleteAsync(TEntity? entity, CancellationToken cancellationToken = default)
     {
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
@@ -53,7 +53,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         return true;
     }
 
-    public async Task<Result<IEnumerable<TEntity>>> FindAsync(Expression<Func<TEntity, bool>> predicate,
+    public virtual async Task<Result<IEnumerable<TEntity>>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         bool descending = false,
         Expression<Func<TEntity, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default)
@@ -71,7 +71,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
             .ToList();
     }
 
-    public async Task<Result<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate,
+    public virtual async Task<Result<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
         var entity = await _repository.GetAsync(predicate, cancellationToken: cancellationToken);
@@ -84,7 +84,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         return entity;
     }
 
-    public async Task<Result<TEntity>> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual async Task<Result<TEntity>> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
@@ -98,7 +98,7 @@ public class DataService<TEntity> : IDataService<TEntity> where TEntity : Entity
         return await _repository.UpdateAsync(result.Instance, cancellationToken);
     }
 
-    public async Task<Result<bool>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public virtual async Task<Result<bool>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var entity = await GetAsync(x => x.Id == id, cancellationToken);
 

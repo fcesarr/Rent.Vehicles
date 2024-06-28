@@ -20,7 +20,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
     {
         _logger = logger;
         _mongoCollection = mongoDatabase
-            .GetCollection<TEntity>($"{nameof(TEntity).ToLower()}s");
+            .GetCollection<TEntity>($"{typeof(TEntity).Name.ToLower()}s");
     }
 
     public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)

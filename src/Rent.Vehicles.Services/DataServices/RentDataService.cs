@@ -1,7 +1,10 @@
+using System.Linq.Expressions;
+
 using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
@@ -47,7 +50,7 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
             return entity.Exception!;
         }
 
-        var entityToUpdate = Update(entity.Value!, endDate);
+        var entityToUpdate = UpdateCostAndEstimatedDate(entity.Value!, endDate);
 
         var result = await _validator.ValidateAsync(entityToUpdate, cancellationToken);
 
@@ -69,12 +72,30 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
             return entity.Exception!;
         }
 
-        var entityToUpdate = Update(entity.Value!, endDate);
+        var entityToUpdate = UpdateCostAndEstimatedDate(entity.Value!, endDate);
 
         return await UpdateAsync(entityToUpdate, cancellationToken);
     }
 
-    private Entities.Rent Update(Entities.Rent entity, DateTime endDate)
+    public async override Task<Result<Entities.Rent>> GetAsync(Expression<Func<Entities.Rent, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        var includes = new List<Expression<Func<Entities.Rent, dynamic>>>
+        {
+            x => x.Vehicle,
+            x => x.User,
+        };
+
+        var entity = await _repository.GetAsync(predicate, includes: includes, cancellationToken: cancellationToken);
+
+        if (entity == null)
+        {
+            return Result<Entities.Rent>.Failure(new NullException($"Entity {nameof(Entities.Rent)} not found"));
+        }
+
+        return entity;
+    }
+
+    private Entities.Rent UpdateCostAndEstimatedDate(Entities.Rent entity, DateTime endDate)
     {
         if (endDate.Date.Ticks < entity.EstimatedDate.Date.Ticks)
         {

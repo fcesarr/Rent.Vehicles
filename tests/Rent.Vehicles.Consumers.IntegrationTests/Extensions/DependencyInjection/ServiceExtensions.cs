@@ -75,19 +75,23 @@ public static class ServiceExtensions
                 .AddScoped<IUserProjectionFacade, UserProjectionFacade>()
                 // UserProjection
                 // VehicleProjection
-                .AddProjectionDomain<VehicleProjection>()
+                .AddProjectionDomain<VehicleProjection, IVehicleProjectionDataService, VehicleProjectionDataService>()
                 .AddScoped<IVehicleProjectionFacade, VehicleProjectionFacade>()
                 // VehicleProjection
                 // VehiclesForSpecificYearProjection
-                .AddProjectionDomain<VehiclesForSpecificYearProjection>()
+                .AddProjectionDomain<VehiclesForSpecificYearProjection, IVehiclesForSpecificYearProjectionDataService, VehiclesForSpecificYearProjectionDataService>()
                 .AddScoped<IVehiclesForSpecificYearProjectionFacade, VehiclesForSpecificYearProjectionFacade>()
                 // VehiclesForSpecificYearProjection
+                // RentProjection
+                .AddProjectionDomain<RentProjection, IRentProjectionDataService, RentProjectionDataService>()
+                .AddScoped<IRentProjectionFacade, RentProjectionFacade>()
+                // RentProjection
                 // Event
-                .AddDataDomain<Event, IValidator<Event>, Validator<Event>, IDataService<Event>, DataService<Event>>()
+                .AddDataDomain<Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
                 .AddScoped<IEventFacade, EventFacade>()
                 // Event
                 // Command
-                .AddDataDomain<Command, IValidator<Command>, Validator<Command> , ICommandDataService, CommandDataService>()
+                .AddDataDomain<Command, ICommandValidator, CommandValidator , ICommandDataService, CommandDataService>()
                 .AddScoped<ICommandFacade,CommandFacade>()
                 // Command
                 // Vehicle
@@ -103,7 +107,7 @@ public static class ServiceExtensions
                 .AddScoped<IRentFacade, RentFacade>()
                 // Rent
                 // RentPlane
-                .AddDataDomain<RentalPlane, IValidator<RentalPlane>, Validator<RentalPlane>, IDataService<RentalPlane>, DataService<RentalPlane>>()
+                .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
                 // RentPlane
                 .AddSingleton<IUploadService, FileUploadService>()
                 .AddSingleton<ILicenseImageService, LicenseImageService>()
@@ -137,6 +141,7 @@ public static class ServiceExtensions
                     return client.GetDatabase("rent");
                 })
                 .AddDefaultSerializer<MessagePackSerializer>()
+                .AddDefaultSerializer<MessagePackSerializer>()
                 .AddSingleton<CreateRentCommandBackgroundService>()
                 .AddSingleton<CreateUserCommandBackgroundService>()
                 .AddSingleton<CreateVehiclesCommandBackgroundService>()
@@ -146,6 +151,7 @@ public static class ServiceExtensions
                 .AddSingleton<UpdateUserLicenseImageCommandBackgroundService>()
                 .AddSingleton<UpdateVehiclesCommandBackgroundService>()
                 .AddSingleton<CreateRentEventBackgroundService>()
+                .AddSingleton<CreateRentProjectionEventBackgroundService>()
                 .AddSingleton<CreateUserEventBackgroundService>()
                 .AddSingleton<CreateUserProjectionEventBackgroundService>()
                 .AddSingleton<CreateVehiclesEventBackgroundService>()
@@ -156,6 +162,7 @@ public static class ServiceExtensions
                 .AddSingleton<DeleteVehiclesProjectionEventBackgroundService>()
                 .AddSingleton<EventBackgroundService>()
                 .AddSingleton<UpdateRentEventBackgroundService>()
+                .AddSingleton<UpdateRentProjectionEventBackgroundService>()
                 .AddSingleton<UpdateUserEventBackgroundService>()
                 .AddSingleton<UpdateUserLicenseImageEventBackgroundService>()
                 .AddSingleton<UpdateUserProjectionEventBackgroundService>()

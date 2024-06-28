@@ -3,4 +3,4 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services.Validators;
 
-public class EventValidator : Validator<Event>, IEventValidator;
+public class RentalPlaneValidator : Validator<RentalPlane>, IRentalPlaneValidator;
