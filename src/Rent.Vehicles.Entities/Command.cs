@@ -38,7 +38,7 @@ public class Command : Entity
         set;
     }
 
-    public required IEnumerable<byte> Data
+    public required IList<byte> Data
     {
         get;
         set;

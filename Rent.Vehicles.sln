@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -20,6 +20,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rent.Vehicles.Database", "src\Rent.Vehicles.Database\Rent.Vehicles.Database.csproj", "{300BEB57-668F-45B4-AE19-C118F010C9AC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rent.Vehicles.Api", "src\Rent.Vehicles.Api\Rent.Vehicles.Api.csproj", "{86F2BB4F-2A1B-4103-8578-E157100FF031}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{6B30E499-E52A-4ADB-A3B1-4AF46AEB93A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rent.Vehicles.Consumers.IntegrationTests", "tests\Rent.Vehicles.Consumers.IntegrationTests\Rent.Vehicles.Consumers.IntegrationTests.csproj", "{B8C3CABB-3FDB-46BA-90D0-33A9F63FADDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -62,6 +66,10 @@ Global
 		{86F2BB4F-2A1B-4103-8578-E157100FF031}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86F2BB4F-2A1B-4103-8578-E157100FF031}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86F2BB4F-2A1B-4103-8578-E157100FF031}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8C3CABB-3FDB-46BA-90D0-33A9F63FADDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8C3CABB-3FDB-46BA-90D0-33A9F63FADDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8C3CABB-3FDB-46BA-90D0-33A9F63FADDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8C3CABB-3FDB-46BA-90D0-33A9F63FADDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0A44474C-4C6A-43EE-8BF4-08E2018D58FE} = {4000CE07-4D78-4950-A80F-151A76C2992D}
@@ -72,5 +80,6 @@ Global
 		{BB4BE12C-AB72-455E-8C11-877AACDF16EE} = {4000CE07-4D78-4950-A80F-151A76C2992D}
 		{300BEB57-668F-45B4-AE19-C118F010C9AC} = {4000CE07-4D78-4950-A80F-151A76C2992D}
 		{86F2BB4F-2A1B-4103-8578-E157100FF031} = {4000CE07-4D78-4950-A80F-151A76C2992D}
+		{B8C3CABB-3FDB-46BA-90D0-33A9F63FADDF} = {6B30E499-E52A-4ADB-A3B1-4AF46AEB93A1}
 	EndGlobalSection
 EndGlobal

@@ -34,7 +34,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
-        _channel.SubscribeAsync(nameof(TEventToConsume), cancellationToken);
+        _channel.SubscribeAsync(typeof(TEventToConsume).Name, cancellationToken);
 
         return base.StartAsync(cancellationToken);
     }

@@ -10,6 +10,8 @@ using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.IntegrationTests.Configuration;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Interfaces;
 
 using Xunit.Abstractions;
@@ -17,10 +19,11 @@ using Xunit.Abstractions;
 namespace Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 
 [ExcludeFromCodeCoverage]
-public class ConsumerFixture<TBackgroundService, TCommand, TEntity> : IDisposable 
+public class ConsumerFixture<TBackgroundService, TCommand, TEntity, TService> : IDisposable 
     where TBackgroundService : BackgroundService 
     where TCommand : Messages.Command
     where TEntity : Entities.Command
+    where TService : IDataService<TEntity>
 {
     private TBackgroundService? _backgroundService;
 
@@ -30,11 +33,11 @@ public class ConsumerFixture<TBackgroundService, TCommand, TEntity> : IDisposabl
 
     private readonly Fixture? _fixture;
 
-    private IModel? _model;
+    private IPublisher? _publisher;
 
     private ISerializer? _serializer;
 
-    private IService<TEntity>? _service;
+    private TService? _service;
 
     public void Init(ITestOutputHelper output)
     {
@@ -43,9 +46,9 @@ public class ConsumerFixture<TBackgroundService, TCommand, TEntity> : IDisposabl
             .GetServiceProvider();
     
         _backgroundService = _serviceProfile.GetRequiredService<TBackgroundService>();
-        _model = _serviceProfile.GetRequiredService<IModel>();
+        _publisher = _serviceProfile.GetRequiredService<IPublisher>();
         _serializer = _serviceProfile.GetRequiredService<ISerializer>();
-        _service = _serviceProfile.GetRequiredService<IService<TEntity>>();
+        _service = _serviceProfile.GetRequiredService<TService>();
     }
 
     public Fixture GetFixture() => _fixture ?? new Fixture();
@@ -70,17 +73,12 @@ public class ConsumerFixture<TBackgroundService, TCommand, TEntity> : IDisposabl
         _started = false;
     }
 
-    public async Task SendCommandAsync(TCommand message, CancellationToken cancellationToken)
+    public async Task SendCommandAsync(TCommand command, CancellationToken cancellationToken)
     {
-        var bytes = await _serializer!.SerializeAsync(message, cancellationToken);
-
-        _model?.BasicPublish(exchange: string.Empty,
-            routingKey: nameof(TCommand),
-            basicProperties: null,
-            body: bytes);
+        await _publisher!.PublishCommandAsync(command, cancellationToken);
     }
 
-    public async Task<TEntity?> GetCommandAsync(Expression<Func<TEntity, bool>> predicate,
+    public async Task<Result<TEntity>?> GetCommandAsync(Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
         return await _service!.GetAsync(predicate, cancellationToken);

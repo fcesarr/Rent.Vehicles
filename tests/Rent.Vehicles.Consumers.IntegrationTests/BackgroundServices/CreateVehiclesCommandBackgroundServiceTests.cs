@@ -9,14 +9,14 @@ using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(DeleteVehiclesBackgroundServiceCollection))]
-public class DeleteVehiclesBackgroundServiceTests : IDisposable
+[Collection(nameof(CreateVehiclesCommandBackgroundServiceCollection))]
+public class CreateVehiclesCommandBackgroundServiceTests : IDisposable
 {
-    private readonly DeleteVehiclesBackgroundServiceFixture _fixture;
+    private readonly CreateVehiclesCommandBackgroundServiceFixture _fixture;
     private readonly ITestOutputHelper _output;
 
-    public DeleteVehiclesBackgroundServiceTests(
-        DeleteVehiclesBackgroundServiceFixture fixture,
+    public CreateVehiclesCommandBackgroundServiceTests(
+        CreateVehiclesCommandBackgroundServiceFixture fixture,
         ITestOutputHelper output)
     {
         _fixture = fixture;
@@ -27,14 +27,20 @@ public class DeleteVehiclesBackgroundServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SendDeleteVehiclesCommandAndVerifyCommandIsCreatedInDatabase()
+    public async Task SendCreateVehiclesCommandAndVerifyCommandIsCreatedInDatabase()
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
 
-        var command = _fixture.GetFixture()
-            .Create<DeleteVehiclesCommand>();
+        var command = _fixture
+            .GetFixture()
+            .Build<CreateVehiclesCommand>()
+            .With(x => x.Year, () => {
+                var random = new Random();
+                return random.Next(2024, 2024);
+            })
+            .Create();
 
         await _fixture.SendCommandAsync(command, cancellationTokenSource.Token);
 
@@ -44,7 +50,10 @@ public class DeleteVehiclesBackgroundServiceTests : IDisposable
 
         do
         {
-            found = await _fixture.GetCommandAsync(x => x.SagaId == command.SagaId) != null;
+            var result = await _fixture.GetCommandAsync(x => x.SagaId == command.SagaId);
+
+            found = result!.IsSuccess;
+
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
 
