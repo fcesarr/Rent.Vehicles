@@ -62,6 +62,8 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
                     continue;
                 }
 
+                _logger.LogInformation($"Handler message from type {typeof(TEventToConsume).Name}");
+
                 var result = await HandlerAsync(message, cancellationToken);
 
                 if (!result.IsSuccess)

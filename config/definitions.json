@@ -12,12 +12,22 @@
     "vhosts": [
         {
             "name": "/"
+        },
+        {
+            "name": "/integrationTests"
         }
     ],
     "permissions": [
         {
             "user": "admin",
             "vhost": "/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "admin",
+            "vhost": "/integrationTests",
             "configure": ".*",
             "write": ".*",
             "read": ".*"

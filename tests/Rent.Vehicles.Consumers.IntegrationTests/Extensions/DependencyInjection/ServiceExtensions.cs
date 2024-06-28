@@ -49,17 +49,7 @@ public static class ServiceExtensions
             => services.AddLogging(configuration)
                 .AddTransient<IConsumer>(service =>
                 {
-                    ConnectionFactory factory = new()
-                    {
-                        HostName = "localhost",
-                        Port = 5672,
-                        UserName = "admin",
-                        Password = "nimda",
-                        RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
-                        SocketReadTimeout = TimeSpan.FromSeconds(30),
-                        SocketWriteTimeout = TimeSpan.FromSeconds(30)
-                    };
-                    var connection = factory.CreateConnection();
+                    var connection = service.GetRequiredService<IConnection>();
                     return new RabbitMQConsumer(connection.CreateModel());
                 })
                 .AddDbContextDependencies<IDbContext, RentVehiclesContext>(configuration.GetConnectionString("Sql") ??
@@ -113,20 +103,8 @@ public static class ServiceExtensions
                 .AddSingleton<ILicenseImageService, LicenseImageService>()
                 .AddSingleton<IPublisher>(service => 
                 {
-                    ConnectionFactory factory = new()
-                    {
-                        HostName = "localhost",
-                        Port = 5672,
-                        UserName = "admin",
-                        Password = "nimda",
-                        RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
-                        SocketReadTimeout = TimeSpan.FromSeconds(30),
-                        SocketWriteTimeout = TimeSpan.FromSeconds(30)
-                    };
-                    var connection = factory.CreateConnection();
-
+                    var connection = service.GetRequiredService<IConnection>();
                     var serializer = service.GetRequiredService<ISerializer>();
-                    
                     return new RabbitMQPublisher(connection.CreateModel(), serializer);
                 })
                 .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
@@ -139,6 +117,21 @@ public static class ServiceExtensions
                     MongoClient client = new(connectionString);
 
                     return client.GetDatabase("rent");
+                })
+                .AddSingleton<IConnection>(service => {
+                    var factory =  new ConnectionFactory 
+                    {
+                        HostName = "localhost",
+                        Port = 5672,
+                        UserName = "admin",
+                        Password = "nimda",
+                        VirtualHost = "/integrationTests",
+                        RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
+                        SocketReadTimeout = TimeSpan.FromSeconds(30),
+                        SocketWriteTimeout = TimeSpan.FromSeconds(30)
+                    };
+
+                    return factory.CreateConnection();
                 })
                 .AddDefaultSerializer<MessagePackSerializer>()
                 .AddDefaultSerializer<MessagePackSerializer>()
