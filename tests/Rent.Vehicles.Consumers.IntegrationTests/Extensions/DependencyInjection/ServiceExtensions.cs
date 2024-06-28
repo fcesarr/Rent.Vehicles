@@ -45,7 +45,7 @@ namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjectio
 public static class ServiceExtensions
 {
     public static IServiceCollection AddServicesTests(this IServiceCollection services,
-        IConfiguration configuration, ITestOutputHelper output)
+        IConfiguration configuration)
             => services.AddLogging(configuration)
                 .AddTransient<IConsumer>(service =>
                 {
@@ -116,7 +116,9 @@ public static class ServiceExtensions
 
                     MongoClient client = new(connectionString);
 
-                    return client.GetDatabase("rent");
+                    var databaseName = MongoUrl.Create(connectionString).DatabaseName;
+
+                    return client.GetDatabase(databaseName);
                 })
                 .AddSingleton<IConnection>(service => {
                     var factory =  new ConnectionFactory 

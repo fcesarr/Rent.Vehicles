@@ -15,7 +15,7 @@ public class ServiceProviderManager : IDisposable
         _serviceProvider = serviceProvider;
     }
 
-    public static ServiceProviderManager GetInstance(ITestOutputHelper output)
+    public static ServiceProviderManager GetInstance()
     {
         if(_serviceProviderManager != null)
             return _serviceProviderManager;
@@ -25,7 +25,7 @@ public class ServiceProviderManager : IDisposable
 
         var services = new ServiceCollection();
 
-        services.AddServicesTests(configuration, output)
+        services.AddServicesTests(configuration)
                 .AddSingleton(configuration);
 
         var serviceProvider = services.BuildServiceProvider();

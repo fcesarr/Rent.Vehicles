@@ -28,7 +28,6 @@ public abstract class CommandBackgroundServiceTests<TBackgroundService, TCommand
         ITestOutputHelper output)
     {
         _classFixture = classFixture;
-        _classFixture.Init(output);
     }
 
     protected abstract TCommand GetCommand();
@@ -65,10 +64,5 @@ public abstract class CommandBackgroundServiceTests<TBackgroundService, TCommand
 
         await _classFixture.GetRequiredService<TBackgroundService>()
             .StopAsync(cancellationTokenSource.Token);
-    }
-
-    public void Dispose()
-    {
-        _classFixture.Dispose();
     }
 }

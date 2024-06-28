@@ -1,29 +1,42 @@
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rent.Vehicles.Consumers.IntegrationTests.Configuration;
+using Rent.Vehicles.Entities.Contexts;
+using Rent.Vehicles.Entities.Contexts.Interfaces;
 
 using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 
-public class CommonFixture : IDisposable
+public class CommonFixture : IAsyncLifetime
 {
     private ServiceProvider? _serviceProvider;
-
-    public void Init(ITestOutputHelper output)
-    {
-        _serviceProvider = ServiceProviderManager
-            .GetInstance(output)
-            .GetServiceProvider();
-    }
 
     public T GetRequiredService<T>() where T : class
     {
         return _serviceProvider!.GetRequiredService<T>();
     }
 
-    public void Dispose()
+    public async Task InitializeAsync()
     {
-        _serviceProvider!.Dispose();
+        if(_serviceProvider == null)
+            _serviceProvider = ServiceProviderManager
+                .GetInstance()
+                .GetServiceProvider();
+
+        var context = GetRequiredService<IDbContext>();
+
+        await context.Database.EnsureCreatedAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        var context = GetRequiredService<IDbContext>();
+
+        await context.Database.EnsureDeletedAsync();
+
+        await _serviceProvider!.DisposeAsync();
     }
 }

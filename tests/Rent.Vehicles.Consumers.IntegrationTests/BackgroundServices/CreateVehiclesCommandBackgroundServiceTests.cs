@@ -31,7 +31,6 @@ public class CreateVehiclesCommandBackgroundServiceTests
     {
         _fixture = new Fixture();
         _classFixture = classFixture;
-        _classFixture.Init(output);
     }
 
     [Fact]
