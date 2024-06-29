@@ -11,7 +11,7 @@ using RabbitMQ.Client;
 using Rent.Vehicles.Consumers;
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
-using Rent.Vehicles.Consumers.Extensions;
+using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Entities;
@@ -61,40 +61,77 @@ public static class ServiceExtensions
                     return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
                 })
                 // UserProjection
-                .AddProjectionDomain<UserProjection, IUserProjectionDataService, UserProjectionDataService>()
-                .AddScoped<IUserProjectionFacade, UserProjectionFacade>()
+                .AddProjectionDomain<UserProjection,
+                    IUserProjectionDataService,
+                    UserProjectionDataService,
+                    IUserProjectionFacade,
+                    UserProjectionFacade>()
                 // UserProjection
                 // VehicleProjection
-                .AddProjectionDomain<VehicleProjection, IVehicleProjectionDataService, VehicleProjectionDataService>()
-                .AddScoped<IVehicleProjectionFacade, VehicleProjectionFacade>()
+                .AddProjectionDomain<VehicleProjection,
+                    IVehicleProjectionDataService,
+                    VehicleProjectionDataService,
+                    IVehicleProjectionFacade,
+                    VehicleProjectionFacade>()
                 // VehicleProjection
                 // VehiclesForSpecificYearProjection
-                .AddProjectionDomain<VehiclesForSpecificYearProjection, IVehiclesForSpecificYearProjectionDataService, VehiclesForSpecificYearProjectionDataService>()
-                .AddScoped<IVehiclesForSpecificYearProjectionFacade, VehiclesForSpecificYearProjectionFacade>()
+                .AddProjectionDomain<VehiclesForSpecificYearProjection,
+                    IVehiclesForSpecificYearProjectionDataService,
+                    VehiclesForSpecificYearProjectionDataService,
+                    IVehiclesForSpecificYearProjectionFacade,
+                    VehiclesForSpecificYearProjectionFacade>()
                 // VehiclesForSpecificYearProjection
                 // RentProjection
-                .AddProjectionDomain<RentProjection, IRentProjectionDataService, RentProjectionDataService>()
-                .AddScoped<IRentProjectionFacade, RentProjectionFacade>()
+                .AddProjectionDomain<RentProjection,
+                    IRentProjectionDataService,
+                    RentProjectionDataService,
+                    IRentProjectionFacade,
+                    RentProjectionFacade>()
                 // RentProjection
                 // Event
-                .AddDataDomain<Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
-                .AddScoped<IEventFacade, EventFacade>()
+                .AddDataDomain<Event,
+                    IEventValidator,
+                    EventValidator,
+                    IEventDataService,
+                    EventDataService,
+                    IEventFacade,
+                    EventFacade>()
                 // Event
                 // Command
-                .AddDataDomain<Command, ICommandValidator, CommandValidator , ICommandDataService, CommandDataService>()
-                .AddScoped<ICommandFacade,CommandFacade>()
+                .AddDataDomain<Command,
+                    ICommandValidator,
+                    CommandValidator,
+                    ICommandDataService,
+                    CommandDataService,
+                    ICommandFacade,
+                    CommandFacade>()
                 // Command
                 // Vehicle
-                .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()
-                .AddScoped<IVehicleFacade, VehicleFacade>()
+                .AddDataDomain<Vehicle,
+                    IVehicleValidator,
+                    VehicleValidator,
+                    IVehicleDataService,
+                    VehicleDataService,
+                    IVehicleFacade,
+                    VehicleFacade>()
                 // Vehicle
                 // User
-                .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
-                .AddScoped<IUserFacade, UserFacade>()
+                .AddDataDomain<User,
+                    IUserValidator,
+                    UserValidator,
+                    IUserDataService,
+                    UserDataService,
+                    IUserFacade,
+                    UserFacade>()
                 // User
                 // Rent
-                .AddDataDomain<Rent.Vehicles.Entities.Rent, IRentValidator, RentValidator, IRentDataService, RentDataService>()
-                .AddScoped<IRentFacade, RentFacade>()
+                .AddDataDomain<Rent.Vehicles.Entities.Rent,
+                    IRentValidator,
+                    RentValidator,
+                    IRentDataService,
+                    RentDataService,
+                    IRentFacade,
+                    RentFacade>()
                 // Rent
                 // RentPlane
                 .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()

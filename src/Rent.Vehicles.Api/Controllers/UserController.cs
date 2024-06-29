@@ -17,20 +17,17 @@ namespace Rent.Vehicles.Api.Controllers;
 public class UserController : Controller
 {
     private readonly IValidator<CreateUserCommand> _createCommandValidator;
-    private readonly IUserFacade _facade;
     private readonly IUserProjectionFacade _projectionFacade;
     private readonly IPublisher _publisher;
     private readonly IValidator<UpdateUserCommand> _updateCommandValidator;
-
     private readonly IValidator<UpdateUserLicenseImageCommand> _updateImageCommandValidator;
 
-    public UserController(IValidator<CreateUserCommand> createCommandValidator, IUserFacade facade,
+    public UserController(IValidator<CreateUserCommand> createCommandValidator,
         IUserProjectionFacade projectionFacade, IPublisher publisher,
         IValidator<UpdateUserCommand> updateCommandValidator,
         IValidator<UpdateUserLicenseImageCommand> updateImageCommandValidator)
     {
         _createCommandValidator = createCommandValidator;
-        _facade = facade;
         _projectionFacade = projectionFacade;
         _publisher = publisher;
         _updateCommandValidator = updateCommandValidator;

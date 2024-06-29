@@ -5,7 +5,7 @@ using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Services.Facades.Interfaces;
 
-public interface IEventFacade
+public interface IEventFacade : IFacade
 {
     Task<Result<EventResponse>> CreateAsync(Event @event, CancellationToken cancellationToken = default);
 

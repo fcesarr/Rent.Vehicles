@@ -19,20 +19,18 @@ public class RentController : Controller
 {
     private readonly IValidator<CreateRentCommand> _createCommandValidator;
     private readonly IPublisher _publisher;
-
-    private readonly IRentFacade _rentFacade;
-
+    private readonly IRentProjectionFacade _rentProjectionFacade;
     private readonly IValidator<UpdateRentCommand> _updateCommandValidator;
 
     public RentController(IPublisher publisher,
         IValidator<CreateRentCommand> createRentCommandValidator,
         IValidator<UpdateRentCommand> updateRentCommandValidator,
-        IRentFacade rentFacade)
+        IRentProjectionFacade rentProjectionFacade)
     {
         _publisher = publisher;
         _createCommandValidator = createRentCommandValidator;
         _updateCommandValidator = updateRentCommandValidator;
-        _rentFacade = rentFacade;
+        _rentProjectionFacade = rentProjectionFacade;
     }
 
     [HttpPost]
@@ -93,7 +91,7 @@ public class RentController : Controller
         DateTime estimatedDate,
         CancellationToken cancellationToken = default)
     {
-        var cost = await _rentFacade.EstimateCostAsync(id, estimatedDate, cancellationToken);
+        var cost = await _rentProjectionFacade.EstimateCostAsync(id, estimatedDate, cancellationToken);
 
         if (!cost.IsSuccess)
         {

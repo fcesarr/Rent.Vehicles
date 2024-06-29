@@ -5,6 +5,7 @@ using Rent.Vehicles.Api.Responses;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
@@ -17,7 +18,7 @@ public class VehicleController : Controller
 {
     private readonly IValidator<CreateVehiclesCommand> _createCommandValidator;
 
-    private readonly IDataService<VehicleProjection> _dataService;
+    private readonly IVehicleProjectionFacade _vehicleProjectionFacade;
 
     private readonly IValidator<DeleteVehiclesCommand> _deleteCommandValidator;
     private readonly IPublisher _publisher;
@@ -26,13 +27,13 @@ public class VehicleController : Controller
 
     public VehicleController(IPublisher publisher, IValidator<CreateVehiclesCommand> createCommandValidator,
         IValidator<UpdateVehiclesCommand> updateCommandValidator,
-        IValidator<DeleteVehiclesCommand> deleteCommandValidator, IDataService<VehicleProjection> dataService)
+        IValidator<DeleteVehiclesCommand> deleteCommandValidator, IVehicleProjectionFacade vehicleProjectionFacade)
     {
         _publisher = publisher;
         _createCommandValidator = createCommandValidator;
         _updateCommandValidator = updateCommandValidator;
         _deleteCommandValidator = deleteCommandValidator;
-        _dataService = dataService;
+        _vehicleProjectionFacade = vehicleProjectionFacade;
     }
 
     [HttpPost]
@@ -117,7 +118,7 @@ public class VehicleController : Controller
     public async Task<IResult> GetAsync([FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
-        var entity = await _dataService.GetAsync(x => x.Id == id, cancellationToken);
+        var entity = await _vehicleProjectionFacade.GetAsync(x => x.Id == id, cancellationToken);
 
         if (!entity.IsSuccess)
         {
@@ -136,7 +137,7 @@ public class VehicleController : Controller
         CancellationToken cancellationToken = default)
     {
         var entity =
-            await _dataService.GetAsync(x => x.LicensePlate == licensePlate, cancellationToken);
+            await _vehicleProjectionFacade.GetAsync(x => x.LicensePlate == licensePlate, cancellationToken);
 
         if (!entity.IsSuccess)
         {

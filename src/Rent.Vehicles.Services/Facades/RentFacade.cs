@@ -89,19 +89,6 @@ public class RentFacade : IRentFacade
         }
     }
 
-    public async Task<Result<CostResponse>> EstimateCostAsync(Guid id, DateTime estimatedDate,
-        CancellationToken cancellationToken = default)
-    {
-        var entity = await _dataService.EstimateCostAsync(id, estimatedDate, cancellationToken);
-
-        if (!entity.IsSuccess)
-        {
-            return entity.Exception!;
-        }
-
-        return new CostResponse(entity.Value!.Cost);
-    }
-
     public async Task<Result<RentResponse>> UpdateAsync(UpdateRentEvent @event,
         CancellationToken cancellationToken = default)
     {

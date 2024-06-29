@@ -1,12 +1,13 @@
 using System.Linq.Expressions;
 
 using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Services.Facades.Interfaces;
 
-public interface IUserProjectionFacade
+public interface IUserProjectionFacade : IFacade
 {
     Task<Result<UserResponse>> CreateAsync(CreateUserProjectionEvent @event,
         CancellationToken cancellationToken = default);

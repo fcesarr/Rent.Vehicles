@@ -31,22 +31,54 @@ using Rent.Vehicles.Services.Repositories;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IPublisher, RabbitMQPublisher>()
-    .AddSingleton<ISerializer, MessagePackSerializer>()
-    .AddSingleton<IModel>(service =>
+builder.Services.AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
+    // UserProjection
+    .AddProjectionDomain<UserProjection,
+        IUserProjectionDataService,
+        UserProjectionDataService,
+        IUserProjectionFacade,
+        UserProjectionFacade>()
+    // UserProjection
+    // VehicleProjection
+    .AddProjectionDomain<VehicleProjection,
+        IVehicleProjectionDataService,
+        VehicleProjectionDataService,
+        IVehicleProjectionFacade,
+        VehicleProjectionFacade>()
+    // VehicleProjection
+    // VehiclesForSpecificYearProjection
+    .AddProjectionDomain<VehiclesForSpecificYearProjection,
+        IVehiclesForSpecificYearProjectionDataService,
+        VehiclesForSpecificYearProjectionDataService,
+        IVehiclesForSpecificYearProjectionFacade,
+        VehiclesForSpecificYearProjectionFacade>()
+    // VehiclesForSpecificYearProjection
+    // RentProjection
+    .AddProjectionDomain<RentProjection,
+        IRentProjectionDataService,
+        RentProjectionDataService,
+        IRentProjectionFacade,
+        RentProjectionFacade>()
+    // RentProjection
+    // Event
+    .AddDataDomain<Event,
+        IEventValidator,
+        EventValidator,
+        IEventDataService,
+        EventDataService,
+        IEventFacade,
+        EventFacade>()
+    // Event
+    .AddSingleton<IPublisher>(service => 
     {
-        ConnectionFactory factory = new()
-        {
-            HostName = "localhost", Port = 5672, UserName = "admin", Password = "nimda"
-        };
-        var connection = factory.CreateConnection();
-        return connection.CreateModel();
+        var connection = service.GetRequiredService<IConnection>();
+        var serializer = service.GetRequiredService<ISerializer>();
+        return new RabbitMQPublisher(connection.CreateModel(), serializer);
     })
-    .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
-                                                               string.Empty)
     .AddSingleton<IMongoDatabase>(service =>
     {
         var configuration = service.GetRequiredService<IConfiguration>();
@@ -55,40 +87,35 @@ builder.Services.AddSingleton<IPublisher, RabbitMQPublisher>()
 
         MongoClient client = new(connectionString);
 
-        return client.GetDatabase("rent");
-    })
-    .AddScoped<IValidator<Event>, EventValidator>()
-    .AddScoped<IRepository<Event>, EntityFrameworkRepository<Event>>()
-    .AddScoped<IDataService<Event>, DataService<Event>>()
-    .AddScoped<IEventFacade, EventFacade>()
-    .AddScoped<IUserValidator, UserValidator>()
-    .AddScoped<ILicenseImageService, LicenseImageService>()
-    .AddScoped<IUploadService, FileUploadService>()
-    .AddScoped<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
-    .AddScoped<IRepository<User>, EntityFrameworkRepository<User>>()
-    .AddScoped<IUserDataService, UserDataService>()
-    .AddScoped<IUserFacade, UserFacade>()
-    .AddScoped<IRentValidator, RentValidator>()
-    .AddScoped<IRepository<Rent.Vehicles.Entities.Rent>, EntityFrameworkRepository<Rent.Vehicles.Entities.Rent>>()
-    .AddScoped<IRentDataService, RentDataService>()
-    .AddScoped<IValidator<RentalPlane>, Validator<RentalPlane>>()
-    .AddScoped<IRepository<RentalPlane>, EntityFrameworkRepository<RentalPlane>>()
-    .AddScoped<IDataService<RentalPlane>, DataService<RentalPlane>>()
-    .AddScoped<IVehicleDataService, VehicleDataService>()
-    .AddScoped<IRentFacade, RentFacade>()
-    .AddScoped<IVehicleValidator, VehicleValidator>()
-    .AddScoped<IRepository<Vehicle>, EntityFrameworkRepository<Vehicle>>()
-    .AddScoped<IRepository<VehicleProjection>, MongoRepository<VehicleProjection>>()
-    .AddScoped<IDataService<VehicleProjection>, DataService<VehicleProjection>>()
-    .AddScoped<IValidator<VehicleProjection>, Rent.Vehicles.Services.Validators.Validator<VehicleProjection>>()
-    .AddScoped<IValidator<CreateUserCommand>, Rent.Vehicles.Api.Validators.Validator<CreateUserCommand>>()
-    .AddScoped<IValidator<UpdateUserCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateUserCommand>>()
-    .AddScoped<IValidator<CreateRentCommand>, Rent.Vehicles.Api.Validators.Validator<CreateRentCommand>>()
-    .AddScoped<IValidator<UpdateRentCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateRentCommand>>()
-    .AddScoped<IValidator<CreateVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<CreateVehiclesCommand>>()
-    .AddScoped<IValidator<UpdateVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateVehiclesCommand>>()
-    .AddScoped<IValidator<DeleteVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<DeleteVehiclesCommand>>();
+        var databaseName = MongoUrl.Create(connectionString).DatabaseName;
 
+        return client.GetDatabase(databaseName);
+    })
+    .AddSingleton<IConnection>(service => {
+        var factory =  new ConnectionFactory 
+        {
+            HostName = "localhost",
+            Port = 5672,
+            UserName = "admin",
+            Password = "nimda",
+            VirtualHost = "/integrationTests",
+            RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
+            SocketReadTimeout = TimeSpan.FromSeconds(30),
+            SocketWriteTimeout = TimeSpan.FromSeconds(30)
+        };
+
+        return factory.CreateConnection();
+    })
+    .AddDefaultSerializer<MessagePackSerializer>()
+    .AddScoped<IValidator<CreateRentCommand>, Rent.Vehicles.Api.Validators.Validator<CreateRentCommand>>()
+    .AddScoped<IValidator<CreateUserCommand>, Rent.Vehicles.Api.Validators.Validator<CreateUserCommand>>()
+    .AddScoped<IValidator<CreateVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<CreateVehiclesCommand>>()
+    .AddScoped<IValidator<DeleteVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<DeleteVehiclesCommand>>()
+    .AddScoped<IValidator<UpdateRentCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateRentCommand>>()
+    .AddScoped<IValidator<UpdateUserCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateUserCommand>>()
+    .AddScoped<IValidator<UpdateUserLicenseImageCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateUserLicenseImageCommand>>()
+    .AddScoped<IValidator<UpdateVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateVehiclesCommand>>();
+    
 builder.Services.AddControllers();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);

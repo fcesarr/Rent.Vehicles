@@ -5,7 +5,7 @@ using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Services.Facades.Interfaces;
 
-public interface ICommandFacade
+public interface ICommandFacade : IFacade
 {
     Task<Result<CommandResponse>> CreateAsync(Command command,
         Event @event,

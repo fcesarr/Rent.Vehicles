@@ -3,7 +3,7 @@ using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Services.Facades.Interfaces;
 
-public interface IUserFacade
+public interface IUserFacade : IFacade
 {
     Task<Result<UserResponse>> CreateAsync(CreateUserEvent @event,
         CancellationToken cancellationToken = default);
