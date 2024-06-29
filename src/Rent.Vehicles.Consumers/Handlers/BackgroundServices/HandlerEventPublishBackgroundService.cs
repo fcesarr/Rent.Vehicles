@@ -31,7 +31,7 @@ public abstract class
         Event @event = new()
         {
             SagaId = eventToPublish.SagaId,
-            Type = nameof(TEventToConsume),
+            Type = eventToPublish.GetType().ToString(),
             StatusType = StatusType.Success,
             Message = string.Empty
         };
