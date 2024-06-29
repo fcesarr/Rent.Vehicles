@@ -46,7 +46,7 @@ public class CreateRentCommandBackgroundService : HandlerCommandPublishEventBack
         var @event = CreateEventToPublish(command);
 
         var entity = await service.CreateAsync(command, @event, ActionType.Create,
-            EntityType.Rent, nameof(CreateRentEvent), cancellationToken);
+            EntityType.Rent, @event.GetType().ToString(), cancellationToken);
 
         if (!entity.IsSuccess)
         {

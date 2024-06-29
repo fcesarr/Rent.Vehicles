@@ -43,9 +43,10 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     {
         while (await _periodicTimer.WaitForNextTickAsync(cancellationToken))
         {
+            ConsumerResponse? consumerResponse = default;
             try
             {
-                var consumerResponse = await _channel.ConsumeAsync(cancellationToken);
+                consumerResponse = await _channel.ConsumeAsync(cancellationToken);
 
                 if (consumerResponse == null)
                 {
@@ -73,7 +74,9 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
                         RetryException => TreatRetryExceptionAsync(consumerResponse,
                             result.Exception,
                             cancellationToken),
-                        NoRetryException or _ => TreatNoRetryExceptionAsync(result.Exception!)
+                        NoRetryException or _ => TreatNoRetryExceptionAsync(consumerResponse,
+                            result.Exception!,
+                            cancellationToken)
                     });
 
                     continue;
@@ -83,16 +86,18 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
             }
             catch (Exception ex)
             {
-                await TreatNoRetryExceptionAsync(ex);
+                await TreatNoRetryExceptionAsync(consumerResponse, ex, cancellationToken);
             }
         }
     }
 
-    private Task TreatNoRetryExceptionAsync(Exception exception)
+    private async Task TreatNoRetryExceptionAsync(ConsumerResponse? consumerResponse,
+        Exception exception, CancellationToken cancellationToken = default)
     {
-        _logger.LogError(exception, exception.Message);
+        if(consumerResponse is not null)
+            await _channel.RemoveAsync(consumerResponse.Id, cancellationToken);
 
-        return Task.CompletedTask;
+        _logger.LogError(exception, exception.Message);
     }
 
     private async Task TreatRetryExceptionAsync(ConsumerResponse consumerResponse,

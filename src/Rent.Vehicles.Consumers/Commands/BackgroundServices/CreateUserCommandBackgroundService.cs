@@ -52,7 +52,7 @@ public class CreateUserCommandBackgroundService : HandlerCommandPublishEventBack
         var @event = CreateEventToPublish(command);
 
         var entity = await service.CreateAsync(command, @event, ActionType.Create,
-            EntityType.User, nameof(CreateUserEvent), cancellationToken);
+            EntityType.User, @event.GetType().ToString(), cancellationToken);
 
         if (!entity.IsSuccess)
         {

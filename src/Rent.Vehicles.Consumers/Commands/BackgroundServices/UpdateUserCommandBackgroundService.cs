@@ -44,7 +44,7 @@ public class UpdateUserCommandBackgroundService : HandlerCommandPublishEventBack
         var @event = CreateEventToPublish(command);
 
         var entity = await service.CreateAsync(command, @event, ActionType.Update,
-            EntityType.User, nameof(UpdateUserEvent), cancellationToken);
+            EntityType.User, @event.GetType().ToString(), cancellationToken);
 
         if (!entity.IsSuccess)
         {

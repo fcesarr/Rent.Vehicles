@@ -15,7 +15,7 @@ public class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValida
 
         if (instance is null)
         {
-            validationResult.Exception = new ValidationException($"Error on Validate {nameof(TEntity)}",
+            validationResult.Exception = new ValidationException($"Error on Validate {typeof(TEntity).Name}",
                 new Dictionary<string, string[]>());
             return validationResult;
         }
@@ -28,7 +28,7 @@ public class Validator<TEntity> : AbstractValidator<TEntity>, Interfaces.IValida
         if (!result.IsValid)
         {
             validationResult.Exception =
-                new ValidationException($"Error on Validate {nameof(TEntity)}", result.ToDictionary());
+                new ValidationException($"Error on Validate {typeof(TEntity).Name}", result.ToDictionary());
 
             return validationResult;
         }

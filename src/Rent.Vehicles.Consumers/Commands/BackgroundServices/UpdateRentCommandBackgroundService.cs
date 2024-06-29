@@ -43,7 +43,7 @@ public class UpdateRentCommandBackgroundService : HandlerCommandPublishEventBack
         var @event = CreateEventToPublish(command);
 
         var entity = await service.CreateAsync(command, @event, ActionType.Update,
-            EntityType.Rent, nameof(UpdateRentEvent), cancellationToken);
+            EntityType.Rent, @event.GetType().ToString(), cancellationToken);
 
         if (!entity.IsSuccess)
         {

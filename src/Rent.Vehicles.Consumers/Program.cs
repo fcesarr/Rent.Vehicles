@@ -74,6 +74,13 @@ builder.Services.AddTransient<IConsumer>(service =>
         IRentProjectionFacade,
         RentProjectionFacade>()
     // RentProjection
+    // EventProjection
+    .AddProjectionDomain<EventProjection,
+        IEventProjectionDataService,
+        EventProjectionDataService,
+        IEventProjectionFacade,
+        EventProjectionFacade>()
+    // EventProjection
     // Event
     .AddDataDomain<Event,
         IEventValidator,
@@ -151,9 +158,9 @@ builder.Services.AddTransient<IConsumer>(service =>
             UserName = "admin",
             Password = "nimda",
             VirtualHost = "/",
-            RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
-            SocketReadTimeout = TimeSpan.FromSeconds(30),
-            SocketWriteTimeout = TimeSpan.FromSeconds(30)
+            RequestedConnectionTimeout = TimeSpan.FromSeconds(180),
+            SocketReadTimeout = TimeSpan.FromSeconds(180),
+            SocketWriteTimeout = TimeSpan.FromSeconds(180)
         };
 
         return factory.CreateConnection();
@@ -178,6 +185,7 @@ builder.Services.AddTransient<IConsumer>(service =>
     .AddHostedService<DeleteVehiclesEventBackgroundService>()
     .AddHostedService<DeleteVehiclesProjectionEventBackgroundService>()
     .AddHostedService<EventBackgroundService>()
+    .AddHostedService<EventProjectionEventBackgroundService>()
     .AddHostedService<UpdateRentEventBackgroundService>()
     .AddHostedService<UpdateRentProjectionEventBackgroundService>()
     .AddHostedService<UpdateUserEventBackgroundService>()

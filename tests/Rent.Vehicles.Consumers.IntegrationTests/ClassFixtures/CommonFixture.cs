@@ -28,6 +28,8 @@ public class CommonFixture : IAsyncLifetime
 
         var context = GetRequiredService<IDbContext>();
 
+        await context.Database.EnsureDeletedAsync();
+
         await context.Database.EnsureCreatedAsync();
     }
 

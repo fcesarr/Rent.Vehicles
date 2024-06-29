@@ -37,7 +37,7 @@ public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerEventP
     {
         if (@event.Year != 2024)
         {
-            return Task.Run(() => Result<Task>.Failure(new SpecificYearException(string.Empty)), cancellationToken);
+            return Task.Run(() => Result<Task>.Failure(new SpecificYearException("Veiculo com ano diferente de 2024")), cancellationToken);
         }
 
         return Task.Run(() => Result<Task>.Success(Task.CompletedTask), cancellationToken);

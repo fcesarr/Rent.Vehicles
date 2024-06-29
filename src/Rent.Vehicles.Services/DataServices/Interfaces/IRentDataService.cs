@@ -8,7 +8,7 @@ public interface IRentDataService : IDataService<Entities.Rent>
     Task<Result<Entities.Rent>> UpdateAsync(Guid id, DateTime estimatedDate,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Entities.Rent>> CreateAsync(RentalPlane rentalPlane, Guid userId, Guid vehicleId,
+    Task<Result<Entities.Rent>> CreateAsync(RentalPlane rentalPlane, Guid id, Guid userId, Guid vehicleId,
         CancellationToken cancellationToken = default);
 
     Task<Result<Entities.Rent>> EstimateCostAsync(Guid id, DateTime estimatedDate,

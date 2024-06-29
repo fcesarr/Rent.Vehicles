@@ -18,13 +18,14 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
     {
     }
 
-    public async Task<Result<Entities.Rent>> CreateAsync(RentalPlane rentalPlane, Guid userId, Guid vehicleId,
+    public async Task<Result<Entities.Rent>> CreateAsync(RentalPlane rentalPlane, Guid id, Guid userId, Guid vehicleId,
         CancellationToken cancellationToken = default)
     {
         var startDate = DateTime.Now.Date.AddDays(1);
 
-        Entities.Rent entity = new()
+        var entity = new Entities.Rent
         {
+            Id = id,
             NumberOfDays = rentalPlane.NumberOfDays,
             DailyCost = rentalPlane.DailyCost,
             VehicleId = vehicleId,
@@ -89,7 +90,7 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
 
         if (entity == null)
         {
-            return Result<Entities.Rent>.Failure(new NullException($"Entity {nameof(Entities.Rent)} not found"));
+            return Result<Entities.Rent>.Failure(new NullException($"Entity {typeof(Entities.Rent).Name} not found"));
         }
 
         return entity;

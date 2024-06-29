@@ -46,7 +46,7 @@ public class UpdateVehiclesCommandBackgroundService : HandlerCommandPublishEvent
         var @event = CreateEventToPublish(command);
 
         var entity = await service.CreateAsync(command, @event, ActionType.Update,
-            EntityType.Vehicles, nameof(UpdateVehiclesEvent), cancellationToken);
+            EntityType.Vehicles, @event.GetType().ToString(), cancellationToken);
 
         if (!entity.IsSuccess)
         {

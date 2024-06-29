@@ -35,13 +35,16 @@ using Rent.Vehicles.Services.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
+
+builder.Services.AddDbContextDependencies<IDbContext,
+        RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??string.Empty)
     // UserProjection
     .AddProjectionDomain<UserProjection,
         IUserProjectionDataService,
         UserProjectionDataService,
         IUserProjectionFacade,
         UserProjectionFacade>()
+    .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
     // UserProjection
     // VehicleProjection
     .AddProjectionDomain<VehicleProjection,
@@ -49,6 +52,7 @@ builder.Services.AddDbContextDependencies<IDbContext, RentVehiclesContext>(build
         VehicleProjectionDataService,
         IVehicleProjectionFacade,
         VehicleProjectionFacade>()
+    .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()
     // VehicleProjection
     // VehiclesForSpecificYearProjection
     .AddProjectionDomain<VehiclesForSpecificYearProjection,
@@ -63,16 +67,16 @@ builder.Services.AddDbContextDependencies<IDbContext, RentVehiclesContext>(build
         RentProjectionDataService,
         IRentProjectionFacade,
         RentProjectionFacade>()
+    .AddDataDomain<Rent.Vehicles.Entities.Rent, IRentValidator, RentValidator, IRentDataService, RentDataService>()
     // RentProjection
-    // Event
-    .AddDataDomain<Event,
-        IEventValidator,
-        EventValidator,
-        IEventDataService,
-        EventDataService,
-        IEventFacade,
-        EventFacade>()
-    // Event
+    // EventProjection
+    .AddProjectionDomain<EventProjection,
+        IEventProjectionDataService,
+        EventProjectionDataService,
+        IEventProjectionFacade,
+        EventProjectionFacade>()
+    .AddDataDomain<Rent.Vehicles.Entities.Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
+    // EventProjection
     .AddSingleton<IPublisher>(service => 
     {
         var connection = service.GetRequiredService<IConnection>();
@@ -98,7 +102,7 @@ builder.Services.AddDbContextDependencies<IDbContext, RentVehiclesContext>(build
             Port = 5672,
             UserName = "admin",
             Password = "nimda",
-            VirtualHost = "/integrationTests",
+            VirtualHost = "/",
             RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
             SocketReadTimeout = TimeSpan.FromSeconds(30),
             SocketWriteTimeout = TimeSpan.FromSeconds(30)

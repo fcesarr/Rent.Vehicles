@@ -43,7 +43,7 @@ public class DeleteVehiclesCommandBackgroundService : HandlerCommandPublishEvent
         var @event = CreateEventToPublish(command);
 
         var entity = await service.CreateAsync(command, @event, ActionType.Delete,
-            EntityType.Vehicles, nameof(DeleteVehiclesEvent), cancellationToken);
+            EntityType.Vehicles, @event.GetType().ToString(), cancellationToken);
 
         if (!entity.IsSuccess)
         {

@@ -64,7 +64,7 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
         if (!entities.Any())
         {
             return Result<IEnumerable<TEntity>>.Failure(
-                new EmptyException($"Entities {nameof(TEntity)} is empty"));
+                new EmptyException($"Entities {typeof(TEntity).Name} is empty"));
         }
 
         return entities
@@ -78,7 +78,7 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
 
         if (entity == null)
         {
-            return Result<TEntity>.Failure(new NullException($"Entity {nameof(TEntity)} not found"));
+            return Result<TEntity>.Failure(new NullException($"Entity {typeof(TEntity).Name} not found"));
         }
 
         return entity;

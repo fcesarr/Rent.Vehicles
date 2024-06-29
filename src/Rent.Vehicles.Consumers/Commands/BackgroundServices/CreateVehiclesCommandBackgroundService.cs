@@ -51,7 +51,7 @@ public class CreateVehiclesCommandBackgroundService : HandlerCommandPublishEvent
         var @event = CreateEventToPublish(command);
 
         var entity = await service.CreateAsync(command, @event, ActionType.Create,
-            EntityType.Vehicles, nameof(CreateVehiclesEvent), cancellationToken);
+            EntityType.Vehicles, @event.GetType().ToString(), cancellationToken);
 
         if (!entity.IsSuccess)
         {

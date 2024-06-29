@@ -132,6 +132,20 @@ public static class ToExtension
         };
     }
 
+    public static EventResponse ToResponse(this EventProjection projection)
+    {
+        return new EventResponse
+        {
+            Id = projection.Id,
+            SagaId = projection.SagaId,
+            Name = projection.Name,
+            StatusType = projection.StatusType,
+            Message = projection.Message,
+            SerializerType = projection.SerializerType,
+            Created = projection.Created
+        };
+    }
+
     public static User ToEntity(this CreateUserEvent @event, string licensePath)
     {
         return new User
@@ -181,6 +195,7 @@ public static class ToExtension
     {
         return new Event
         {
+            Id = @event.Id,
             SagaId = @event.SagaId,
             Name = @event.Type,
             StatusType = @event.StatusType switch
@@ -252,6 +267,19 @@ public static class ToExtension
             Cost = entity.Cost,
             Vehicle = entity.Vehicle!.ToProjection<VehicleProjection>(),
             User = entity.User!.ToProjection()
+        };
+    }
+
+    public static EventProjection ToProjection(this Entities.Event entity)
+    {
+        return new EventProjection
+        {
+            Id = entity.Id,
+            SagaId = entity.SagaId,
+            Name = entity.Name,
+            StatusType = entity.StatusType,
+            Message = entity.Message,
+            SerializerType = entity.SerializerType
         };
     }
 

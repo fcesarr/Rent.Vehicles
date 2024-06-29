@@ -45,7 +45,7 @@ public class UpdateUserLicenseImageCommandBackgroundService : HandlerCommandPubl
         var @event = CreateEventToPublish(command);
 
         var entity = await service.CreateAsync(command, @event, ActionType.Update,
-            EntityType.User, nameof(UpdateUserLicenseImageEvent), cancellationToken);
+            EntityType.User, @event.GetType().ToString(), cancellationToken);
 
         if (!entity.IsSuccess)
         {

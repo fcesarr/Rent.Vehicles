@@ -19,7 +19,7 @@ public class Validator<TCommand> : IValidator<TCommand> where TCommand : Command
 
             if (command is null)
             {
-                validationResult.Exception = new ValidationException($"Error on Validate {nameof(TCommand)}",
+                validationResult.Exception = new ValidationException($"Error on Validate {typeof(TCommand).Name}",
                     new Dictionary<string, string[]>());
                 return validationResult;
             }
@@ -42,7 +42,7 @@ public class Validator<TCommand> : IValidator<TCommand> where TCommand : Command
                         g => g.Select(x => x.Item2).ToArray()
                     );
 
-                validationResult.Exception = new ValidationException($"Error on Validate {nameof(TCommand)}",
+                validationResult.Exception = new ValidationException($"Error on Validate {typeof(TCommand).Name}",
                     errors);
             }
 

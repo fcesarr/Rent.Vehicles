@@ -88,6 +88,13 @@ public static class ServiceExtensions
                     IRentProjectionFacade,
                     RentProjectionFacade>()
                 // RentProjection
+                // EventProjection
+                .AddProjectionDomain<EventProjection,
+                    IEventProjectionDataService,
+                    EventProjectionDataService,
+                    IEventProjectionFacade,
+                    EventProjectionFacade>()
+                // EventProjection
                 // Event
                 .AddDataDomain<Event,
                     IEventValidator,
@@ -193,6 +200,7 @@ public static class ServiceExtensions
                 .AddSingleton<DeleteVehiclesEventBackgroundService>()
                 .AddSingleton<DeleteVehiclesProjectionEventBackgroundService>()
                 .AddSingleton<EventBackgroundService>()
+                .AddSingleton<EventProjectionEventBackgroundService>()
                 .AddSingleton<UpdateRentEventBackgroundService>()
                 .AddSingleton<UpdateRentProjectionEventBackgroundService>()
                 .AddSingleton<UpdateUserEventBackgroundService>()

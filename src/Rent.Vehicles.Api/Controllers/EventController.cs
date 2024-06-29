@@ -11,9 +11,9 @@ namespace Rent.Vehicles.Api.Controllers;
 [Route("api/[controller]")]
 public class EventController : Controller
 {
-    private readonly IEventFacade _facade;
+    private readonly IEventProjectionFacade _facade;
 
-    public EventController(IEventFacade facade)
+    public EventController(IEventProjectionFacade facade)
     {
         _facade = facade;
     }

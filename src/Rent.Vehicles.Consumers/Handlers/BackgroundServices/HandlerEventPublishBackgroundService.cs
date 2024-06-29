@@ -28,8 +28,9 @@ public abstract class
     protected override async Task<Result<Task>> HandlerAsync(TEventToConsume eventToPublish,
         CancellationToken cancellationToken = default)
     {
-        Event @event = new()
+        var @event = new Event
         {
+            Id = Guid.NewGuid(),
             SagaId = eventToPublish.SagaId,
             Type = eventToPublish.GetType().ToString(),
             StatusType = StatusType.Success,

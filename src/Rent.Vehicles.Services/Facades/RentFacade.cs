@@ -60,6 +60,7 @@ public class RentFacade : IRentFacade
             }
 
             var entity = await _dataService.CreateAsync(rentalPlane.Value!,
+                @event.Id,
                 @event.UserId,
                 vehicle.Value!.Id,
                 cancellationToken);
