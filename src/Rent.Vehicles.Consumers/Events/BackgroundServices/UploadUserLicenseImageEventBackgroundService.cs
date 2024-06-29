@@ -26,7 +26,7 @@ public class UploadUserLicenseImageEventBackgroundService : HandlerEventServiceP
         CancellationToken cancellationToken = default)
     {
         var service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<ILicenseImageService>();
+            .GetRequiredService<IUploadService>();
 
         var result = await service.UploadAsync(@event.LicenseImage, cancellationToken);
 
@@ -35,6 +35,6 @@ public class UploadUserLicenseImageEventBackgroundService : HandlerEventServiceP
             return result.Exception!;
         }
 
-        return result.Value!;
+        return Task.CompletedTask;
     }
 }

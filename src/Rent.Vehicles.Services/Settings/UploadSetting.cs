@@ -1,13 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Rent.Vehicles.Services.Settings;
 
-public class LicenseImageSetting
+public class UploadSetting
 {
-    public required string Path
-    {
-        get;
-        set;
-    }
-
+    [Required]
     public required Dictionary<string, byte[]> Formats
     {
         get;

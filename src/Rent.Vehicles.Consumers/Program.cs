@@ -31,8 +31,6 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.Configure<LicenseImageSetting>(builder.Configuration.GetSection("LicenseImageSetting"));
-
 builder.Services.AddTransient<IConsumer>(service =>
     {
         var connection = service.GetRequiredService<IConnection>();
@@ -130,7 +128,6 @@ builder.Services.AddTransient<IConsumer>(service =>
     .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
     // RentPlane
     .AddSingleton<IUploadService, FileUploadService>()
-    .AddSingleton<ILicenseImageService, LicenseImageService>()
     .AddSingleton<IPublisher>(service => 
     {
         var connection = service.GetRequiredService<IConnection>();
@@ -194,6 +191,11 @@ builder.Services.AddTransient<IConsumer>(service =>
     .AddHostedService<UpdateVehiclesEventBackgroundService>()
     .AddHostedService<UpdateVehiclesProjectionEventBackgroundService>()
     .AddHostedService<UploadUserLicenseImageEventBackgroundService>();
+
+builder.Services.AddOptions<FileUploadSetting>()
+    .BindConfiguration(nameof(FileUploadSetting))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 var host = builder.Build();
 host.Run();

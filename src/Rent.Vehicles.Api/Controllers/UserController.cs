@@ -82,7 +82,7 @@ public class UserController : Controller
         return Results.Accepted(locationUri, new CommandResponse(command.Id));
     }
 
-    [HttpPut("upload")]
+    [HttpPut("upload/licenseImage")]
     [ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(CommandResponse))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

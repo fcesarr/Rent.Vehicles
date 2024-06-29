@@ -1,4 +1,6 @@
 
+using System.Linq.Expressions;
+
 using AutoFixture;
 
 using FluentAssertions;
@@ -8,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
+using Rent.Vehicles.Consumers.IntegrationTests.Extensions;
+using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Commands;
@@ -27,10 +31,32 @@ public class CreateVehiclesCommandBackgroundServiceTests
 
     private readonly CommonFixture _classFixture;
 
-    public CreateVehiclesCommandBackgroundServiceTests(CommonFixture classFixture, ITestOutputHelper output)
+    public CreateVehiclesCommandBackgroundServiceTests(CommonFixture classFixture)
     {
         _fixture = new Fixture();
         _classFixture = classFixture;
+    }
+
+    private Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
+
+    private Expression<Func<Vehicle, bool>> GetVehiclePredicate(CreateVehiclesCommand command)
+    {
+        var predicate = GetPredicate<Vehicle>(command.Id);
+
+        return predicate.And(y => y.Year == command.Year &&
+            y.LicensePlate == command.LicensePlate &&
+            y.Type == (Entities.Types.VehicleType)command.Type &&
+            y.Model == command.Model);
+    }
+
+    private Expression<Func<TProjection, bool>> GetVehicleProjectionPredicate<TProjection>(CreateVehiclesCommand command) where TProjection : VehicleProjection
+    {
+        var predicate = GetPredicate<TProjection>(command.Id);
+
+        return predicate.And(y => y.Year == command.Year &&
+            y.LicensePlate == command.LicensePlate &&
+            y.Type == (Entities.Types.VehicleType)command.Type &&
+            y.Model == command.Model);
     }
 
     [Fact]
@@ -66,33 +92,33 @@ public class CreateVehiclesCommandBackgroundServiceTests
         await _classFixture.GetRequiredService<CreateVehiclesForSpecificYearProjectionEventBackgroundService>()
             .StartAsync(cancellationTokenSource.Token);
 
+        var commandDataService = _classFixture
+            .GetRequiredService<ICommandDataService>();
+
+        var vehicleDataService = _classFixture
+            .GetRequiredService<IVehicleDataService>();
+
+        var vehicleProjectionDataService = _classFixture
+            .GetRequiredService<IVehicleProjectionDataService>();
+
+        var vehiclesForSpecificYearProjectionDataService = _classFixture
+            .GetRequiredService<IVehiclesForSpecificYearProjectionDataService>();
+
         var found = false;
 
         do
         {
-            var commandResult = await _classFixture.GetRequiredService<ICommandDataService>()
+            var commandResult = await commandDataService
                 .GetAsync(x => x.SagaId == command.SagaId);
 
-            var vehicleResult = await _classFixture.GetRequiredService<IVehicleDataService>()
-                .GetAsync(x => x.Id == command.Id && 
-                    x.Year == command.Year &&
-                    x.LicensePlate == command.LicensePlate &&
-                    x.Type == (Entities.Types.VehicleType)command.Type &&
-                    x.Model == command.Model);
+            var vehicleResult = await vehicleDataService
+                .GetAsync(GetVehiclePredicate(command));
 
-            var vehicleProjectionResult = await _classFixture.GetRequiredService<IVehicleProjectionDataService>()
-                .GetAsync(x => x.Id == command.Id && 
-                    x.Year == command.Year &&
-                    x.LicensePlate == command.LicensePlate &&
-                    x.Type == (Entities.Types.VehicleType)command.Type &&
-                    x.Model == command.Model);
+            var vehicleProjectionResult = await vehicleProjectionDataService
+                .GetAsync(GetVehicleProjectionPredicate<VehicleProjection>(command));
 
-            var vehiclesForSpecificYearProjectionResult = await _classFixture.GetRequiredService<IVehiclesForSpecificYearProjectionDataService>()
-                .GetAsync(x => x.Id == command.Id && 
-                    x.Year == command.Year &&
-                    x.LicensePlate == command.LicensePlate &&
-                    x.Type == (Entities.Types.VehicleType)command.Type &&
-                    x.Model == command.Model);
+            var vehiclesForSpecificYearProjectionResult = await vehiclesForSpecificYearProjectionDataService
+                .GetAsync(GetVehicleProjectionPredicate<VehiclesForSpecificYearProjection>(command));
 
             found = commandResult.IsSuccess && 
                 vehicleProjectionResult.IsSuccess && 
@@ -151,33 +177,33 @@ public class CreateVehiclesCommandBackgroundServiceTests
         await _classFixture.GetRequiredService<CreateVehiclesForSpecificYearProjectionEventBackgroundService>()
             .StartAsync(cancellationTokenSource.Token);
 
+        var commandDataService = _classFixture
+            .GetRequiredService<ICommandDataService>();
+
+        var vehicleDataService = _classFixture
+            .GetRequiredService<IVehicleDataService>();
+
+        var vehicleProjectionDataService = _classFixture
+            .GetRequiredService<IVehicleProjectionDataService>();
+
+        var vehiclesForSpecificYearProjectionDataService = _classFixture
+            .GetRequiredService<IVehiclesForSpecificYearProjectionDataService>();
+
         var found = false;
 
         do
         {
-            var commandResult = await _classFixture.GetRequiredService<ICommandDataService>()
+            var commandResult = await commandDataService
                 .GetAsync(x => x.SagaId == command.SagaId);
 
-            var vehicleResult = await _classFixture.GetRequiredService<IVehicleDataService>()
-                .GetAsync(x => x.Id == command.Id && 
-                    x.Year == command.Year &&
-                    x.LicensePlate == command.LicensePlate &&
-                    x.Type == (Entities.Types.VehicleType)command.Type &&
-                    x.Model == command.Model);
+            var vehicleResult = await vehicleDataService
+                .GetAsync(GetVehiclePredicate(command));
 
-            var vehicleProjectionResult = await _classFixture.GetRequiredService<IVehicleProjectionDataService>()
-                .GetAsync(x => x.Id == command.Id && 
-                    x.Year == command.Year &&
-                    x.LicensePlate == command.LicensePlate &&
-                    x.Type == (Entities.Types.VehicleType)command.Type &&
-                    x.Model == command.Model);
+            var vehicleProjectionResult = await vehicleProjectionDataService
+                .GetAsync(GetVehicleProjectionPredicate<VehicleProjection>(command));
 
-            var vehiclesForSpecificYearProjectionResult = await _classFixture.GetRequiredService<IVehiclesForSpecificYearProjectionDataService>()
-                .GetAsync(x => x.Id == command.Id && 
-                    x.Year == command.Year &&
-                    x.LicensePlate == command.LicensePlate &&
-                    x.Type == (Entities.Types.VehicleType)command.Type &&
-                    x.Model == command.Model);
+            var vehiclesForSpecificYearProjectionResult = await vehiclesForSpecificYearProjectionDataService
+                .GetAsync(GetVehicleProjectionPredicate<VehiclesForSpecificYearProjection>(command));
 
             found = commandResult.IsSuccess && 
                 vehicleProjectionResult.IsSuccess && 

@@ -9,19 +9,19 @@ namespace Rent.Vehicles.Services.Facades;
 public class UserFacade : IUserFacade
 {
     private readonly IUserDataService _dataService;
-    private readonly ILicenseImageService _licenseImageService;
+    private readonly IUploadService _uploadService;
 
-    public UserFacade(IUserDataService dataService, ILicenseImageService licenseImageService)
+    public UserFacade(IUserDataService dataService, IUploadService uploadService)
     {
         _dataService = dataService;
-        _licenseImageService = licenseImageService;
+        _uploadService = uploadService;
     }
 
     public async Task<Result<UserResponse>> CreateAsync(CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
         var licensePath =
-            await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
+            await _uploadService.GetNameAsync(@event.LicenseImage, cancellationToken);
 
         if (!licensePath.IsSuccess)
         {
@@ -42,7 +42,7 @@ public class UserFacade : IUserFacade
         CancellationToken cancellationToken = default)
     {
         var licensePath =
-            await _licenseImageService.GetPathAsync(@event.LicenseImage, cancellationToken);
+            await _uploadService.UploadAsync(@event.LicenseImage, cancellationToken);
 
         if (!licensePath.IsSuccess)
         {

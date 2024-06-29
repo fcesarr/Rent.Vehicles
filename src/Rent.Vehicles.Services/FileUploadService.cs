@@ -1,26 +1,37 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
+using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Settings;
+using Rent.Vehicles.Lib.Extensions;
 
 namespace Rent.Vehicles.Services;
 
-public class FileUploadService : IUploadService
+public class FileUploadService : UploadService, IUploadService
 {
     private readonly Func<string, byte[], CancellationToken, Task> _func;
-    private readonly ILogger<FileUploadService> _logger;
+    private readonly FileUploadSetting _fileUploadSetting;
 
     public FileUploadService(ILogger<FileUploadService> logger,
-        Func<string, byte[], CancellationToken, Task> func)
+        Func<string, byte[], CancellationToken, Task> func,
+        IOptions<FileUploadSetting> fileUploadSetting) : base(logger, fileUploadSetting)
     {
-        _logger = logger;
         _func = func;
+        _fileUploadSetting = fileUploadSetting.Value;
     }
 
-    public async Task<Result<Task>> UploadAsync(string filePath, byte[] fileBytes,
+    protected async override Task<string> ToUploadAsync(string name,
+        byte[] bytes,
         CancellationToken cancellationToken = default)
     {
-        await _func(filePath, fileBytes, cancellationToken);
+        if(!Directory.Exists(_fileUploadSetting.Path))
+            Directory.CreateDirectory(_fileUploadSetting.Path);
 
-        return Task.CompletedTask;
+        var path = $"{_fileUploadSetting.Path}/{name}";
+
+        await _func(path, bytes, cancellationToken);
+
+        return path;
     }
 }

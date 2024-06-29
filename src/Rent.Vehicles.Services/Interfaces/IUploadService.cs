@@ -2,5 +2,6 @@ namespace Rent.Vehicles.Services.Interfaces;
 
 public interface IUploadService
 {
-    Task<Result<Task>> UploadAsync(string filePath, byte[] fileBytes, CancellationToken cancellationToken = default);
+    Task<Result<string>> GetNameAsync(string base64String, CancellationToken cancellationToken = default);
+    Task<Result<string>> UploadAsync(string base64String, CancellationToken cancellationToken = default);
 }

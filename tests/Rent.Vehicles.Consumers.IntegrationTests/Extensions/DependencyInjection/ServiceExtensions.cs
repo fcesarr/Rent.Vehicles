@@ -46,171 +46,177 @@ public static class ServiceExtensions
 {
     public static IServiceCollection AddServicesTests(this IServiceCollection services,
         IConfiguration configuration)
-            => services.AddLogging(configuration)
-                .AddTransient<IConsumer>(service =>
+    {
+        services = services.AddLogging(configuration)
+            .AddTransient<IConsumer>(service =>
+            {
+                var connection = service.GetRequiredService<IConnection>();
+                return new RabbitMQConsumer(connection.CreateModel());
+            })
+            .AddDbContextDependencies<IDbContext, RentVehiclesContext>(configuration.GetConnectionString("Sql") ??
+                                                                    string.Empty)
+            .AddTransient<IPeriodicTimer>(service =>
+            {
+                PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(500));
+
+                return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
+            })
+            // UserProjection
+            .AddProjectionDomain<UserProjection,
+                IUserProjectionDataService,
+                UserProjectionDataService,
+                IUserProjectionFacade,
+                UserProjectionFacade>()
+            // UserProjection
+            // VehicleProjection
+            .AddProjectionDomain<VehicleProjection,
+                IVehicleProjectionDataService,
+                VehicleProjectionDataService,
+                IVehicleProjectionFacade,
+                VehicleProjectionFacade>()
+            // VehicleProjection
+            // VehiclesForSpecificYearProjection
+            .AddProjectionDomain<VehiclesForSpecificYearProjection,
+                IVehiclesForSpecificYearProjectionDataService,
+                VehiclesForSpecificYearProjectionDataService,
+                IVehiclesForSpecificYearProjectionFacade,
+                VehiclesForSpecificYearProjectionFacade>()
+            // VehiclesForSpecificYearProjection
+            // RentProjection
+            .AddProjectionDomain<RentProjection,
+                IRentProjectionDataService,
+                RentProjectionDataService,
+                IRentProjectionFacade,
+                RentProjectionFacade>()
+            // RentProjection
+            // EventProjection
+            .AddProjectionDomain<EventProjection,
+                IEventProjectionDataService,
+                EventProjectionDataService,
+                IEventProjectionFacade,
+                EventProjectionFacade>()
+            // EventProjection
+            // Event
+            .AddDataDomain<Event,
+                IEventValidator,
+                EventValidator,
+                IEventDataService,
+                EventDataService,
+                IEventFacade,
+                EventFacade>()
+            // Event
+            // Command
+            .AddDataDomain<Command,
+                ICommandValidator,
+                CommandValidator,
+                ICommandDataService,
+                CommandDataService,
+                ICommandFacade,
+                CommandFacade>()
+            // Command
+            // Vehicle
+            .AddDataDomain<Vehicle,
+                IVehicleValidator,
+                VehicleValidator,
+                IVehicleDataService,
+                VehicleDataService,
+                IVehicleFacade,
+                VehicleFacade>()
+            // Vehicle
+            // User
+            .AddDataDomain<User,
+                IUserValidator,
+                UserValidator,
+                IUserDataService,
+                UserDataService,
+                IUserFacade,
+                UserFacade>()
+            // User
+            // Rent
+            .AddDataDomain<Rent.Vehicles.Entities.Rent,
+                IRentValidator,
+                RentValidator,
+                IRentDataService,
+                RentDataService,
+                IRentFacade,
+                RentFacade>()
+            // Rent
+            // RentPlane
+            .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
+            // RentPlane
+            .AddSingleton<IStreamUploadService, StreamUploadService>()
+            .AddSingleton<IUploadService>(services => services.GetRequiredService<IStreamUploadService>())
+            .AddSingleton<IPublisher>(service => 
+            {
+                var connection = service.GetRequiredService<IConnection>();
+                var serializer = service.GetRequiredService<ISerializer>();
+                return new RabbitMQPublisher(connection.CreateModel(), serializer);
+            })
+            .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
+            .AddSingleton<IMongoDatabase>(service =>
+            {
+                var configuration = service.GetRequiredService<IConfiguration>();
+
+                var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
+
+                MongoClient client = new(connectionString);
+
+                var databaseName = MongoUrl.Create(connectionString).DatabaseName;
+
+                return client.GetDatabase(databaseName);
+            })
+            .AddSingleton<IConnection>(service => {
+                var factory =  new ConnectionFactory 
                 {
-                    var connection = service.GetRequiredService<IConnection>();
-                    return new RabbitMQConsumer(connection.CreateModel());
-                })
-                .AddDbContextDependencies<IDbContext, RentVehiclesContext>(configuration.GetConnectionString("Sql") ??
-                                                                        string.Empty)
-                .AddTransient<IPeriodicTimer>(service =>
-                {
-                    PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(500));
+                    HostName = "localhost",
+                    Port = 5672,
+                    UserName = "admin",
+                    Password = "nimda",
+                    VirtualHost = "/integrationTests",
+                    RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
+                    SocketReadTimeout = TimeSpan.FromSeconds(30),
+                    SocketWriteTimeout = TimeSpan.FromSeconds(30)
+                };
 
-                    return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
-                })
-                // UserProjection
-                .AddProjectionDomain<UserProjection,
-                    IUserProjectionDataService,
-                    UserProjectionDataService,
-                    IUserProjectionFacade,
-                    UserProjectionFacade>()
-                // UserProjection
-                // VehicleProjection
-                .AddProjectionDomain<VehicleProjection,
-                    IVehicleProjectionDataService,
-                    VehicleProjectionDataService,
-                    IVehicleProjectionFacade,
-                    VehicleProjectionFacade>()
-                // VehicleProjection
-                // VehiclesForSpecificYearProjection
-                .AddProjectionDomain<VehiclesForSpecificYearProjection,
-                    IVehiclesForSpecificYearProjectionDataService,
-                    VehiclesForSpecificYearProjectionDataService,
-                    IVehiclesForSpecificYearProjectionFacade,
-                    VehiclesForSpecificYearProjectionFacade>()
-                // VehiclesForSpecificYearProjection
-                // RentProjection
-                .AddProjectionDomain<RentProjection,
-                    IRentProjectionDataService,
-                    RentProjectionDataService,
-                    IRentProjectionFacade,
-                    RentProjectionFacade>()
-                // RentProjection
-                // EventProjection
-                .AddProjectionDomain<EventProjection,
-                    IEventProjectionDataService,
-                    EventProjectionDataService,
-                    IEventProjectionFacade,
-                    EventProjectionFacade>()
-                // EventProjection
-                // Event
-                .AddDataDomain<Event,
-                    IEventValidator,
-                    EventValidator,
-                    IEventDataService,
-                    EventDataService,
-                    IEventFacade,
-                    EventFacade>()
-                // Event
-                // Command
-                .AddDataDomain<Command,
-                    ICommandValidator,
-                    CommandValidator,
-                    ICommandDataService,
-                    CommandDataService,
-                    ICommandFacade,
-                    CommandFacade>()
-                // Command
-                // Vehicle
-                .AddDataDomain<Vehicle,
-                    IVehicleValidator,
-                    VehicleValidator,
-                    IVehicleDataService,
-                    VehicleDataService,
-                    IVehicleFacade,
-                    VehicleFacade>()
-                // Vehicle
-                // User
-                .AddDataDomain<User,
-                    IUserValidator,
-                    UserValidator,
-                    IUserDataService,
-                    UserDataService,
-                    IUserFacade,
-                    UserFacade>()
-                // User
-                // Rent
-                .AddDataDomain<Rent.Vehicles.Entities.Rent,
-                    IRentValidator,
-                    RentValidator,
-                    IRentDataService,
-                    RentDataService,
-                    IRentFacade,
-                    RentFacade>()
-                // Rent
-                // RentPlane
-                .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
-                // RentPlane
-                .AddSingleton<IUploadService, FileUploadService>()
-                .AddSingleton<ILicenseImageService, LicenseImageService>()
-                .AddSingleton<IPublisher>(service => 
-                {
-                    var connection = service.GetRequiredService<IConnection>();
-                    var serializer = service.GetRequiredService<ISerializer>();
-                    return new RabbitMQPublisher(connection.CreateModel(), serializer);
-                })
-                .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
-                .AddSingleton<IMongoDatabase>(service =>
-                {
-                    var configuration = service.GetRequiredService<IConfiguration>();
+                return factory.CreateConnection();
+            })
+            .AddDefaultSerializer<MessagePackSerializer>()
+            .AddSingleton<CreateRentCommandBackgroundService>()
+            .AddSingleton<CreateUserCommandBackgroundService>()
+            .AddSingleton<CreateVehiclesCommandBackgroundService>()
+            .AddSingleton<DeleteVehiclesCommandBackgroundService>()
+            .AddSingleton<UpdateRentCommandBackgroundService>()
+            .AddSingleton<UpdateUserCommandBackgroundService>()
+            .AddSingleton<UpdateUserLicenseImageCommandBackgroundService>()
+            .AddSingleton<UpdateVehiclesCommandBackgroundService>()
+            .AddSingleton<CreateRentEventBackgroundService>()
+            .AddSingleton<CreateRentProjectionEventBackgroundService>()
+            .AddSingleton<CreateUserEventBackgroundService>()
+            .AddSingleton<CreateUserProjectionEventBackgroundService>()
+            .AddSingleton<CreateVehiclesEventBackgroundService>()
+            .AddSingleton<CreateVehiclesForSpecificYearEventBackgroundService>()
+            .AddSingleton<CreateVehiclesForSpecificYearProjectionEventBackgroundService>()
+            .AddSingleton<CreateVehiclesProjectionEventBackgroundService>()
+            .AddSingleton<DeleteVehiclesEventBackgroundService>()
+            .AddSingleton<DeleteVehiclesProjectionEventBackgroundService>()
+            .AddSingleton<EventBackgroundService>()
+            .AddSingleton<EventProjectionEventBackgroundService>()
+            .AddSingleton<UpdateRentEventBackgroundService>()
+            .AddSingleton<UpdateRentProjectionEventBackgroundService>()
+            .AddSingleton<UpdateUserEventBackgroundService>()
+            .AddSingleton<UpdateUserLicenseImageEventBackgroundService>()
+            .AddSingleton<UpdateUserProjectionEventBackgroundService>()
+            .AddSingleton<UpdateVehiclesEventBackgroundService>()
+            .AddSingleton<UpdateVehiclesProjectionEventBackgroundService>()
+            .AddSingleton<UploadUserLicenseImageEventBackgroundService>();
 
-                    var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
+        services.AddOptions<StreamUploadSetting>()
+            .BindConfiguration(nameof(StreamUploadSetting))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-                    MongoClient client = new(connectionString);
-
-                    var databaseName = MongoUrl.Create(connectionString).DatabaseName;
-
-                    return client.GetDatabase(databaseName);
-                })
-                .AddSingleton<IConnection>(service => {
-                    var factory =  new ConnectionFactory 
-                    {
-                        HostName = "localhost",
-                        Port = 5672,
-                        UserName = "admin",
-                        Password = "nimda",
-                        VirtualHost = "/integrationTests",
-                        RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
-                        SocketReadTimeout = TimeSpan.FromSeconds(30),
-                        SocketWriteTimeout = TimeSpan.FromSeconds(30)
-                    };
-
-                    return factory.CreateConnection();
-                })
-                .AddDefaultSerializer<MessagePackSerializer>()
-                .AddDefaultSerializer<MessagePackSerializer>()
-                .AddSingleton<CreateRentCommandBackgroundService>()
-                .AddSingleton<CreateUserCommandBackgroundService>()
-                .AddSingleton<CreateVehiclesCommandBackgroundService>()
-                .AddSingleton<DeleteVehiclesCommandBackgroundService>()
-                .AddSingleton<UpdateRentCommandBackgroundService>()
-                .AddSingleton<UpdateUserCommandBackgroundService>()
-                .AddSingleton<UpdateUserLicenseImageCommandBackgroundService>()
-                .AddSingleton<UpdateVehiclesCommandBackgroundService>()
-                .AddSingleton<CreateRentEventBackgroundService>()
-                .AddSingleton<CreateRentProjectionEventBackgroundService>()
-                .AddSingleton<CreateUserEventBackgroundService>()
-                .AddSingleton<CreateUserProjectionEventBackgroundService>()
-                .AddSingleton<CreateVehiclesEventBackgroundService>()
-                .AddSingleton<CreateVehiclesForSpecificYearEventBackgroundService>()
-                .AddSingleton<CreateVehiclesForSpecificYearProjectionEventBackgroundService>()
-                .AddSingleton<CreateVehiclesProjectionEventBackgroundService>()
-                .AddSingleton<DeleteVehiclesEventBackgroundService>()
-                .AddSingleton<DeleteVehiclesProjectionEventBackgroundService>()
-                .AddSingleton<EventBackgroundService>()
-                .AddSingleton<EventProjectionEventBackgroundService>()
-                .AddSingleton<UpdateRentEventBackgroundService>()
-                .AddSingleton<UpdateRentProjectionEventBackgroundService>()
-                .AddSingleton<UpdateUserEventBackgroundService>()
-                .AddSingleton<UpdateUserLicenseImageEventBackgroundService>()
-                .AddSingleton<UpdateUserProjectionEventBackgroundService>()
-                .AddSingleton<UpdateVehiclesEventBackgroundService>()
-                .AddSingleton<UpdateVehiclesProjectionEventBackgroundService>()
-                .AddSingleton<UploadUserLicenseImageEventBackgroundService>();
-
-
+        return services;
+    }
     
     private static IServiceCollection AddLogging(this IServiceCollection services,
         IConfiguration configuration)
