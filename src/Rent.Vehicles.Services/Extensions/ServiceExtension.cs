@@ -50,9 +50,7 @@ public static class ServiceExtension
             TIValidator,
             TValidatorImplementation,
             TIService,
-            TServiceImplementation,
-            TIFacade,
-            TFacadeImplementation>()
+            TServiceImplementation>()
             .AddScoped<TIFacade, TFacadeImplementation>();
     }
 
