@@ -256,11 +256,14 @@ public class CreateVehiclesCommandBackgroundServiceTests
         await _classFixture.GetRequiredService<CreateVehiclesEventBackgroundService>()
             .StartAsync(cancellationTokenSource.Token);
 
+        await _classFixture.GetRequiredService<EventBackgroundService>()
+            .StartAsync(cancellationTokenSource.Token);
+
         var commandDataService = _classFixture
             .GetRequiredService<ICommandDataService>();
 
-        var vehicleProjectionDataService = _classFixture
-            .GetRequiredService<IVehicleProjectionDataService>();
+        var eventDataService = _classFixture
+            .GetRequiredService<IEventDataService>();
 
         var vehicleFacade = _classFixture
             .GetRequiredService<IVehicleFacade>();
@@ -284,18 +287,22 @@ public class CreateVehiclesCommandBackgroundServiceTests
             var commandResult = await commandDataService
                 .GetAsync(x => x.SagaId == command.SagaId);
 
-            var vehicleProjectionDataServiceResult = await vehicleProjectionDataService
-                .GetAsync(GetVehiclePredicate<VehicleProjection>(command));
+            var eventResult = await eventDataService
+                .GetAsync(x => x.SagaId == command.SagaId && 
+                    x.StatusType == Entities.Types.StatusType.Fail &&
+                    x.Name == typeof(CreateVehiclesEvent).ToString());
 
             found = commandResult.IsSuccess &&
-                !vehicleProjectionDataServiceResult.IsSuccess &&
-                vehicleProjectionDataServiceResult.Exception is not null;
+                eventResult.IsSuccess;
 
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
 
         // Assert
         found.Should().BeTrue();
+
+        await _classFixture.GetRequiredService<EventBackgroundService>()
+            .StopAsync(cancellationTokenSource.Token);
 
         await _classFixture.GetRequiredService<CreateVehiclesEventBackgroundService>()
             .StopAsync(cancellationTokenSource.Token);
