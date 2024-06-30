@@ -55,11 +55,11 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTests
         await _classFixture.GetRequiredService<UploadUserLicenseImageEventBackgroundService>()
             .StartAsync(cancellationTokenSource.Token);
 
-        var found = false;
-
         var commandDataService = _classFixture.GetRequiredService<ICommandDataService>();
 
         var streamUploadService = _classFixture.GetRequiredService<IStreamUploadService>();
+
+        var found = false;
 
         do
         {
