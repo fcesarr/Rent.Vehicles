@@ -76,4 +76,10 @@ public class Rent : Entity
         get;
         set;
     }
+
+    public bool IsActive
+    {
+        get;
+        set;
+    }=false;
 }

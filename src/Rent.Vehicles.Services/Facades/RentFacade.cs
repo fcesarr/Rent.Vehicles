@@ -52,7 +52,7 @@ public class RentFacade : IRentFacade
                 throw user.Exception!;
             }
 
-            var vehicle = await _vehicleService.GetAsync(x => !x.IsRented, cancellationToken);
+            var vehicle = await _vehicleService.RentItAsync(cancellationToken);
 
             if (!vehicle.IsSuccess)
             {
@@ -68,15 +68,6 @@ public class RentFacade : IRentFacade
             if (!entity.IsSuccess)
             {
                 throw entity.Exception!;
-            }
-
-            vehicle.Value!.IsRented = true;
-
-            vehicle = await _vehicleService.UpdateAsync(vehicle.Value!, cancellationToken);
-
-            if (!vehicle.IsSuccess)
-            {
-                throw vehicle.Exception!;
             }
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);

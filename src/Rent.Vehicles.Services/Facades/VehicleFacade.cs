@@ -38,7 +38,7 @@ public class VehicleFacade : IVehicleFacade
             return entity.Exception!;
         }
 
-        return entity;
+        return entity.Value;
     }
 
     public async Task<Result<VehicleResponse>> UpdateAsync(UpdateVehiclesEvent @event,

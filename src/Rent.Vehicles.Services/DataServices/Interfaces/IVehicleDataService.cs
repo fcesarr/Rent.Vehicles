@@ -7,4 +7,6 @@ public interface IVehicleDataService : IDataService<Vehicle>
     Task<Result<Vehicle>> UpdateAsync(Guid id,
         string licensePlate,
         CancellationToken cancellationToken = default);
+    
+    Task<Result<Vehicle>> RentItAsync(CancellationToken cancellationToken = default);
 }

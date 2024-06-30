@@ -33,7 +33,7 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
 
         if (!result.IsValid)
         {
-            return Result<TEntity>.Failure(result.Exception);
+            return result.Exception!;
         }
 
         return await _repository.CreateAsync(result.Instance, cancellationToken);
@@ -45,7 +45,7 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
 
         if (!result.IsValid)
         {
-            return Result<bool>.Failure(result.Exception);
+            return result.Exception!;
         }
 
         await _repository.DeleteAsync(result.Instance, cancellationToken);
@@ -63,8 +63,7 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
 
         if (!entities.Any())
         {
-            return Result<IEnumerable<TEntity>>.Failure(
-                new EmptyException($"Entities {typeof(TEntity).Name} is empty"));
+            return new EmptyException($"Entities {typeof(TEntity).Name} is empty");
         }
 
         return entities
@@ -78,7 +77,7 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
 
         if (entity == null)
         {
-            return Result<TEntity>.Failure(new NullException($"Entity {typeof(TEntity).Name} not found"));
+            return new NullException($"Entity {typeof(TEntity).Name} not found");
         }
 
         return entity;
@@ -90,7 +89,7 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
 
         if (!result.IsValid)
         {
-            return Result<TEntity>.Failure(result.Exception);
+            return result.Exception!;
         }
 
         result.Instance.Updated = DateTime.Now;
@@ -104,7 +103,7 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
 
         if (!entity.IsSuccess)
         {
-            return Result<bool>.Failure(entity.Exception);
+            return entity.Exception!;
         }
 
         return await DeleteAsync(entity.Value, cancellationToken);
