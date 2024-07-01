@@ -11,19 +11,19 @@ namespace Rent.Vehicles.Services.Facades;
 
 public class VehicleProjectionFacade : IVehicleProjectionFacade
 {
-    private readonly IVehicleProjectionDataService _dataService;
-    private readonly IVehicleDataService _vehicleDataService;
+    private readonly IVehicleProjectionDataService _projectionDataService;
+    private readonly IVehicleDataService _dataService;
 
     public VehicleProjectionFacade(IVehicleDataService vehicleDataService, IVehicleProjectionDataService dataService)
     {
-        _vehicleDataService = vehicleDataService;
-        _dataService = dataService;
+        _dataService = vehicleDataService;
+        _projectionDataService = dataService;
     }
 
     public async Task<Result<VehicleResponse>> CreateAsync(CreateVehiclesProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var vehicle = await _vehicleDataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
+        var vehicle = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 
         if (!vehicle.IsSuccess)
         {
@@ -31,7 +31,7 @@ public class VehicleProjectionFacade : IVehicleProjectionFacade
         }
 
         var entity =
-            await _dataService.CreateAsync(vehicle.Value!.ToProjection<VehicleProjection>(), cancellationToken);
+            await _projectionDataService.CreateAsync(vehicle.Value!.ToProjection<VehicleProjection>(), cancellationToken);
 
         if (!entity.IsSuccess)
         {
@@ -44,7 +44,7 @@ public class VehicleProjectionFacade : IVehicleProjectionFacade
     public async Task<Result<bool>> DeleteAsync(DeleteVehiclesProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var entity = await _dataService.DeleteAsync(@event.Id, cancellationToken);
+        var entity = await _projectionDataService.DeleteAsync(@event.Id, cancellationToken);
 
         if (!entity.IsSuccess)
         {
@@ -56,7 +56,7 @@ public class VehicleProjectionFacade : IVehicleProjectionFacade
 
     public async Task<Result<VehicleResponse>> GetAsync(Expression<Func<VehicleProjection, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        var entity = await _dataService.GetAsync(predicate, cancellationToken);
+        var entity = await _projectionDataService.GetAsync(predicate, cancellationToken);
 
         if(!entity.IsSuccess)
             return entity.Exception!;
@@ -67,7 +67,7 @@ public class VehicleProjectionFacade : IVehicleProjectionFacade
     public async Task<Result<VehicleResponse>> UpdateAsync(UpdateVehiclesProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var vehicle = await _vehicleDataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
+        var vehicle = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 
         if (!vehicle.IsSuccess)
         {
@@ -75,7 +75,7 @@ public class VehicleProjectionFacade : IVehicleProjectionFacade
         }
 
         var entity =
-            await _dataService.UpdateAsync(vehicle.Value!.ToProjection<VehicleProjection>(), cancellationToken);
+            await _projectionDataService.UpdateAsync(vehicle.Value!.ToProjection<VehicleProjection>(), cancellationToken);
 
         if (!entity.IsSuccess)
         {
