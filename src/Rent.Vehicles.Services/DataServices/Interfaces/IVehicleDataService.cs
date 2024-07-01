@@ -9,4 +9,6 @@ public interface IVehicleDataService : IDataService<Vehicle>
         CancellationToken cancellationToken = default);
     
     Task<Result<Vehicle>> RentItAsync(CancellationToken cancellationToken = default);
+
+    Task<Result<Vehicle>> ReturnItAsync(Guid id, CancellationToken cancellationToken = default);
 }

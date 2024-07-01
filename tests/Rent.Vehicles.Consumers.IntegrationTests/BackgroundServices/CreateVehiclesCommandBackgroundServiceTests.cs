@@ -20,6 +20,8 @@ using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Repositories.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 
 using Xunit.Abstractions;
 
@@ -38,9 +40,9 @@ public class CreateVehiclesCommandBackgroundServiceTests
         _classFixture = classFixture;
     }
 
-    private Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
+    private static Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
 
-    private Expression<Func<Vehicle, bool>> GetVehiclePredicate(CreateVehiclesCommand command)
+    private static Expression<Func<Vehicle, bool>> GetVehiclePredicate(CreateVehiclesCommand command)
     {
         var predicate = GetPredicate<Vehicle>(command.Id);
 
@@ -50,7 +52,7 @@ public class CreateVehiclesCommandBackgroundServiceTests
             x.Model == command.Model);
     }
 
-    private Expression<Func<TProjection, bool>> GetVehiclePredicate<TProjection>(CreateVehiclesCommand command) where TProjection : VehicleProjection
+    private static Expression<Func<TProjection, bool>> GetVehiclePredicate<TProjection>(CreateVehiclesCommand command) where TProjection : VehicleProjection
     {
         var predicate = GetPredicate<TProjection>(command.Id);
 
@@ -237,7 +239,7 @@ public class CreateVehiclesCommandBackgroundServiceTests
     }
 
     [Fact]
-    public async Task SendCreateVehiclesCommandWithSameLicensePlateVerifyEntityAndProjectionAreSaved()
+    public async Task SendCreateVehiclesCommandWithSameLicensePlateVerifyEntityAndEventFail()
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(90));
 
@@ -265,20 +267,16 @@ public class CreateVehiclesCommandBackgroundServiceTests
         var eventDataService = _classFixture
             .GetRequiredService<IEventDataService>();
 
-        var vehicleFacade = _classFixture
-            .GetRequiredService<IVehicleFacade>();
+        var vehicleRepository = _classFixture
+            .GetRequiredService<IRepository<Vehicle>>();
 
-        var @event = new CreateVehiclesEvent
-        {
-            Id = command.Id,
-            Year = command.Year,
-            Model = command.Model,
-            LicensePlate = command.LicensePlate,
-            Type = command.Type,
-            SagaId = command.SagaId
-        };
+        var entity = _fixture
+            .Build<Vehicle>()
+                .With(x => x.Id, command.Id)
+                .With(x => x.LicensePlate, command.LicensePlate)
+            .Create(); 
 
-        await vehicleFacade.CreateAsync(@event, cancellationTokenSource.Token);
+        await vehicleRepository.CreateAsync(entity, cancellationTokenSource.Token);
 
         var found = false;
 

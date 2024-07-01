@@ -22,10 +22,24 @@ public class VehicleDataService : DataService<Vehicle>, IVehicleDataService
 
         if(!entity.IsSuccess)
         {
-            return new VehicleIsRentedException(string.Empty);
+            return new NoVehicleToRentException(string.Empty);
         }
 
         entity.Value!.IsRented = true;
+
+        return await UpdateAsync(entity.Value!, cancellationToken);
+    }
+
+    public async Task<Result<Vehicle>> ReturnItAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var entity = await GetAsync(x => !x.IsRented, cancellationToken);
+
+        if(!entity.IsSuccess)
+        {
+            return entity.Exception!;
+        }
+
+        entity.Value!.IsRented = false;
 
         return await UpdateAsync(entity.Value!, cancellationToken);
     }
@@ -41,12 +55,7 @@ public class VehicleDataService : DataService<Vehicle>, IVehicleDataService
             return entity.Exception!;
         }
 
-        if (entity.Value is null)
-        {
-            return new NullException("Vehicle not found.");
-        }
-
-        entity.Value.LicensePlate = licensePlate;
+        entity.Value!.LicensePlate = licensePlate;
 
         return await UpdateAsync(entity.Value, cancellationToken);
     }

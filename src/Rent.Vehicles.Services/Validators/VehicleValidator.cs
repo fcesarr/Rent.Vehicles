@@ -11,12 +11,16 @@ public class VehicleValidator : Validator<Vehicle>, IVehicleValidator
     public VehicleValidator(IRepository<Vehicle> repository)
     {
         RuleFor(x => x.LicensePlate)
-            .MustAsync(async (licensePlate, cancellationToken) => {
+            .MustAsync(async (e, licensePlate, cancellationToken) => {
                 
-                var entity = await repository.GetAsync(x => x.LicensePlate == licensePlate,
-                    cancellationToken: cancellationToken);
+                var entity = await repository.GetAsync(x => x.Id != e.Id &&
+                    x.LicensePlate == licensePlate,
+                cancellationToken: cancellationToken);
                 
                 return entity is null;
-            }).WithMessage("Placa já cadastrada");
+            }).WithMessage("Veiculo com placa já cadastrada");
+
+        RuleFor(x => x.IsRented)
+            .Must(x => !x).WithMessage("Veiculo já alugado");
     }
 }

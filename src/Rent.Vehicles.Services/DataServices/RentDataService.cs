@@ -118,6 +118,7 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
         }
 
         entity.EstimatedDate = endDate.Date;
+        entity.IsActive = true;
 
         return entity;
     }

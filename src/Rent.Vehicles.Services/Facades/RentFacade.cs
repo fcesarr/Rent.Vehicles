@@ -97,17 +97,7 @@ public class RentFacade : IRentFacade
                 throw user.Exception!;
             }
 
-            var vehicle =
-                await _vehicleService.GetAsync(x => x.Id == entity.Value!.VehicleId, cancellationToken);
-
-            if (!vehicle.IsSuccess)
-            {
-                throw entity.Exception!;
-            }
-
-            vehicle.Value!.IsRented = true;
-
-            vehicle = await _vehicleService.UpdateAsync(vehicle.Value!, cancellationToken);
+            var vehicle = await _vehicleService.ReturnItAsync(entity.Value!.VehicleId, cancellationToken);
 
             if (!vehicle.IsSuccess)
             {
