@@ -42,7 +42,7 @@ public class DeleteVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
 
     private static Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
 
-    private static Expression<Func<Vehicle, bool>> GetVehiclePredicate(Vehicle entity)
+    private static Expression<Func<Vehicle, bool>> GetPredicate(Vehicle entity)
     {
         var predicate = GetPredicate<Vehicle>(entity.Id);
 
@@ -78,13 +78,13 @@ public class DeleteVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
         var commandDataService = _classFixture
             .GetRequiredService<ICommandDataService>();
 
-        var vehicleDataService = _classFixture
+        var entityDataService = _classFixture
             .GetRequiredService<IVehicleDataService>();
 
-        var vehicleProjectionDataService = _classFixture
+        var projectionDataService = _classFixture
             .GetRequiredService<IVehicleProjectionDataService>();
 
-        var vehicleRepository = _classFixture
+        var entityRepository = _classFixture
             .GetRequiredService<IRepository<Vehicle>>();
 
         var @event = _fixture
@@ -93,7 +93,7 @@ public class DeleteVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
                 .With(x => x.IsRented, false)
             .Create(); 
 
-        await vehicleRepository.CreateAsync(@event, cancellationTokenSource.Token);
+        await entityRepository.CreateAsync(@event, cancellationTokenSource.Token);
 
         var found = false;
 
@@ -102,13 +102,13 @@ public class DeleteVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
             var commandResult = await commandDataService
                 .GetAsync(x => x.SagaId == command.SagaId);
 
-            var vehicleResult = await vehicleDataService
-                .GetAsync(GetVehiclePredicate(@event));
+            var entityResult = await entityDataService
+                .GetAsync(GetPredicate(@event));
 
             found = commandResult.IsSuccess &&
-                !vehicleResult.IsSuccess &&
-                vehicleResult.Exception is not null &&
-                vehicleResult.Exception.GetType() == typeof(NullException);
+                !entityResult.IsSuccess &&
+                entityResult.Exception is not null &&
+                entityResult.Exception.GetType() == typeof(NullException);
 
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);

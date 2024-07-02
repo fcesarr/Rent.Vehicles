@@ -9,7 +9,7 @@ public abstract record Message
 {
     [Key(0)]
     [JsonIgnore]
-    public Guid SagaId
+    public required Guid SagaId
     {
         get;
         set;

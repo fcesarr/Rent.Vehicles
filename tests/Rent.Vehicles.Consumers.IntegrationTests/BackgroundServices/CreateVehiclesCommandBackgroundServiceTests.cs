@@ -47,7 +47,7 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
 
     private static Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
 
-    private static Expression<Func<Vehicle, bool>> GetVehiclePredicate(CreateVehiclesCommand command)
+    private static Expression<Func<Vehicle, bool>> GetPredicate(CreateVehiclesCommand command)
     {
         var predicate = GetPredicate<Vehicle>(command.Id);
 
@@ -57,7 +57,7 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
             x.Model == command.Model);
     }
 
-    private static Expression<Func<TProjection, bool>> GetVehiclePredicate<TProjection>(CreateVehiclesCommand command) where TProjection : VehicleProjection
+    private static Expression<Func<TProjection, bool>> GetProjectionPredicate<TProjection>(CreateVehiclesCommand command) where TProjection : VehicleProjection
     {
         var predicate = GetPredicate<TProjection>(command.Id);
 
@@ -103,13 +103,13 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
         var commandDataService = _classFixture
             .GetRequiredService<ICommandDataService>();
 
-        var vehicleDataService = _classFixture
+        var entityDataService = _classFixture
             .GetRequiredService<IVehicleDataService>();
 
-        var vehicleProjectionDataService = _classFixture
+        var projectionDataService = _classFixture
             .GetRequiredService<IVehicleProjectionDataService>();
 
-        var vehiclesForSpecificYearProjectionDataService = _classFixture
+        var yearProjectionDataService = _classFixture
             .GetRequiredService<IVehiclesForSpecificYearProjectionDataService>();
 
         var found = false;
@@ -119,20 +119,20 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
             var commandResult = await commandDataService
                 .GetAsync(x => x.SagaId == command.SagaId);
 
-            var vehicleResult = await vehicleDataService
-                .GetAsync(GetVehiclePredicate(command));
+            var entityResult = await entityDataService
+                .GetAsync(GetPredicate(command));
 
-            var vehicleProjectionResult = await vehicleProjectionDataService
-                .GetAsync(GetVehiclePredicate<VehicleProjection>(command));
+            var projectionResult = await projectionDataService
+                .GetAsync(GetProjectionPredicate<VehicleProjection>(command));
 
-            var vehiclesForSpecificYearProjectionResult = await vehiclesForSpecificYearProjectionDataService
-                .GetAsync(GetVehiclePredicate<VehiclesForSpecificYearProjection>(command));
+            var yearProjectionResult = await yearProjectionDataService
+                .GetAsync(GetProjectionPredicate<VehiclesForSpecificYearProjection>(command));
 
             found = commandResult.IsSuccess &&
-                vehicleResult.IsSuccess &&
-                vehicleProjectionResult.IsSuccess && 
-                vehicleProjectionResult.IsSuccess &&
-                vehiclesForSpecificYearProjectionResult.IsSuccess;
+                entityResult.IsSuccess &&
+                projectionResult.IsSuccess && 
+                projectionResult.IsSuccess &&
+                yearProjectionResult.IsSuccess;
 
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
@@ -189,13 +189,13 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
         var commandDataService = _classFixture
             .GetRequiredService<ICommandDataService>();
 
-        var vehicleDataService = _classFixture
+        var entityDataService = _classFixture
             .GetRequiredService<IVehicleDataService>();
 
-        var vehicleProjectionDataService = _classFixture
+        var projectionDataService = _classFixture
             .GetRequiredService<IVehicleProjectionDataService>();
 
-        var vehiclesForSpecificYearProjectionDataService = _classFixture
+        var yearProjectionDataService = _classFixture
             .GetRequiredService<IVehiclesForSpecificYearProjectionDataService>();
 
         var found = false;
@@ -205,21 +205,21 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
             var commandResult = await commandDataService
                 .GetAsync(x => x.SagaId == command.SagaId);
 
-            var vehicleResult = await vehicleDataService
-                .GetAsync(GetVehiclePredicate(command));
+            var entityResult = await entityDataService
+                .GetAsync(GetPredicate(command));
 
-            var vehicleProjectionResult = await vehicleProjectionDataService
-                .GetAsync(GetVehiclePredicate<VehicleProjection>(command));
+            var projectionResult = await projectionDataService
+                .GetAsync(GetProjectionPredicate<VehicleProjection>(command));
 
-            var vehiclesForSpecificYearProjectionResult = await vehiclesForSpecificYearProjectionDataService
-                .GetAsync(GetVehiclePredicate<VehiclesForSpecificYearProjection>(command));
+            var yearProjectionResult = await yearProjectionDataService
+                .GetAsync(GetProjectionPredicate<VehiclesForSpecificYearProjection>(command));
 
             found = commandResult.IsSuccess &&
-                vehicleResult.IsSuccess &&
-                vehicleProjectionResult.IsSuccess && 
-                vehicleProjectionResult.IsSuccess &&
-                !vehiclesForSpecificYearProjectionResult.IsSuccess &&
-                vehiclesForSpecificYearProjectionResult.Exception is not null;
+                entityResult.IsSuccess &&
+                projectionResult.IsSuccess && 
+                projectionResult.IsSuccess &&
+                !yearProjectionResult.IsSuccess &&
+                yearProjectionResult.Exception is not null;
 
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
@@ -272,7 +272,7 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
         var eventDataService = _classFixture
             .GetRequiredService<IEventDataService>();
 
-        var vehicleRepository = _classFixture
+        var entityRepository = _classFixture
             .GetRequiredService<IRepository<Vehicle>>();
 
         var entity = _fixture
@@ -280,7 +280,7 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
                 .With(x => x.LicensePlate, command.LicensePlate)
             .Create(); 
 
-        await vehicleRepository.CreateAsync(entity, cancellationTokenSource.Token);
+        await entityRepository.CreateAsync(entity, cancellationTokenSource.Token);
 
         var found = false;
 

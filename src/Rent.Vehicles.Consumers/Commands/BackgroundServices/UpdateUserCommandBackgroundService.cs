@@ -28,10 +28,11 @@ public class UpdateUserCommandBackgroundService : HandlerCommandPublishEventBack
         {
             Id = @event.Id,
             Name = @event.Name,
-            Number = @event.Name,
+            Number = @event.Number,
             Birthday = @event.Birthday,
             LicenseNumber = @event.LicenseNumber,
-            LicenseType = @event.LicenseType
+            LicenseType = @event.LicenseType,
+            SagaId = @event.SagaId
         };
     }
 

@@ -248,7 +248,8 @@ public static class ToExtension
             Number = entity.Number,
             Birthday = entity.Birthday,
             LicenseNumber = entity.LicenseNumber,
-            LicensePath = entity.LicenseNumber
+            LicensePath = entity.LicenseNumber,
+            LicenseType = entity.LicenseType
         };
     }
 

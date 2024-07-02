@@ -136,13 +136,16 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
 
     public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        UpdateOptions options = new();
+        var options = new ReplaceOptions
+        {
+            IsUpsert = true
+        };
 
         var filter = Builders<TEntity>
             .Filter
             .Where(x => x.Id == entity.Id);
 
-        await Task.Run(async () => await _mongoCollection.ReplaceOneAsync(filter, entity), cancellationToken);
+        await _mongoCollection.ReplaceOneAsync(filter, entity, options, cancellationToken);
 
         return entity;
     }

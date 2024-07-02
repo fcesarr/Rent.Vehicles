@@ -21,6 +21,7 @@ public class UserProjection : Entity
     }
 
     [BsonElement("Birthday")]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Unspecified)]
     public required DateTime Birthday
     {
         get;
@@ -35,7 +36,7 @@ public class UserProjection : Entity
     }
 
     [BsonElement("LicenseType")]
-    public LicenseType LicenseType
+    public required LicenseType LicenseType
     {
         get;
         set;
