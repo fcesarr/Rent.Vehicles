@@ -41,19 +41,19 @@ public class UserFacade : IUserFacade
     public async Task<Result<UserResponse>> UpdateAsync(UpdateUserLicenseImageEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var licensePath =
-            await _uploadService.UploadAsync(@event.LicenseImage, cancellationToken);
-
-        if (!licensePath.IsSuccess)
-        {
-            return licensePath.Exception!;
-        }
-
         var entity = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 
         if (!entity.IsSuccess)
         {
             return entity.Exception!;
+        }
+
+        var licensePath =
+            await _uploadService.GetNameAsync(@event.LicenseImage, cancellationToken);
+
+        if (!licensePath.IsSuccess)
+        {
+            return licensePath.Exception!;
         }
 
         entity.Value!.LicensePath = licensePath.Value!;

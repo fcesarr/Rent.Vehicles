@@ -173,9 +173,9 @@ public static class ServiceExtensions
                     UserName = "admin",
                     Password = "nimda",
                     VirtualHost = "/integrationTests",
-                    RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
-                    SocketReadTimeout = TimeSpan.FromSeconds(30),
-                    SocketWriteTimeout = TimeSpan.FromSeconds(30)
+                    RequestedConnectionTimeout = TimeSpan.FromSeconds(180),
+                    SocketReadTimeout = TimeSpan.FromSeconds(180),
+                    SocketWriteTimeout = TimeSpan.FromSeconds(180)
                 };
 
                 return factory.CreateConnection();

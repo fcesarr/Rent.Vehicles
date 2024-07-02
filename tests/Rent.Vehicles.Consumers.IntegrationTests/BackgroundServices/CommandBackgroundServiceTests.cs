@@ -2,9 +2,12 @@ using AutoFixture;
 
 using FluentAssertions;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using MongoDB.Driver;
+
+using RabbitMQ.Client;
 
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 using Rent.Vehicles.Messages;
@@ -17,52 +20,35 @@ using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-public abstract class CommandBackgroundServiceTests<TBackgroundService, TCommand> 
-    where TBackgroundService : BackgroundService
-    where TCommand : Command
+public abstract class CommandBackgroundServiceTests : IAsyncLifetime
 {
     protected readonly CommonFixture _classFixture;
 
-    public CommandBackgroundServiceTests(
-        CommonFixture classFixture,
-        ITestOutputHelper output)
+    protected readonly IList<string> _queues = new List<string>();
+
+    public CommandBackgroundServiceTests(CommonFixture classFixture)
     {
         _classFixture = classFixture;
     }
 
-    protected abstract TCommand GetCommand();
-
-    [Fact]
-    public async Task SendCommandAndVerifyCommandIsCreatedInDatabase()
+    public Task InitializeAsync()
     {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        return Task.CompletedTask;
+    }
 
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(1000));
+    public async Task DisposeAsync()
+    {
+        var connection = _classFixture.GetRequiredService<IConnection>();
+        
+        var model = connection.CreateModel();
 
-        var command = GetCommand();
-
-        await _classFixture.GetRequiredService<IPublisher>()
-            .PublishCommandAsync(command, cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<TBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        var found = false;
-
-        do
+        foreach (var queue in _queues)
         {
-            var result = await _classFixture.GetRequiredService<ICommandDataService>()
-                .GetAsync(x => x.SagaId == command.SagaId);
+            model.QueuePurge(queue);
+        }
 
-            found = result!.IsSuccess;
+        model.Close();
 
-            await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
-        } while (!found && !cancellationTokenSource.IsCancellationRequested);
-
-        // Assert
-        found.Should().BeTrue();
-
-        await _classFixture.GetRequiredService<TBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
+        await _classFixture.ResetDatabaseAsync();
     }
 }

@@ -25,17 +25,19 @@ using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(CommonCollection))]
-public class DeleteVehiclesCommandBackgroundServiceTests
+[Collection(nameof(CommonCollectionFixture))]
+public class DeleteVehiclesCommandBackgroundServiceTests : CommandBackgroundServiceTests
 {
     private readonly Fixture _fixture;
 
-    private readonly CommonFixture _classFixture;
-
-    public DeleteVehiclesCommandBackgroundServiceTests(CommonFixture classFixture)
+    public DeleteVehiclesCommandBackgroundServiceTests(CommonFixture classFixture) : base(classFixture)
     {
         _fixture = new Fixture();
-        _classFixture = classFixture;
+
+        _queues.Add("DeleteVehiclesCommand");
+        _queues.Add("DeleteVehiclesEvent");
+        _queues.Add("DeleteVehiclesProjectionEvent");
+        _queues.Add("Event");
     }
 
     private static Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
@@ -174,7 +176,7 @@ public class DeleteVehiclesCommandBackgroundServiceTests
             var eventResult = await eventDataService
                 .GetAsync(x => x.SagaId == command.SagaId && 
                     x.StatusType == Entities.Types.StatusType.Fail &&
-                    x.Name == typeof(DeleteVehiclesEvent).ToString());
+                    x.Name == typeof(DeleteVehiclesEvent).Name);
 
             found = commandResult.IsSuccess &&
                 eventResult.IsSuccess;

@@ -13,9 +13,9 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
 {
     private IDbContext _dbContext;
 
-    public EntityFrameworkRepository(IDbContextFactory dbContextFactory)
+    public EntityFrameworkRepository(IDbContext dbContext)
     {
-        _dbContext = dbContextFactory.CreateDbContextAsync().GetAwaiter().GetResult();
+        _dbContext = dbContext;
     }
 
     public void SetContext(IDbContext context)
@@ -25,22 +25,26 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
 
     public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>();
+        var context = _dbContext;
+
+        var dbSet = context.Set<TEntity>();
 
         var entityEntry = await dbSet.AddAsync(entity, cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return entityEntry.Entity;
     }
 
     public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>();
+        var context = _dbContext;
+
+        var dbSet = context.Set<TEntity>();
 
         await Task.Run(() => dbSet.Remove(entity), cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
@@ -49,7 +53,9 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
         IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>()
+        var context = _dbContext;
+
+        var dbSet = context.Set<TEntity>()
             .Where(predicate);
 
         if (orderBy is not null)
@@ -73,7 +79,9 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
         IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>()
+        var context = _dbContext;
+
+        var dbSet = context.Set<TEntity>()
             .Where(predicate);
 
         if (orderBy is not null)
@@ -105,7 +113,9 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
     public async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
-        var dbSet = _dbContext.Set<TEntity>();
+        var context = _dbContext;
+
+        var dbSet = context.Set<TEntity>();
 
         var entities = await dbSet
             .Where(predicate)
@@ -113,6 +123,6 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
 
         await Task.Run(() => dbSet.RemoveRange(entities), cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

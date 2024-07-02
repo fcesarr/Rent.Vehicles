@@ -21,6 +21,8 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     protected readonly ISerializer _serializer;
 
+    private readonly string _guid;
+
     protected HandlerMessageBackgroundService(ILogger<HandlerMessageBackgroundService<TEventToConsume>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
@@ -30,13 +32,22 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         _channel = channel;
         _periodicTimer = periodicTimer;
         _serializer = serializer;
+        _guid = Guid.NewGuid().ToString();
     }
 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
         _channel.SubscribeAsync(typeof(TEventToConsume).Name, cancellationToken);
 
+        _logger.LogInformation($"StartAsync {this.GetType().Name}: {_guid}");
+
         return base.StartAsync(cancellationToken);
+    }
+
+    public override Task StopAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation($"StopAsync {this.GetType().Name}: {_guid}");
+        return base.StopAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)

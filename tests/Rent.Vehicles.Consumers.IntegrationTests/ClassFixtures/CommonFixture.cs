@@ -1,10 +1,18 @@
 
+
+using System.Data.Common;
+
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rent.Vehicles.Consumers.IntegrationTests.Configuration;
 using Rent.Vehicles.Entities.Contexts;
 using Rent.Vehicles.Entities.Contexts.Interfaces;
+using Rent.Vehicles.Entities.Factories.Interfaces;
+
+using Respawn;
+using Respawn.Graph;
 
 using Xunit.Abstractions;
 
@@ -14,31 +22,76 @@ public class CommonFixture : IAsyncLifetime
 {
     private ServiceProvider? _serviceProvider;
 
+    public ServiceProvider ServiceProvider 
+    {
+        get => _serviceProvider ??= ServiceProviderManager
+            .GetInstance()
+            .GetServiceProvider();
+    }
+
     public T GetRequiredService<T>() where T : class
     {
-        return _serviceProvider!.GetRequiredService<T>();
+        return ServiceProvider.GetRequiredService<T>();
     }
+
+    private Respawner _respawner = default!;
+
+    private DbConnection _connection = default!;
 
     public async Task InitializeAsync()
     {
-        if(_serviceProvider == null)
-            _serviceProvider = ServiceProviderManager
-                .GetInstance()
-                .GetServiceProvider();
+        // var contextFactory = GetRequiredService<IDbContextFactory>();
 
+        // var context = await contextFactory.CreateDbContextAsync();
         var context = GetRequiredService<IDbContext>();
 
-        await context.Database.EnsureDeletedAsync();
+        await context.Database.MigrateAsync();
 
-        await context.Database.EnsureCreatedAsync();
+        _connection = context.Database.GetDbConnection();
+
+        await _connection.OpenAsync();
+
+		_respawner = await Respawner.CreateAsync(_connection,
+			new RespawnerOptions
+			{
+				DbAdapter = DbAdapter.Postgres,
+				SchemasToInclude = [ "vehicles", "events" ],
+                TablesToIgnore = [ new Table("rentalPlanes") ],
+				WithReseed = false
+			}
+		);
+
+        // await context.Database.CloseConnectionAsync();
+
+        // context.Dispose();
     }
 
     public async Task DisposeAsync()
     {
-        var context = GetRequiredService<IDbContext>();
+        var contextFactory = GetRequiredService<IDbContextFactory>();
+
+        var context = await contextFactory.CreateDbContextAsync();
 
         await context.Database.EnsureDeletedAsync();
 
-        await _serviceProvider!.DisposeAsync();
+        context.Dispose();
     }
+
+    public async Task ResetDatabaseAsync()
+	{
+        // var contextFactory = GetRequiredService<IDbContextFactory>();
+
+        // var context = await contextFactory.CreateDbContextAsync();
+        var context = GetRequiredService<IDbContext>();
+
+        await context.Database.OpenConnectionAsync();
+
+        context.ChangeTracker.Clear();
+
+		await _respawner.ResetAsync(_connection);
+
+        // await context.Database.CloseConnectionAsync();
+
+        // context.Dispose();
+	}
 }

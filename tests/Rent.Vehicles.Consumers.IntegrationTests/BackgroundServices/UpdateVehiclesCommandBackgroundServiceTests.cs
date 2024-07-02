@@ -4,11 +4,15 @@ using AutoFixture;
 
 using FluentAssertions;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 using Rent.Vehicles.Consumers.IntegrationTests.Extensions;
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Entities.Contexts.Interfaces;
+using Rent.Vehicles.Entities.Factories.Interfaces;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Events;
@@ -21,17 +25,19 @@ using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(CommonCollection))]
-public class UpdateVehiclesCommandBackgroundServiceTests
+[Collection(nameof(CommonCollectionFixture))]
+public class UpdateVehiclesCommandBackgroundServiceTests : CommandBackgroundServiceTests
 {
     private readonly Fixture _fixture;
 
-    private readonly CommonFixture _classFixture;
-
-    public UpdateVehiclesCommandBackgroundServiceTests(CommonFixture classFixture)
+    public UpdateVehiclesCommandBackgroundServiceTests(CommonFixture classFixture) : base(classFixture)
     {
         _fixture = new Fixture();
-        _classFixture = classFixture;
+
+        _queues.Add("UpdateVehiclesCommand");
+        _queues.Add("UpdateVehiclesEvent");
+        _queues.Add("UpdateVehiclesProjectionEvent");
+        _queues.Add("Event");
     }
 
     private static Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
@@ -53,9 +59,22 @@ public class UpdateVehiclesCommandBackgroundServiceTests
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
+        var vehicleRepository = _classFixture
+            .GetRequiredService<IRepository<Vehicle>>();
+
+        var entity = _fixture
+            .Build<Vehicle>()
+                .With(x => x.IsRented, false)
+            .Create(); 
+
+        await vehicleRepository.CreateAsync(entity, cancellationTokenSource.Token);
+
         var command = _fixture
             .Build<UpdateVehiclesCommand>()
+                .With(x => x.Id, entity.Id)
             .Create();
+
+        entity.LicensePlate = command.LicensePlate;
 
         await _classFixture.GetRequiredService<IPublisher>()
             .PublishCommandAsync(command, cancellationTokenSource.Token);
@@ -78,19 +97,6 @@ public class UpdateVehiclesCommandBackgroundServiceTests
         var vehicleProjectionDataService = _classFixture
             .GetRequiredService<IVehicleProjectionDataService>();
 
-        var vehicleRepository = _classFixture
-            .GetRequiredService<IRepository<Vehicle>>();
-
-        var @event = _fixture
-            .Build<Vehicle>()
-                .With(x => x.Id, command.Id)
-                .With(x => x.IsRented, false)
-            .Create(); 
-
-        await vehicleRepository.CreateAsync(@event, cancellationTokenSource.Token);
-
-        @event.LicensePlate = command.LicensePlate;
-
         var found = false;
 
         do
@@ -99,7 +105,7 @@ public class UpdateVehiclesCommandBackgroundServiceTests
                 .GetAsync(x => x.SagaId == command.SagaId);
 
             var vehicleResult = await vehicleDataService
-                .GetAsync(GetVehiclePredicate(@event));
+                .GetAsync(GetVehiclePredicate(entity));
 
             found = commandResult.IsSuccess &&
                 vehicleResult.IsSuccess &&
@@ -128,8 +134,45 @@ public class UpdateVehiclesCommandBackgroundServiceTests
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
+        var vehicleRepository = _classFixture
+            .GetRequiredService<IRepository<Vehicle>>();
+
+        var entity = _fixture
+            .Build<Vehicle>()
+                .With(x => x.IsRented, false)
+            .Create(); 
+
+        try
+        {
+            await vehicleRepository.CreateAsync(entity, cancellationTokenSource.Token);
+        }
+        catch (System.Exception ex)
+        {
+            
+            throw;
+        }
+
+        var licensePlate = entity.LicensePlate;
+
+        entity = _fixture
+            .Build<Vehicle>()
+                .With(x => x.IsRented, false)
+            .Create(); 
+
+        try
+        {
+            await vehicleRepository.CreateAsync(entity, cancellationTokenSource.Token);
+        }
+        catch (System.Exception ex)
+        {
+            
+            throw;
+        }
+
         var command = _fixture
             .Build<UpdateVehiclesCommand>()
+                .With(x => x.Id, entity.Id)
+                .With(x => x.LicensePlate, licensePlate)
             .Create();
 
         await _classFixture.GetRequiredService<IPublisher>()
@@ -150,17 +193,6 @@ public class UpdateVehiclesCommandBackgroundServiceTests
         var eventDataService = _classFixture
             .GetRequiredService<IEventDataService>();
 
-        var vehicleRepository = _classFixture
-            .GetRequiredService<IRepository<Vehicle>>();
-
-        var entity = _fixture
-            .Build<Vehicle>()
-                .With(x => x.LicensePlate, command.LicensePlate)
-                .With(x => x.IsRented, false)
-            .Create(); 
-
-        await vehicleRepository.CreateAsync(entity, cancellationTokenSource.Token);
-
         var found = false;
 
         do
@@ -171,7 +203,8 @@ public class UpdateVehiclesCommandBackgroundServiceTests
             var eventResult = await eventDataService
                 .GetAsync(x => x.SagaId == command.SagaId && 
                     x.StatusType == Entities.Types.StatusType.Fail &&
-                    x.Name == typeof(UpdateVehiclesEvent).ToString());
+                    x.Message.Contains("Error on Validate") &&
+                    x.Name == typeof(UpdateVehiclesEvent).Name);
 
             found = commandResult.IsSuccess &&
                 eventResult.IsSuccess;

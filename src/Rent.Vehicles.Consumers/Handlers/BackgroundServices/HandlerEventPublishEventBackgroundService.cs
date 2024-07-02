@@ -23,25 +23,18 @@ public abstract class
     protected override async Task<Result<Task>> HandlerAsync(TEventToConsume @event,
         CancellationToken cancellationToken = default)
     {
-        try
+        var result = await base.HandlerAsync(@event, cancellationToken);
+
+        if (!result.IsSuccess)
         {
-            var result = await base.HandlerAsync(@event, cancellationToken);
-
-            if (!result.IsSuccess)
-            {
-                return result.Exception!;
-            }
-
-            await result.Value!;
-
-            var eventsToPublish = CreateEventToPublish(@event);
-
-            return PublishAsync(eventsToPublish, cancellationToken);
+            return result.Exception!;
         }
-        catch (Exception ex)
-        {
-            return ex;
-        }
+
+        await result.Value!;
+
+        var eventsToPublish = CreateEventToPublish(@event);
+
+        return PublishAsync(eventsToPublish, cancellationToken);
     }
 
     protected abstract IEnumerable<Event> CreateEventToPublish(TEventToConsume @event);

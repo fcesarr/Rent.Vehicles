@@ -24,20 +24,25 @@ using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Extensions;
 
 using Xunit.Abstractions;
+using RabbitMQ.Client;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(CommonCollection))]
-public class CreateVehiclesCommandBackgroundServiceTests
+[Collection(nameof(CommonCollectionFixture))]
+public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServiceTests
 {
     private readonly Fixture _fixture;
 
-    private readonly CommonFixture _classFixture;
-
-    public CreateVehiclesCommandBackgroundServiceTests(CommonFixture classFixture)
+    public CreateVehiclesCommandBackgroundServiceTests(CommonFixture classFixture) : base(classFixture)
     {
         _fixture = new Fixture();
-        _classFixture = classFixture;
+
+        _queues.Add("CreateVehiclesCommand");
+        _queues.Add("CreateVehiclesEvent");
+        _queues.Add("CreateVehiclesForSpecificYearEvent");
+        _queues.Add("CreateVehiclesForSpecificYearProjectionEvent");
+        _queues.Add("CreateVehiclesProjectionEvent");
+        _queues.Add("Event");
     }
 
     private static Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
@@ -272,7 +277,6 @@ public class CreateVehiclesCommandBackgroundServiceTests
 
         var entity = _fixture
             .Build<Vehicle>()
-                .With(x => x.Id, command.Id)
                 .With(x => x.LicensePlate, command.LicensePlate)
             .Create(); 
 
@@ -288,7 +292,8 @@ public class CreateVehiclesCommandBackgroundServiceTests
             var eventResult = await eventDataService
                 .GetAsync(x => x.SagaId == command.SagaId && 
                     x.StatusType == Entities.Types.StatusType.Fail &&
-                    x.Name == typeof(CreateVehiclesEvent).ToString());
+                    x.Message.Contains("Error on Validate") &&
+                    x.Name == typeof(CreateVehiclesEvent).Name);
 
             found = commandResult.IsSuccess &&
                 eventResult.IsSuccess;

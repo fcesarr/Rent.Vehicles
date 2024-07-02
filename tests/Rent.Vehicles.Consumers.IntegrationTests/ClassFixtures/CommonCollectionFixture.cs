@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 namespace Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 
 
-[CollectionDefinition(nameof(CommonCollection))]
-public class CommonCollection : ICollectionFixture<CommonFixture>
+[CollectionDefinition(nameof(CommonCollectionFixture))]
+public class CommonCollectionFixture : ICollectionFixture<CommonFixture>
 {
 }

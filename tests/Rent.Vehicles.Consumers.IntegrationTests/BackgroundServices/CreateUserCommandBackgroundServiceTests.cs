@@ -17,20 +17,13 @@ using Xunit.Abstractions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(CommonCollection))]
-public class CreateUserCommandBackgroundServiceTests : CommandBackgroundServiceTests<CreateUserCommandBackgroundService, CreateUserCommand>
+[Collection(nameof(CommonCollectionFixture))]
+public class CreateUserCommandBackgroundServiceTests : CommandBackgroundServiceTests
 {
     private readonly Fixture _fixture;
 
-    public CreateUserCommandBackgroundServiceTests(CommonFixture classFixture, ITestOutputHelper output) : base(classFixture, output)
+    public CreateUserCommandBackgroundServiceTests(CommonFixture classFixture) : base(classFixture)
     {
         _fixture = new Fixture();
-    }
-
-    protected override CreateUserCommand GetCommand()
-    {
-        return _fixture
-            .Build<CreateUserCommand>()
-            .Create();
     }
 }

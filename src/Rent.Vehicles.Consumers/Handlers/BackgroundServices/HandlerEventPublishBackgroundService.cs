@@ -32,7 +32,7 @@ public abstract class
         {
             Id = Guid.NewGuid(),
             SagaId = eventToPublish.SagaId,
-            Type = eventToPublish.GetType().ToString(),
+            Type = eventToPublish.GetType().Name,
             StatusType = StatusType.Success,
             Message = string.Empty
         };
@@ -52,9 +52,11 @@ public abstract class
 
             return _publisher.PublishSingleEventAsync(@event, cancellationToken);
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            return TreatException(@event, exception, cancellationToken).Value!;
+            await TreatException(@event, ex, cancellationToken).Value!;
+            
+            return ex;
         }
     }
 
