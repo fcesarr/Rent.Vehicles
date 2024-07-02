@@ -47,10 +47,10 @@ public class UpdateUserCommandBackgroundServiceTests : CommandBackgroundServiceT
         var predicate = GetPredicate<User>(command.Id);
 
         return predicate.And(x => x.Name == command.Name &&
-                    x.Number == command.Number &&
-                    x.Birthday == command.Birthday &&
-                    x.LicenseNumber == command.LicenseNumber &&
-                    x.LicenseType == (Entities.Types.LicenseType)command.LicenseType);
+            x.Number == command.Number &&
+            x.Birthday == command.Birthday &&
+            x.LicenseNumber == command.LicenseNumber &&
+            x.LicenseType == (Entities.Types.LicenseType)command.LicenseType);
     }
 
     private static Expression<Func<UserProjection, bool>> GetProjectionPredicate(UpdateUserCommand command)
@@ -58,10 +58,10 @@ public class UpdateUserCommandBackgroundServiceTests : CommandBackgroundServiceT
         var predicate = GetPredicate<UserProjection>(command.Id);
 
         return predicate.And(x => x.Name == command.Name &&
-                    x.Number == command.Number &&
-                    x.Birthday == command.Birthday &&
-                    x.LicenseNumber == command.LicenseNumber &&
-                    x.LicenseType == (Entities.Types.LicenseType)command.LicenseType);
+            x.Number == command.Number &&
+            x.Birthday == command.Birthday &&
+            x.LicenseNumber == command.LicenseNumber &&
+            x.LicenseType == (Entities.Types.LicenseType)command.LicenseType);
     }
 
     [Fact]

@@ -23,7 +23,9 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Scripts/InsertCommand.sql" />
+    <EmbeddedResource Include="Images/pngBase64String" />
+    <EmbeddedResource Include="Images/bmpBase64String" />
+    <EmbeddedResource Include="Images/jpgBase64String" />
   </ItemGroup>
 
   <ItemGroup>
