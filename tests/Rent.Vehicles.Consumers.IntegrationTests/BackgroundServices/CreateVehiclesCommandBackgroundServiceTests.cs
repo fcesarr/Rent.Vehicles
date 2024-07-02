@@ -250,8 +250,18 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
+        var entityRepository = _classFixture
+            .GetRequiredService<IRepository<Vehicle>>();
+
+        var entity = _fixture
+            .Build<Vehicle>()
+            .Create(); 
+
+        await entityRepository.CreateAsync(entity, cancellationTokenSource.Token);
+
         var command = _fixture
             .Build<CreateVehiclesCommand>()
+                .With(x => x.LicensePlate, entity.LicensePlate)
             .Create();
         
         await _classFixture.GetRequiredService<IPublisher>()
@@ -271,16 +281,6 @@ public class CreateVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
 
         var eventDataService = _classFixture
             .GetRequiredService<IEventDataService>();
-
-        var entityRepository = _classFixture
-            .GetRequiredService<IRepository<Vehicle>>();
-
-        var entity = _fixture
-            .Build<Vehicle>()
-                .With(x => x.LicensePlate, command.LicensePlate)
-            .Create(); 
-
-        await entityRepository.CreateAsync(entity, cancellationTokenSource.Token);
 
         var found = false;
 

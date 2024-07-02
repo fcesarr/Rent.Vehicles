@@ -19,6 +19,7 @@ using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
+using Rent.Vehicles.Services.Repositories.Interfaces;
 
 using Xunit.Abstractions;
 
@@ -133,6 +134,165 @@ public class CreateUserCommandBackgroundServiceTests : CommandBackgroundServiceT
         await _classFixture.GetRequiredService<CreateUserCommandBackgroundService>()
             .StopAsync(cancellationTokenSource.Token);
     }
+
+    [Theory]
+    [InlineData("pngBase64String")]
+    [InlineData("bmpBase64String")]
+    public async Task SendCreateUserCommandWithSameNumberVerifyEntityAndEventFail(string name)
+    {
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
+        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+
+        var entityRepository = _classFixture
+            .GetRequiredService<IRepository<User>>();
+
+        var entity = _fixture
+            .Build<User>()
+            .Create(); 
+
+        await entityRepository.CreateAsync(entity, cancellationTokenSource.Token);
+
+        var number = entity.Number;
+
+        var base64String = await UpdateUserLicenseImageCommandBackgroundServiceTests
+            .GetBase64StringAsync(name, cancellationTokenSource.Token);
+
+        var command = _fixture
+            .Build<CreateUserCommand>()
+                .With(x => x.LicenseImage, base64String)
+                .With(x => x.Number, number)
+            .Create();
+
+        await _classFixture.GetRequiredService<IPublisher>()
+            .PublishCommandAsync(command, cancellationTokenSource.Token);
+
+        await _classFixture.GetRequiredService<CreateUserCommandBackgroundService>()
+            .StartAsync(cancellationTokenSource.Token);
+
+        await _classFixture.GetRequiredService<CreateUserEventBackgroundService>()
+            .StartAsync(cancellationTokenSource.Token);
+
+        await _classFixture.GetRequiredService<EventBackgroundService>()
+            .StartAsync(cancellationTokenSource.Token);
+
+        var commandDataService = _classFixture
+            .GetRequiredService<ICommandDataService>();
+
+        var eventDataService = _classFixture
+            .GetRequiredService<IEventDataService>();
+
+        var found = false;
+
+        do
+        {
+            var commandResult = await commandDataService
+                .GetAsync(x => x.SagaId == command.SagaId);
+
+            var eventResult = await eventDataService
+                .GetAsync(x => x.SagaId == command.SagaId && 
+                    x.StatusType == Entities.Types.StatusType.Fail &&
+                    x.Message.Contains("Error on Validate") &&
+                    x.Name == typeof(CreateUserEvent).Name);
+
+            found = commandResult.IsSuccess &&
+                eventResult.IsSuccess;
+
+            await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
+        } while (!found && !cancellationTokenSource.IsCancellationRequested);
+
+        // Assert
+        found.Should().BeTrue();
+
+        await _classFixture.GetRequiredService<EventBackgroundService>()
+            .StopAsync(cancellationTokenSource.Token);
+
+        await _classFixture.GetRequiredService<CreateUserEventBackgroundService>()
+            .StopAsync(cancellationTokenSource.Token);
+        
+        await _classFixture.GetRequiredService<CreateUserCommandBackgroundService>()
+            .StopAsync(cancellationTokenSource.Token);
+    }
+
+    [Theory]
+    [InlineData("pngBase64String")]
+    [InlineData("bmpBase64String")]
+    public async Task SendCreateUserCommandWithSameLicenseNumberVerifyEntityAndEventFail(string name)
+    {
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+
+        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+
+        var entityRepository = _classFixture
+            .GetRequiredService<IRepository<User>>();
+
+        var entity = _fixture
+            .Build<User>()
+            .Create(); 
+
+        await entityRepository.CreateAsync(entity, cancellationTokenSource.Token);
+
+        var licenseNumber = entity.LicenseNumber;
+
+        var base64String = await UpdateUserLicenseImageCommandBackgroundServiceTests
+            .GetBase64StringAsync(name, cancellationTokenSource.Token);
+
+        var command = _fixture
+            .Build<CreateUserCommand>()
+                .With(x => x.LicenseImage, base64String)
+                .With(x => x.LicenseNumber, licenseNumber)
+            .Create();
+
+        await _classFixture.GetRequiredService<IPublisher>()
+            .PublishCommandAsync(command, cancellationTokenSource.Token);
+
+        await _classFixture.GetRequiredService<CreateUserCommandBackgroundService>()
+            .StartAsync(cancellationTokenSource.Token);
+
+        await _classFixture.GetRequiredService<CreateUserEventBackgroundService>()
+            .StartAsync(cancellationTokenSource.Token);
+
+        await _classFixture.GetRequiredService<EventBackgroundService>()
+            .StartAsync(cancellationTokenSource.Token);
+
+        var commandDataService = _classFixture
+            .GetRequiredService<ICommandDataService>();
+
+        var eventDataService = _classFixture
+            .GetRequiredService<IEventDataService>();
+
+        var found = false;
+
+        do
+        {
+            var commandResult = await commandDataService
+                .GetAsync(x => x.SagaId == command.SagaId);
+
+            var eventResult = await eventDataService
+                .GetAsync(x => x.SagaId == command.SagaId && 
+                    x.StatusType == Entities.Types.StatusType.Fail &&
+                    x.Message.Contains("Error on Validate") &&
+                    x.Name == typeof(CreateUserEvent).Name);
+
+            found = commandResult.IsSuccess &&
+                eventResult.IsSuccess;
+
+            await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
+        } while (!found && !cancellationTokenSource.IsCancellationRequested);
+
+        // Assert
+        found.Should().BeTrue();
+
+        await _classFixture.GetRequiredService<EventBackgroundService>()
+            .StopAsync(cancellationTokenSource.Token);
+
+        await _classFixture.GetRequiredService<CreateUserEventBackgroundService>()
+            .StopAsync(cancellationTokenSource.Token);
+        
+        await _classFixture.GetRequiredService<CreateUserCommandBackgroundService>()
+            .StopAsync(cancellationTokenSource.Token);
+    }
+
 
     [Theory]
     [InlineData("pngBase64String")]
