@@ -7,7 +7,7 @@ namespace Rent.Vehicles.Entities;
 
 public class Entity
 {
-    private DateTime _created = DateTime.UtcNow;
+    private DateTime _created = DateTime.Now;
 
     [BsonId]
     [BsonRepresentation(BsonType.String)]

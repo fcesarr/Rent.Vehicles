@@ -92,7 +92,7 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
             return result.Exception!;
         }
 
-        result.Instance.Updated = DateTime.Now;
+        result.Instance.Updated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Local);
 
         return await _repository.UpdateAsync(result.Instance, cancellationToken);
     }

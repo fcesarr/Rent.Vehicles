@@ -109,7 +109,7 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTests : CommandBackgr
                 .GetAsync(x => x.SagaId == command.SagaId, cancellationTokenSource.Token);
 
             var nameResult = await streamUploadService
-                .GetNameAsync(base64String, cancellationTokenSource.Token);
+                .GetPathAsync(base64String, cancellationTokenSource.Token);
 
             found = commandResult.IsSuccess &&
                 nameResult.IsSuccess &&
@@ -182,7 +182,7 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTests : CommandBackgr
                 .GetAsync(x => x.SagaId == command.SagaId, cancellationTokenSource.Token);
 
             var nameResult = await streamUploadService
-                .GetNameAsync(base64String, cancellationTokenSource.Token);
+                .GetPathAsync(base64String, cancellationTokenSource.Token);
 
             found = commandResult.IsSuccess &&
                 !nameResult.IsSuccess &&

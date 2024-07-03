@@ -21,7 +21,7 @@ public class UserProjection : Entity
     }
 
     [BsonElement("Birthday")]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Unspecified)]
+    [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public required DateTime Birthday
     {
         get;

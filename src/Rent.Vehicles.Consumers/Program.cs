@@ -175,7 +175,10 @@ builder.Services
 
         var factory =  new ConnectionFactory 
         {
-            Uri = new Uri(connectionString)
+            Uri = new Uri(connectionString),
+            DispatchConsumersAsync = true,
+            ConsumerDispatchConcurrency = 100,
+            UseBackgroundThreadsForIO = false
         };
 
         return factory.CreateConnection();

@@ -39,14 +39,14 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     {
         _channel.SubscribeAsync(typeof(TEventToConsume).Name, cancellationToken);
 
-        _logger.LogInformation($"StartAsync {this.GetType().Name}: {_guid}");
+        _logger.LogInformation("StartAsync {ClassName}: {Guid}", this.GetType().Name, _guid);
 
         return base.StartAsync(cancellationToken);
     }
 
     public override Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"StopAsync {this.GetType().Name}: {_guid}");
+        _logger.LogInformation("Stop {ClassName}: {Guid}", this.GetType().Name, _guid);
         return base.StopAsync(cancellationToken);
     }
 
@@ -74,7 +74,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
                     continue;
                 }
 
-                _logger.LogInformation($"Handler message from type {typeof(TEventToConsume).Name}");
+                _logger.LogInformation("Handler message from type {MessageToConsume}", typeof(TEventToConsume).Name);
 
                 var result = await HandlerAsync(message, cancellationToken);
 
@@ -108,7 +108,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         if(consumerResponse is not null)
             await _channel.RemoveAsync(consumerResponse.Id, cancellationToken);
 
-        _logger.LogError(exception, exception.Message);
+        _logger.LogError(exception, "{ClassName} encountered an error: {ErrorMessage}", this.GetType().Name, exception.Message);
     }
 
     private async Task TreatRetryExceptionAsync(ConsumerResponse consumerResponse,
@@ -122,7 +122,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
             _retry[hash] = ++count;
         }
 
-        _logger.LogError(exception, exception.Message);
+        _logger.LogError(exception, "{ClassName} encountered an error: {ErrorMessage}", this.GetType().Name, exception.Message);
 
         if (count < 3)
         {

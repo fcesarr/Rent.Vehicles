@@ -89,49 +89,40 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
         IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
-        try
+        FindOptions<TEntity> findOptions = new();
+
+        if (orderBy is not null)
         {
-            FindOptions<TEntity> findOptions = new();
+            var sortDefinition = Builders<TEntity>.Sort;
 
-            if (orderBy is not null)
+            var sort = sortDefinition.Ascending(orderBy);
+
+            if (descending)
             {
-                var sortDefinition = Builders<TEntity>.Sort;
-
-                var sort = sortDefinition.Ascending(orderBy);
-
-                if (descending)
-                {
-                    sort = sortDefinition.Descending(orderBy);
-                }
-
-                findOptions.Sort = sort;
+                sort = sortDefinition.Descending(orderBy);
             }
 
-            if (includes is not null)
-            {
-                var projectionDefinition = Builders<TEntity>.Projection;
-
-                var projection =
-                    projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
-
-                findOptions.Projection = projection;
-            }
-
-            var filter = Builders<TEntity>.Filter
-                .Where(predicate);
-
-            var cursor = await _mongoCollection
-                .FindAsync(filter, cancellationToken: cancellationToken);
-
-            return await cursor
-                .FirstOrDefaultAsync(cancellationToken);
+            findOptions.Sort = sort;
         }
-        catch (Exception ex)
+
+        if (includes is not null)
         {
-            _logger.LogError(ex.Message, ex);
+            var projectionDefinition = Builders<TEntity>.Projection;
+
+            var projection =
+                projectionDefinition.Combine(includes.Select(include => projectionDefinition.Include(include)));
+
+            findOptions.Projection = projection;
         }
 
-        return await Task.FromResult(default(TEntity));
+        var filter = Builders<TEntity>.Filter
+            .Where(predicate);
+
+        var cursor = await _mongoCollection
+            .FindAsync(filter, cancellationToken: cancellationToken);
+
+        return await cursor
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)

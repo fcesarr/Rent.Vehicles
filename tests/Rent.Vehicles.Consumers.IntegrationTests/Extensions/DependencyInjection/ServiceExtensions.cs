@@ -172,7 +172,9 @@ public static class ServiceExtensions
 
                 var factory =  new ConnectionFactory 
                 {
-                    Uri = new Uri(connectionString)
+                    Uri = new Uri(connectionString),
+                    DispatchConsumersAsync = true,
+                    ConsumerDispatchConcurrency = 100
                 };
 
                 return factory.CreateConnection();

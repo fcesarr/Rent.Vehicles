@@ -21,7 +21,7 @@ public class UserFacade : IUserFacade
         CancellationToken cancellationToken = default)
     {
         var licensePath =
-            await _uploadService.GetNameAsync(@event.LicenseImage, cancellationToken);
+            await _uploadService.GetPathAsync(@event.LicenseImage, cancellationToken);
 
         if (!licensePath.IsSuccess)
         {
@@ -49,7 +49,7 @@ public class UserFacade : IUserFacade
         }
 
         var licensePath =
-            await _uploadService.GetNameAsync(@event.LicenseImage, cancellationToken);
+            await _uploadService.GetPathAsync(@event.LicenseImage, cancellationToken);
 
         if (!licensePath.IsSuccess)
         {

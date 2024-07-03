@@ -97,7 +97,7 @@ builder.Services
         EventProjectionFacade>()
     .AddDataDomain<Rent.Vehicles.Entities.Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
     // EventProjection
-    .AddSingleton<IPublisher>(service => 
+    .AddScoped<IPublisher>(service => 
     {
         var connection = service.GetRequiredService<IConnection>();
         var serializer = service.GetRequiredService<ISerializer>();
@@ -122,7 +122,9 @@ builder.Services
 
         var factory =  new ConnectionFactory 
         {
-            Uri = new Uri(connectionString)
+            Uri = new Uri(connectionString),
+            DispatchConsumersAsync = true,
+            ConsumerDispatchConcurrency = 100
         };
 
         return factory.CreateConnection();

@@ -20,14 +20,20 @@ public class RabbitMQConsumer : IConsumer
     {
         return Task.Run(() =>
         {
-            var basicGetResult = _model.BasicGet(_name, false);
-
-            if (basicGetResult == null)
+            lock (_model)
             {
-                return null;
-            }
+                if(!_model.IsOpen)
+                    return null;
 
-            return new ConsumerResponse { Id = basicGetResult.DeliveryTag, Data = basicGetResult.Body.ToArray() };
+                var basicGetResult = _model.BasicGet(_name, false);
+
+                if (basicGetResult == null)
+                {
+                    return null;
+                }
+
+                return new ConsumerResponse { Id = basicGetResult.DeliveryTag, Data = basicGetResult.Body.ToArray() };
+            }
         }, cancellationToken);
     }
 
@@ -44,6 +50,7 @@ public class RabbitMQConsumer : IConsumer
     public Task SubscribeAsync(string name, CancellationToken cancellationToken = default)
     {
         _name = name;
+        
         return Task.Run(() => _model.QueueDeclare(name,
             true,
             false,

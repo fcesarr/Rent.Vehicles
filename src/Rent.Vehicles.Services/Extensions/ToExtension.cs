@@ -155,7 +155,7 @@ public static class ToExtension
             Id = @event.Id,
             Name = @event.Name,
             Number = @event.Number,
-            Birthday = @event.Birthday,
+            Birthday = DateTime.SpecifyKind(@event.Birthday, DateTimeKind.Local),
             LicenseNumber = @event.LicenseNumber,
             LicenseType = TreatType(@event.LicenseType),
             LicensePath = licensePath
@@ -166,7 +166,7 @@ public static class ToExtension
     {
         entity.Name = @event.Name ?? entity.Name;
         entity.Number = @event.Number ?? entity.Number;
-        entity.Birthday = @event.Birthday ?? entity.Birthday;
+        entity.Birthday = DateTime.SpecifyKind(@event.Birthday ?? entity.Birthday, DateTimeKind.Local);
         entity.LicenseNumber = @event.LicenseNumber ?? entity.LicenseNumber;
         entity.LicenseType = TreatType(@event.LicenseType);
 
