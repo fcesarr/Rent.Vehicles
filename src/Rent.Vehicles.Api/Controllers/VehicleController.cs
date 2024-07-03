@@ -43,8 +43,6 @@ public class VehicleController : Controller
     public async Task<IResult> PostAsync([FromBody] CreateVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
-        command.SagaId = Guid.NewGuid();
-
         var result = await _createCommandValidator
             .ValidateAsync(command, cancellationToken);
 
@@ -67,8 +65,6 @@ public class VehicleController : Controller
     public async Task<IResult> PutAsync([FromBody] UpdateVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
-        command.SagaId = Guid.NewGuid();
-
         var result = await _updateCommandValidator
             .ValidateAsync(command, cancellationToken);
 
@@ -92,8 +88,6 @@ public class VehicleController : Controller
     public async Task<IResult> DeleteAsync([FromBody] DeleteVehiclesCommand command,
         CancellationToken cancellationToken = default)
     {
-        command.SagaId = Guid.NewGuid();
-
         var result = await _deleteCommandValidator
             .ValidateAsync(command, cancellationToken);
 
@@ -101,7 +95,6 @@ public class VehicleController : Controller
         {
             return result.Exception.TreatExceptionToResult(HttpContext);
         }
-
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 

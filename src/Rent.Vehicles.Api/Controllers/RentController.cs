@@ -40,8 +40,6 @@ public class RentController : Controller
     public async Task<IResult> PostAsync([FromBody] CreateRentCommand command,
         CancellationToken cancellationToken = default)
     {
-        command.SagaId = Guid.NewGuid();
-
         var result = await _createCommandValidator
             .ValidateAsync(command, cancellationToken);
 
@@ -64,8 +62,6 @@ public class RentController : Controller
     public async Task<IResult> PutAsync([FromBody] UpdateRentCommand command,
         CancellationToken cancellationToken = default)
     {
-        command.SagaId = Guid.NewGuid();
-
         var result = await _updateCommandValidator
             .ValidateAsync(command, cancellationToken);
 

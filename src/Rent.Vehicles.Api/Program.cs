@@ -32,11 +32,31 @@ using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
 using Rent.Vehicles.Services.Extensions;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
+using Rent.Vehicles.Lib.Constants;
+using Rent.Vehicles.Lib.Extensions;
+using Serilog;
+using System.Reflection;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseSerilog((hostBuilderContext, loggerConfiguration) =>
+{
+	var assembly = Assembly.GetExecutingAssembly();
+	var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+	var version = fvi.FileVersion;
 
-builder.Services.AddDbContextDependencies<IDbContext,
+	loggerConfiguration.ReadFrom.Configuration(hostBuilderContext.Configuration)
+		.Enrich.WithProperty("Version", version);
+});
+
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
+builder.Services
+    .AddHealthCheck(builder.Configuration)
+    .AddDbContextDependencies<IDbContext,
         RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??string.Empty)
     // UserProjection
     .AddProjectionDomain<UserProjection,
@@ -96,16 +116,13 @@ builder.Services.AddDbContextDependencies<IDbContext,
         return client.GetDatabase(databaseName);
     })
     .AddSingleton<IConnection>(service => {
+        var configuration = service.GetRequiredService<IConfiguration>();
+
+        var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
+
         var factory =  new ConnectionFactory 
         {
-            HostName = "localhost",
-            Port = 5672,
-            UserName = "admin",
-            Password = "nimda",
-            VirtualHost = "/",
-            RequestedConnectionTimeout = TimeSpan.FromSeconds(30),
-            SocketReadTimeout = TimeSpan.FromSeconds(30),
-            SocketWriteTimeout = TimeSpan.FromSeconds(30)
+            Uri = new Uri(connectionString)
         };
 
         return factory.CreateConnection();
@@ -121,8 +138,6 @@ builder.Services.AddDbContextDependencies<IDbContext,
     .AddScoped<IValidator<UpdateVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateVehiclesCommand>>();
     
 builder.Services.AddControllers();
-
-builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -178,19 +193,29 @@ BsonClassMap.RegisterClassMap<Event>(map =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseRouting();
+
+app.MapHealthChecks(HealthCheckUri.Ready, new HealthCheckOptions
 {
-    app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks(HealthCheckUri.Live, new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.UseDeveloperExceptionPage();
+
+app.UseSwagger();
+
+app.UseSwaggerUI();
 
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
-
-app.UseRouting();
 
 app.MapControllers();
 

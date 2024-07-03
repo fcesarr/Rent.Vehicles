@@ -7,11 +7,13 @@ namespace Rent.Vehicles.Messages;
 [MessagePackObject]
 public abstract record Message
 {
+    private Guid _sagaId = Guid.NewGuid();
+
     [Key(0)]
     [JsonIgnore]
-    public required Guid SagaId
+    public Guid SagaId
     {
-        get;
-        set;
+        get => _sagaId;
+        set => _sagaId = value == default ? _sagaId : value;
     }
 }

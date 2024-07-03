@@ -166,16 +166,13 @@ public static class ServiceExtensions
                 return client.GetDatabase(databaseName);
             })
             .AddSingleton<IConnection>(service => {
+                var configuration = service.GetRequiredService<IConfiguration>();
+
+                var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
+
                 var factory =  new ConnectionFactory 
                 {
-                    HostName = "localhost",
-                    Port = 5672,
-                    UserName = "admin",
-                    Password = "nimda",
-                    VirtualHost = "/integrationTests",
-                    RequestedConnectionTimeout = TimeSpan.FromSeconds(180),
-                    SocketReadTimeout = TimeSpan.FromSeconds(180),
-                    SocketWriteTimeout = TimeSpan.FromSeconds(180)
+                    Uri = new Uri(connectionString)
                 };
 
                 return factory.CreateConnection();

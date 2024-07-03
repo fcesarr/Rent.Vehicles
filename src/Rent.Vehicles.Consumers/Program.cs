@@ -28,10 +28,31 @@ using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Settings;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
+using Rent.Vehicles.Lib.Constants;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
+using Rent.Vehicles.Lib.Extensions;
+using Serilog;
+using System.Reflection;
+using System.Diagnostics;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddTransient<IConsumer>(service =>
+builder.Host.UseSerilog((hostBuilderContext, loggerConfiguration) =>
+{
+	var assembly = Assembly.GetExecutingAssembly();
+	var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+	var version = fvi.FileVersion;
+
+	loggerConfiguration.ReadFrom.Configuration(hostBuilderContext.Configuration)
+		.Enrich.WithProperty("Version", version);
+});
+
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
+builder.Services
+    .AddHealthCheck(builder.Configuration)
+    .AddTransient<IConsumer>(service =>
     {
         var connection = service.GetRequiredService<IConnection>();
         return new RabbitMQConsumer(connection.CreateModel());
@@ -148,16 +169,13 @@ builder.Services.AddTransient<IConsumer>(service =>
         return client.GetDatabase(databaseName);
     })
     .AddSingleton<IConnection>(service => {
+        var configuration = service.GetRequiredService<IConfiguration>();
+
+        var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
+
         var factory =  new ConnectionFactory 
         {
-            HostName = "localhost",
-            Port = 5672,
-            UserName = "admin",
-            Password = "nimda",
-            VirtualHost = "/",
-            RequestedConnectionTimeout = TimeSpan.FromSeconds(180),
-            SocketReadTimeout = TimeSpan.FromSeconds(180),
-            SocketWriteTimeout = TimeSpan.FromSeconds(180)
+            Uri = new Uri(connectionString)
         };
 
         return factory.CreateConnection();
@@ -197,5 +215,20 @@ builder.Services.AddOptions<FileUploadSetting>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-var host = builder.Build();
-host.Run();
+var app = builder.Build();
+
+app.UseRouting();
+
+app.MapHealthChecks(HealthCheckUri.Ready, new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks(HealthCheckUri.Live, new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+await app.RunAsync();

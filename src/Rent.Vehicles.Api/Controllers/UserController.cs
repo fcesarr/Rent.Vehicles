@@ -41,8 +41,6 @@ public class UserController : Controller
     public async Task<IResult> PostAsync([FromBody] CreateUserCommand command,
         CancellationToken cancellationToken = default)
     {
-        command.SagaId = Guid.NewGuid();
-
         var result = await _createCommandValidator
             .ValidateAsync(command, cancellationToken);
 
@@ -65,8 +63,6 @@ public class UserController : Controller
     public async Task<IResult> PutAsync([FromBody] UpdateUserCommand command,
         CancellationToken cancellationToken = default)
     {
-        command.SagaId = Guid.NewGuid();
-
         var result = await _updateCommandValidator
             .ValidateAsync(command, cancellationToken);
 
@@ -89,8 +85,6 @@ public class UserController : Controller
     public async Task<IResult> PutUploadAsync([FromBody] UpdateUserLicenseImageCommand command,
         CancellationToken cancellationToken = default)
     {
-        command.SagaId = Guid.NewGuid();
-
         var result = await _updateImageCommandValidator
             .ValidateAsync(command, cancellationToken);
 

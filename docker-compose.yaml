@@ -1,39 +1,61 @@
 services:
-  brooker-rabbitmq:
-    image: rabbitmq:3.13.3-management-alpine
-    container_name: brooker-rabbitmq
-    ports:
-      - "5672:5672"      # AMQP port
-      - "15672:15672"    # Management interface port
-    volumes:
-      - type: bind
-        source: ./config/rabbitmq.conf
-        target: /etc/rabbitmq/rabbitmq.conf
-      - type: bind
-        source: ./config/definitions.json
-        target: /etc/rabbitmq/definitions.json
-  
-  database-postgres:
-    image: postgres:14.9-alpine3.18
+  rent-vehicles-api:
+    image: rent-vehicles-api:latest
     deploy:
+      replicas: 3
       resources:
         limits:
           cpus: '0.50'
-          memory: 1024M
-        reservations:
-          cpus: '0.25'
           memory: 512M
-    container_name: database-postgres
+        reservations:
+          cpus: '0.15'
+          memory: 256M
+    hostname: rent-vehicles-api
+    expose:
+      - "80"
+    build:
+        context: .
+        dockerfile: ./src/Rent.Vehicles.Api/Dockerfile
+    restart: on-failure
     environment:
-      POSTGRES_DB: "rent-vehicles"
-      POSTGRES_PASSWORD: "postgres"
-    ports:
-      - "5432:5432"
-    volumes:
-      - database-postgres-volume:/var/lib/postgresql/data
+      - ASPNETCORE_ENVIRONMENT=Docker
+    healthcheck:
+      test: curl --fail http://localhost/health/ready || exit 1
+      interval: 10s
+      retries: 5
+      start_period: 2s
+      timeout: 10s
+
+  rent-vehicles-consumer:
+    image: rent-vehicles-consumer:latest
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.15'
+          memory: 256M
+    hostname: rent-vehicles-consumer
+    expose:
+      - "80"
+    build:
+        context: .
+        dockerfile: ./src/Rent.Vehicles.Consumers/Dockerfile
+    restart: on-failure
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    healthcheck:
+      test: curl --fail http://localhost/health/ready || exit 1
+      interval: 10s
+      retries: 5
+      start_period: 2s
+      timeout: 10s
   
-  database-mongo:
-    image: mongo:5.0.27
+
+  nginx:
+    image: nginx:latest
     deploy:
       resources:
         limits:
@@ -42,12 +64,14 @@ services:
         reservations:
           cpus: '0.25'
           memory: 512M
-    container_name: database-mongo
-    ports:
-      - "27017:27017"
     volumes:
-      - database-mongo-volume:/data/db
-      - ./config/init.js:/docker-entrypoint-initdb.d/init.js:ro
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 4000:4000
+      - 4001:4001
+    depends_on:
+      - rent-vehicles-api
+      - rent-vehicles-consumer
 
 networks:
   default:
