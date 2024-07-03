@@ -20,7 +20,7 @@ public abstract class UploadService : IUploadService
         _uploadSetting = uploadSetting.Value;
     }
 
-    public Task<Result<string>> GetNameAsync(string base64String, CancellationToken cancellationToken = default)
+    public virtual Task<Result<string>> GetPathAsync(string base64String, CancellationToken cancellationToken = default)
     {
         return Task.Run<Result<string>>(() => {
             //
@@ -41,7 +41,7 @@ public abstract class UploadService : IUploadService
     public virtual async Task<Result<string>> UploadAsync(string base64String,
         CancellationToken cancellationToken = default)
     {
-        var result = await GetNameAsync(base64String, cancellationToken);
+        var result = await GetPathAsync(base64String, cancellationToken);
 
         if(!result.IsSuccess)
             return result.Exception!;
@@ -51,7 +51,7 @@ public abstract class UploadService : IUploadService
         return await ToUploadAsync(result.Value!, bytes, cancellationToken);
     }
 
-    protected abstract Task<string> ToUploadAsync(string name,
+    protected abstract Task<string> ToUploadAsync(string path,
         byte[] bytes,
         CancellationToken cancellationToken = default);
 

@@ -21,14 +21,22 @@ public class FileUploadService : UploadService, IUploadService
         _fileUploadSetting = fileUploadSetting.Value;
     }
 
-    protected async override Task<string> ToUploadAsync(string name,
+    public override async Task<Result<string>> GetPathAsync(string base64String, CancellationToken cancellationToken = default)
+    {
+        var path = await base.GetPathAsync(base64String, cancellationToken);
+
+        if(!path.IsSuccess)
+            return path.Exception!;
+
+        return $"{_fileUploadSetting.Path}/{path.Value}";
+    }
+
+    protected async override Task<string> ToUploadAsync(string path,
         byte[] bytes,
         CancellationToken cancellationToken = default)
     {
         if(!Directory.Exists(_fileUploadSetting.Path))
             Directory.CreateDirectory(_fileUploadSetting.Path);
-
-        var path = $"{_fileUploadSetting.Path}/{name}";
 
         await _func(path, bytes, cancellationToken);
 
