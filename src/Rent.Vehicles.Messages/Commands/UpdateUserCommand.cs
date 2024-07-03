@@ -18,40 +18,35 @@ public record UpdateUserCommand : Command
     }
 
     [MessagePack.Key(2)]
-    [Required]
-    public required string Name
+    public string? Name
     {
         get;
         set;
     }
 
     [MessagePack.Key(3)]
-    [Required]
-    public required string Number
+    public string? Number
     {
         get;
         set;
     }
 
     [MessagePack.Key(4)]
-    [Required]
-    public required DateTime Birthday
+    public DateTime? Birthday
     {
         get;
         set;
     }
 
     [MessagePack.Key(5)]
-    [Required]
-    public required string LicenseNumber
+    public string? LicenseNumber
     {
         get;
         set;
     }
 
     [MessagePack.Key(6)]
-    [Required]
-    public LicenseType LicenseType
+    public LicenseType? LicenseType
     {
         get;
         set;

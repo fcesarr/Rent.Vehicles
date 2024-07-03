@@ -15,35 +15,35 @@ public record UpdateUserEvent : Messages.Event
     }
 
     [Key(2)]
-    public required string Name
+    public string? Name
     {
         get;
         set;
     }
 
     [Key(3)]
-    public required string Number
+    public string? Number
     {
         get;
         set;
     }
 
     [Key(4)]
-    public required DateTime Birthday
+    public DateTime? Birthday
     {
         get;
         set;
     }
 
     [Key(5)]
-    public required string LicenseNumber
+    public string? LicenseNumber
     {
         get;
         set;
     }
 
     [Key(6)]
-    public required LicenseType LicenseType
+    public LicenseType? LicenseType
     {
         get;
         set;

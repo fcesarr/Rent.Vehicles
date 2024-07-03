@@ -5,6 +5,8 @@ using Rent.Vehicles.Lib.Types;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Services.Responses;
 
+using ZstdSharp.Unsafe;
+
 using Event = Rent.Vehicles.Entities.Event;
 using StatusType = Rent.Vehicles.Messages.Types.StatusType;
 using VehicleType = Rent.Vehicles.Messages.Types.VehicleType;
@@ -155,18 +157,18 @@ public static class ToExtension
             Number = @event.Number,
             Birthday = @event.Birthday,
             LicenseNumber = @event.LicenseNumber,
-            LicenseType = @event.LicenseType.TreatType(),
+            LicenseType = TreatType(@event.LicenseType),
             LicensePath = licensePath
         };
     }
 
     public static User ToEntity(this UpdateUserEvent @event, User entity)
     {
-        entity.Name = @event.Name;
-        entity.Number = @event.Number;
-        entity.Birthday = @event.Birthday;
-        entity.LicenseNumber = @event.LicenseNumber;
-        entity.LicenseType = @event.LicenseType.TreatType();
+        entity.Name = @event.Name ?? entity.Name;
+        entity.Number = @event.Number ?? entity.Number;
+        entity.Birthday = @event.Birthday ?? entity.Birthday;
+        entity.LicenseNumber = @event.LicenseNumber ?? entity.LicenseNumber;
+        entity.LicenseType = TreatType(@event.LicenseType);
 
         return entity;
     }
@@ -284,7 +286,7 @@ public static class ToExtension
         };
     }
 
-    private static LicenseType TreatType(this Messages.Types.LicenseType type)
+    private static LicenseType TreatType(Messages.Types.LicenseType? type)
     {
         return type switch
         {
