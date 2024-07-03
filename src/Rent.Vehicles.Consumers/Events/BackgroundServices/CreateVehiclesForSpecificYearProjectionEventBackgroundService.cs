@@ -27,8 +27,11 @@ public class CreateVehiclesForSpecificYearProjectionEventBackgroundService : Han
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesForSpecificYearProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IVehiclesForSpecificYearProjectionFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
+
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<IVehiclesForSpecificYearProjectionFacade>();
 
         var entity = await service.CreateAsync(@event, cancellationToken);
 

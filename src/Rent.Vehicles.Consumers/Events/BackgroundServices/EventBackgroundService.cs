@@ -31,10 +31,13 @@ public class EventBackgroundService : HandlerEventBackgroundService<Event>
     protected override async Task<Result<Task>> HandlerMessageAsync(Event @event,
         CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IEventFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
 
-        var entity = await _service.CreateAsync(@event, cancellationToken);
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<IEventFacade>();
+
+        var entity = await service.CreateAsync(@event, cancellationToken);
 
         if (!entity.IsSuccess)
         {

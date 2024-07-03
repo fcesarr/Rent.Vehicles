@@ -24,10 +24,13 @@ public class EventProjectionEventBackgroundService : HandlerEventBackgroundServi
     protected override async Task<Result<Task>> HandlerMessageAsync(EventProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IEventProjectionFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
 
-        var entity = await _service.CreateAsync(@event, cancellationToken);
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<IEventProjectionFacade>();
+
+        var entity = await service.CreateAsync(@event, cancellationToken);
 
         if (!entity.IsSuccess)
         {

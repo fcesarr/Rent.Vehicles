@@ -39,9 +39,11 @@ public class CreateRentCommandBackgroundService : HandlerCommandPublishEventBack
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateRentCommand command,
         CancellationToken cancellationToken = default)
     {
-        var service = _serviceScopeFactory.CreateScope()
-            .ServiceProvider
-            .GetRequiredService<ICommandFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
+
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<ICommandFacade>();
 
         var @event = CreateEventToPublish(command);
 

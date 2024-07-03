@@ -40,10 +40,11 @@ public class CreateUserEventBackgroundService : HandlerEventServicePublishEventB
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateUserEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var service = _serviceScopeFactory
-            .CreateScope()
-            .ServiceProvider
-            .GetRequiredService<IUserFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
+
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<IUserFacade>();
 
         var entity = await service.CreateAsync(@event, cancellationToken);
 

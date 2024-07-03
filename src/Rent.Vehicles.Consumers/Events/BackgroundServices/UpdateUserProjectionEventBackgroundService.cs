@@ -19,10 +19,13 @@ public class UpdateUserProjectionEventBackgroundService : HandlerEventServicePub
 
     protected async override Task<Result<Task>> HandlerMessageAsync(UpdateUserProjectionEvent @event, CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IUserProjectionFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
 
-        var entity = await _service.UpdateAsync(@event, cancellationToken);
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<IUserProjectionFacade>();
+
+        var entity = await service.UpdateAsync(@event, cancellationToken);
 
         if (!entity.IsSuccess)
         {

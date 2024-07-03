@@ -38,8 +38,11 @@ public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEv
     protected override async Task<Result<Task>> HandlerMessageAsync(CreateVehiclesEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IVehicleFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
+
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<IVehicleFacade>();
 
         var entity = await service.CreateAsync(@event, cancellationToken);
 

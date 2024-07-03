@@ -86,11 +86,11 @@ public class UpdateUserCommandBackgroundServiceTests : CommandBackgroundServiceT
             .Create();
 
 
-        entity.Name = command.Name;
-        entity.Number = command.Number;
-        entity.Birthday = command.Birthday;
-        entity.LicenseNumber = command.LicenseNumber;
-        entity.LicenseType = (Entities.Types.LicenseType) command.LicenseType;
+        entity.Name = command.Name!;
+        entity.Number = command.Number!;
+        entity.Birthday = command.Birthday ?? DateTime.Now;
+        entity.LicenseNumber = command.LicenseNumber!;
+        entity.LicenseType = (Entities.Types.LicenseType) command.LicenseType!;
 
         await _classFixture.GetRequiredService<IPublisher>()
             .PublishCommandAsync(command, cancellationTokenSource.Token);
@@ -126,17 +126,19 @@ public class UpdateUserCommandBackgroundServiceTests : CommandBackgroundServiceT
             var projectionResult = await projectionDataService
                 .GetAsync(GetProjectionPredicate(command));
 
+            DateTime commandBirthday = command.Birthday ?? DateTime.Now;
+
             found = commandResult.IsSuccess &&
                 entityResult.IsSuccess &&
                 entityResult.Value!.Name == command.Name &&
                 entityResult.Value!.Number == command.Number &&
-                entityResult.Value!.Birthday.Date == command.Birthday.Date &&
+                entityResult.Value!.Birthday.Date == commandBirthday.Date &&
                 entityResult.Value!.LicenseNumber == command.LicenseNumber &&
                 entityResult.Value!.LicenseType == (Entities.Types.LicenseType) command.LicenseType &&
                 projectionResult.IsSuccess &&
                 projectionResult.Value!.Name == command.Name &&
                 projectionResult.Value!.Number == command.Number &&
-                projectionResult.Value!.Birthday.Date == command.Birthday.Date &&
+                projectionResult.Value!.Birthday.Date == commandBirthday.Date &&
                 projectionResult.Value!.LicenseNumber == command.LicenseNumber &&
                 projectionResult.Value!.LicenseType == (Entities.Types.LicenseType) command.LicenseType;
 

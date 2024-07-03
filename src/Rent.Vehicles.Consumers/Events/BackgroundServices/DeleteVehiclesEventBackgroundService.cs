@@ -36,10 +36,13 @@ public class DeleteVehiclesEventBackgroundService : HandlerEventServicePublishEv
     protected override async Task<Result<Task>> HandlerMessageAsync(DeleteVehiclesEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var _service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IVehicleFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
 
-        var entity = await _service.DeleteAsync(@event, cancellationToken);
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<IVehicleFacade>();
+
+        var entity = await service.DeleteAsync(@event, cancellationToken);
 
         if (!entity.IsSuccess)
         {

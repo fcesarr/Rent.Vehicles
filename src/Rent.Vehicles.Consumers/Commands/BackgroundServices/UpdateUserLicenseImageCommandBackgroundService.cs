@@ -38,9 +38,11 @@ public class UpdateUserLicenseImageCommandBackgroundService : HandlerCommandPubl
     protected override async Task<Result<Task>> HandlerMessageAsync(UpdateUserLicenseImageCommand command,
         CancellationToken cancellationToken = default)
     {
-        var service = _serviceScopeFactory.CreateScope()
-            .ServiceProvider
-            .GetRequiredService<ICommandFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
+
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<ICommandFacade>();
 
         var @event = CreateEventToPublish(command);
 

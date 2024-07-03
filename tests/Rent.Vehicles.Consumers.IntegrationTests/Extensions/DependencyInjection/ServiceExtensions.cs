@@ -170,6 +170,8 @@ public static class ServiceExtensions
 
                 var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
 
+                string applicationName = configuration.GetValue<string>("Serilog:Properties:Application") ?? string.Empty;
+
                 var factory =  new ConnectionFactory 
                 {
                     Uri = new Uri(connectionString),
@@ -177,7 +179,7 @@ public static class ServiceExtensions
                     ConsumerDispatchConcurrency = 100
                 };
 
-                return factory.CreateConnection();
+                return factory.CreateConnection(applicationName);
             })
             .AddDefaultSerializer<MessagePackSerializer>()
             .AddSingleton<CreateRentCommandBackgroundService>()

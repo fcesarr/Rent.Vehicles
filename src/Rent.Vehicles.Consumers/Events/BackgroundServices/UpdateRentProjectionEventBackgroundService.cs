@@ -26,8 +26,11 @@ public class UpdateRentProjectionEventBackgroundService : HandlerEventServicePub
     protected override async Task<Result<Task>> HandlerMessageAsync(UpdateRentProjectionEvent @event,
         CancellationToken cancellationToken = default)
     {
-        var service = _serviceScopeFactory.CreateScope().ServiceProvider
-            .GetRequiredService<IRentProjectionFacade>();
+        using var serviceScope = _serviceScopeFactory.CreateScope();
+
+        var serviceProvider = serviceScope.ServiceProvider;
+
+        var service = serviceProvider.GetRequiredService<IRentProjectionFacade>();
 
         var entity = await service.UpdateAsync(@event, cancellationToken);
 
