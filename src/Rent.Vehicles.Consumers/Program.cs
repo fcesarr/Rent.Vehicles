@@ -6,7 +6,6 @@ using Rent.Vehicles.Consumers;
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
 using Rent.Vehicles.Services.Extensions;
-using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Contexts;
@@ -15,8 +14,6 @@ using Rent.Vehicles.Entities.Extensions;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Producers.RabbitMQ;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Services.DataServices.Interfaces;
@@ -52,11 +49,6 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 builder.Services
     .AddHealthCheck(builder.Configuration)
-    .AddTransient<IConsumer>(service =>
-    {
-        var connection = service.GetRequiredService<IConnection>();
-        return new RabbitMQConsumer(connection.CreateModel());
-    })
     .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
                                                             string.Empty)
     .AddTransient<IPeriodicTimer>(service =>
@@ -149,12 +141,6 @@ builder.Services
     .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
     // RentPlane
     .AddSingleton<IUploadService, FileUploadService>()
-    .AddSingleton<IPublisher>(service => 
-    {
-        var connection = service.GetRequiredService<IConnection>();
-        var serializer = service.GetRequiredService<ISerializer>();
-        return new RabbitMQPublisher(connection.CreateModel(), serializer);
-    })
     .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
     .AddSingleton<IMongoDatabase>(service =>
     {
@@ -168,21 +154,7 @@ builder.Services
 
         return client.GetDatabase(databaseName);
     })
-    .AddSingleton<IConnection>(service => {
-        var configuration = service.GetRequiredService<IConfiguration>();
-
-        var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
-
-        var factory =  new ConnectionFactory 
-        {
-            Uri = new Uri(connectionString),
-            DispatchConsumersAsync = true,
-            ConsumerDispatchConcurrency = 100,
-            UseBackgroundThreadsForIO = false
-        };
-
-        return factory.CreateConnection();
-    })
+    .AddAmqpLiteBroker(builder.Configuration)
     .AddDefaultSerializer<MessagePackSerializer>()
     .AddHostedService<CreateRentCommandBackgroundService>()
     .AddHostedService<CreateUserCommandBackgroundService>()

@@ -10,7 +10,7 @@ using Rent.Vehicles.Consumers.Events.BackgroundServices;
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Commands;
-using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 
 using Xunit.Abstractions;

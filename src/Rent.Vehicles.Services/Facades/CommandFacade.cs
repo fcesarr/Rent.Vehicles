@@ -1,4 +1,5 @@
 using Rent.Vehicles.Entities.Types;
+using Rent.Vehicles.Lib;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib.Types;
 using Rent.Vehicles.Messages;

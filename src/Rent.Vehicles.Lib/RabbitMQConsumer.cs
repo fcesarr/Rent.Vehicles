@@ -1,9 +1,9 @@
 using RabbitMQ.Client;
 
-using Rent.Vehicles.Consumers.Interfaces;
-using Rent.Vehicles.Consumers.Responses;
+using Rent.Vehicles.Lib.Interfaces;
+using Rent.Vehicles.Lib.Responses;
 
-namespace Rent.Vehicles.Consumers;
+namespace Rent.Vehicles.Lib;
 
 public class RabbitMQConsumer : IConsumer
 {

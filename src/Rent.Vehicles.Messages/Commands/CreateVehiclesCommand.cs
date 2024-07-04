@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 using MessagePack;
 
+using Rent.Vehicles.Lib;
 using Rent.Vehicles.Messages.Types;
 
 namespace Rent.Vehicles.Messages.Commands;

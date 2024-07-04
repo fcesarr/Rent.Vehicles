@@ -1,5 +1,7 @@
-using Rent.Vehicles.Consumers.Interfaces;
+
 using Rent.Vehicles.Consumers.Utils.Interfaces;
+using Rent.Vehicles.Lib;
+using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages;
 

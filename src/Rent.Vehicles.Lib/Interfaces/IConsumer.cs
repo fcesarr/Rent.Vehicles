@@ -1,6 +1,6 @@
-using Rent.Vehicles.Consumers.Responses;
+using Rent.Vehicles.Lib.Responses;
 
-namespace Rent.Vehicles.Consumers.Interfaces;
+namespace Rent.Vehicles.Lib.Interfaces;
 
 public interface IConsumer
 {
@@ -9,8 +9,6 @@ public interface IConsumer
     Task<ConsumerResponse?> ConsumeAsync(CancellationToken cancellationToken = default);
 
     Task AckAsync(dynamic id, CancellationToken cancellationToken = default);
-
-    Task NackAsync(dynamic id, CancellationToken cancellationToken = default);
 
     Task RemoveAsync(dynamic id, CancellationToken cancellationToken = default);
 }

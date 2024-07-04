@@ -1,7 +1,9 @@
-using Rent.Vehicles.Consumers.Interfaces;
-using Rent.Vehicles.Consumers.Responses;
+
 using Rent.Vehicles.Consumers.Utils.Interfaces;
+using Rent.Vehicles.Lib;
 using Rent.Vehicles.Lib.Extensions;
+using Rent.Vehicles.Lib.Interfaces;
+using Rent.Vehicles.Lib.Responses;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Services;
@@ -52,7 +54,8 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while (await _periodicTimer.WaitForNextTickAsync(cancellationToken))
+        // while (await _periodicTimer.WaitForNextTickAsync(cancellationToken))
+        while (!cancellationToken.IsCancellationRequested)
         {
             ConsumerResponse? consumerResponse = default;
             try
@@ -126,7 +129,6 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
         if (count < 3)
         {
-            await _channel.NackAsync(consumerResponse.Id, cancellationToken);
             return;
         }
 

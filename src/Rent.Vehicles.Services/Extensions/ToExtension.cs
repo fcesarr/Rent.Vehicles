@@ -211,7 +211,7 @@ public static class ToExtension
         };
     }
 
-    public static Command ToEntity(this Messages.Command command,
+    public static Command ToEntity(this Lib.Command command,
         ActionType actionType,
         SerializerType serializerType,
         EntityType entityType,

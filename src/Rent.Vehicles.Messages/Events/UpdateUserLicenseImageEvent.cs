@@ -5,7 +5,7 @@ using MessagePack;
 namespace Rent.Vehicles.Messages.Events;
 
 [MessagePackObject]
-public record UpdateUserLicenseImageEvent : Messages.Event
+public record UpdateUserLicenseImageEvent : Lib.Event
 {
     [MessagePack.Key(1)]
     public required Guid Id

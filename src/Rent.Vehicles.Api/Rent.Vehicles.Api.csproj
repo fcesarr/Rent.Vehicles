@@ -40,7 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rent.Vehicles.Producers\Rent.Vehicles.Producers.csproj" />
     <ProjectReference Include="..\Rent.Vehicles.Services\Rent.Vehicles.Services.csproj" />
   </ItemGroup>
 

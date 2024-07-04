@@ -1,14 +1,13 @@
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
-using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
+using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Messages.Projections.Events;
-using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Facades.Interfaces;
 
-using Event = Rent.Vehicles.Messages.Event;
+using Event = Rent.Vehicles.Lib.Event;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
 

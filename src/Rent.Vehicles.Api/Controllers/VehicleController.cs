@@ -4,7 +4,7 @@ using Rent.Vehicles.Api.Extensions;
 using Rent.Vehicles.Api.Responses;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages.Commands;
-using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Validators.Interfaces;

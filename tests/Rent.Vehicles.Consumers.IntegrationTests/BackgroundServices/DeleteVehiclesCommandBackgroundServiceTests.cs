@@ -14,7 +14,7 @@ using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Events;
-using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Facades.Interfaces;

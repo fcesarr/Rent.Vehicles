@@ -3,6 +3,8 @@ using System.Text.Json.Serialization;
 
 using MessagePack;
 
+using Rent.Vehicles.Lib;
+
 namespace Rent.Vehicles.Messages.Commands;
 
 [MessagePackObject]

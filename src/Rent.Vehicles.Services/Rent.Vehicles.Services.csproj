@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rent.Vehicles.Lib\Rent.Vehicles.Lib.csproj" />
     <ProjectReference Include="..\Rent.Vehicles.Entities\Rent.Vehicles.Entities.csproj" />
     <ProjectReference Include="..\Rent.Vehicles.Messages\Rent.Vehicles.Messages.csproj" />
   </ItemGroup>

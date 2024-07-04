@@ -12,7 +12,6 @@ using Rent.Vehicles.Consumers;
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
 using Rent.Vehicles.Services.Extensions;
-using Rent.Vehicles.Consumers.Interfaces;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Contexts;
@@ -21,8 +20,6 @@ using Rent.Vehicles.Entities.Extensions;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Producers.RabbitMQ;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Services.DataServices.Interfaces;
@@ -34,10 +31,13 @@ using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Settings;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
+using Rent.Vehicles.Lib.Extensions;
 
 using Serilog;
 
 using Xunit.Abstractions;
+using Rent.Vehicles.Lib.Interfaces;
+using Rent.Vehicles.Lib;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 
@@ -48,11 +48,6 @@ public static class ServiceExtensions
         IConfiguration configuration)
     {
         services = services.AddLogging(configuration)
-            .AddTransient<IConsumer>(service =>
-            {
-                var connection = service.GetRequiredService<IConnection>();
-                return new RabbitMQConsumer(connection.CreateModel());
-            })
             .AddDbContextDependencies<IDbContext, RentVehiclesContext>(configuration.GetConnectionString("Sql") ??
                                                                     string.Empty)
             .AddTransient<IPeriodicTimer>(service =>
@@ -97,7 +92,7 @@ public static class ServiceExtensions
                 EventProjectionFacade>()
             // EventProjection
             // Event
-            .AddDataDomain<Event,
+            .AddDataDomain<Entities.Event,
                 IEventValidator,
                 EventValidator,
                 IEventDataService,
@@ -106,7 +101,7 @@ public static class ServiceExtensions
                 EventFacade>()
             // Event
             // Command
-            .AddDataDomain<Command,
+            .AddDataDomain<Entities.Command,
                 ICommandValidator,
                 CommandValidator,
                 ICommandDataService,
@@ -146,12 +141,6 @@ public static class ServiceExtensions
             // RentPlane
             .AddSingleton<IStreamUploadService, StreamUploadService>()
             .AddSingleton<IUploadService>(services => services.GetRequiredService<IStreamUploadService>())
-            .AddSingleton<IPublisher>(service => 
-            {
-                var connection = service.GetRequiredService<IConnection>();
-                var serializer = service.GetRequiredService<ISerializer>();
-                return new RabbitMQPublisher(connection.CreateModel(), serializer);
-            })
             .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
             .AddSingleton<IMongoDatabase>(service =>
             {
@@ -165,22 +154,7 @@ public static class ServiceExtensions
 
                 return client.GetDatabase(databaseName);
             })
-            .AddSingleton<IConnection>(service => {
-                var configuration = service.GetRequiredService<IConfiguration>();
-
-                var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
-
-                string applicationName = configuration.GetValue<string>("Serilog:Properties:Application") ?? string.Empty;
-
-                var factory =  new ConnectionFactory 
-                {
-                    Uri = new Uri(connectionString),
-                    DispatchConsumersAsync = true,
-                    ConsumerDispatchConcurrency = 100
-                };
-
-                return factory.CreateConnection(applicationName);
-            })
+            .AddAmqpLiteBroker(configuration)
             .AddDefaultSerializer<MessagePackSerializer>()
             .AddSingleton<CreateRentCommandBackgroundService>()
             .AddSingleton<CreateUserCommandBackgroundService>()

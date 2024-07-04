@@ -12,7 +12,7 @@ using RabbitMQ.Client;
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Commands;
-using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 
@@ -38,16 +38,16 @@ public abstract class CommandBackgroundServiceTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        var connection = _classFixture.GetRequiredService<IConnection>();
+        // var connection = _classFixture.GetRequiredService<IConnection>();
         
-        var model = connection.CreateModel();
+        // var model = connection.CreateModel();
 
-        foreach (var queue in _queues)
-        {
-            model.QueuePurge(queue);
-        }
+        // foreach (var queue in _queues)
+        // {
+        //     model.QueuePurge(queue);
+        // }
 
-        model.Close();
+        // model.Close();
 
         await _classFixture.ResetDatabaseAsync();
     }

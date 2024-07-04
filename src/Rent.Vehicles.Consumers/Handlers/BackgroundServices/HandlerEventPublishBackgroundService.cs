@@ -1,8 +1,8 @@
-using Rent.Vehicles.Consumers.Interfaces;
+
 using Rent.Vehicles.Consumers.Utils.Interfaces;
+using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Types;
-using Rent.Vehicles.Producers.Interfaces;
 using Rent.Vehicles.Services;
 
 using Event = Rent.Vehicles.Messages.Events.Event;
@@ -11,7 +11,7 @@ namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
 public abstract class
     HandlerEventPublishBackgroundService<TEventToConsume> : HandlerEventBackgroundService<TEventToConsume>
-    where TEventToConsume : Messages.Event
+    where TEventToConsume : Lib.Event
 {
     protected readonly IPublisher _publisher;
 

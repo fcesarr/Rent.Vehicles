@@ -19,8 +19,6 @@ using Rent.Vehicles.Lib.Serializers;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Types;
-using Rent.Vehicles.Producers.Interfaces;
-using Rent.Vehicles.Producers.RabbitMQ;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Services.DataServices.Interfaces;
@@ -39,6 +37,7 @@ using Rent.Vehicles.Lib.Extensions;
 using Serilog;
 using System.Reflection;
 using System.Diagnostics;
+using Rent.Vehicles.Messages;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,12 +96,7 @@ builder.Services
         EventProjectionFacade>()
     .AddDataDomain<Rent.Vehicles.Entities.Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
     // EventProjection
-    .AddScoped<IPublisher>(service => 
-    {
-        var connection = service.GetRequiredService<IConnection>();
-        var serializer = service.GetRequiredService<ISerializer>();
-        return new RabbitMQPublisher(connection.CreateModel(), serializer);
-    })
+    .AddAmqpLiteBroker(builder.Configuration)
     .AddSingleton<IMongoDatabase>(service =>
     {
         var configuration = service.GetRequiredService<IConfiguration>();

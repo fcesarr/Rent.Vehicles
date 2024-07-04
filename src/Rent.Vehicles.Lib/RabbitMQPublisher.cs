@@ -1,10 +1,9 @@
 using RabbitMQ.Client;
 
-using Rent.Vehicles.Lib;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Producers.Interfaces;
+using Rent.Vehicles.Lib.Interfaces;
 
-namespace Rent.Vehicles.Producers.RabbitMQ;
+namespace Rent.Vehicles.Lib;
 
 public class RabbitMQPublisher : IPublisher
 {

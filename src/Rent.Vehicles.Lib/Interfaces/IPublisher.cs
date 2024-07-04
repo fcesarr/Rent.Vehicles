@@ -1,6 +1,4 @@
-using Rent.Vehicles.Lib;
-
-namespace Rent.Vehicles.Producers.Interfaces;
+namespace Rent.Vehicles.Lib.Interfaces;
 
 public interface IPublisher
 {

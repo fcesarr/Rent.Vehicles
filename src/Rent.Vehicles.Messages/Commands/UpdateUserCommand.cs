@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 using MessagePack;
 
+using Rent.Vehicles.Lib;
 using Rent.Vehicles.Messages.Types;
 
 namespace Rent.Vehicles.Messages.Commands;

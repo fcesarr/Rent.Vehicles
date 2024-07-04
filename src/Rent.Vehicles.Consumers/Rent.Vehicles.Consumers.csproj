@@ -20,6 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- <PackageReference Include="AMQPNetLite" Version="2.4.11" /> -->
+    <PackageReference Include="AMQPNetLite.Core" Version="2.4.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -27,7 +29,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.27.0" />
-    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
     <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="8.0.1" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="8.0.1" />
     <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.1" />
@@ -43,9 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rent.Vehicles.Lib\Rent.Vehicles.Lib.csproj" />
-    <ProjectReference Include="..\Rent.Vehicles.Messages\Rent.Vehicles.Messages.csproj" />
-     <ProjectReference Include="..\Rent.Vehicles.Producers\Rent.Vehicles.Producers.csproj" />
     <ProjectReference Include="..\Rent.Vehicles.Services\Rent.Vehicles.Services.csproj" />
   </ItemGroup>
 </Project>

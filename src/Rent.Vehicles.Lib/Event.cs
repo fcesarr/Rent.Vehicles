@@ -1,6 +1,6 @@
 using MessagePack;
 
-namespace Rent.Vehicles.Messages;
+namespace Rent.Vehicles.Lib;
 
 [MessagePackObject]
 public record Event : Message;

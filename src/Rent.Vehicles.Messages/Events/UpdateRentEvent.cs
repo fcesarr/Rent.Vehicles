@@ -3,7 +3,7 @@ using MessagePack;
 namespace Rent.Vehicles.Messages.Events;
 
 [MessagePackObject]
-public record UpdateRentEvent : Messages.Event
+public record UpdateRentEvent : Lib.Event
 {
     [Key(1)]
     public required Guid Id

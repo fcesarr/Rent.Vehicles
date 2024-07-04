@@ -1,4 +1,4 @@
-namespace Rent.Vehicles.Consumers.Responses;
+namespace Rent.Vehicles.Lib.Responses;
 
 public record ConsumerResponse
 {

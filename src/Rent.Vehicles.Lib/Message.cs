@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 using MessagePack;
 
-namespace Rent.Vehicles.Messages;
+namespace Rent.Vehicles.Lib;
 
 [MessagePackObject]
 public abstract record Message
