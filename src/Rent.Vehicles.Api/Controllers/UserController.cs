@@ -21,6 +21,7 @@ public class UserController : Controller
     private readonly IPublisher _publisher;
     private readonly IValidator<UpdateUserCommand> _updateCommandValidator;
     private readonly IValidator<UpdateUserLicenseImageCommand> _updateImageCommandValidator;
+    private readonly Func<Guid, string> GetLocationUri = (Guid sagaId) =>  $"api/event/{sagaId.ToString()}";
 
     public UserController(IValidator<CreateUserCommand> createCommandValidator,
         IUserProjectionFacade projectionFacade, IPublisher publisher,
@@ -51,9 +52,7 @@ public class UserController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        var locationUri = $"/Events/status/{command.SagaId}";
-
-        return Results.Accepted(locationUri, new CommandResponse(command.Id));
+        return Results.Accepted(GetLocationUri(command.SagaId), new CommandResponse(command.Id));
     }
 
     [HttpPut]
@@ -73,9 +72,7 @@ public class UserController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        var locationUri = $"/Events/status/{command.SagaId}";
-
-        return Results.Accepted(locationUri, new CommandResponse(command.Id));
+        return Results.Accepted(GetLocationUri(command.SagaId), new CommandResponse(command.Id));
     }
 
     [HttpPut("upload/licenseImage")]
@@ -95,9 +92,7 @@ public class UserController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        var locationUri = $"/Events/status/{command.SagaId}";
-
-        return Results.Accepted(locationUri, new CommandResponse(command.Id));
+        return Results.Accepted(GetLocationUri(command.SagaId), new CommandResponse(command.Id));
     }
 
     [HttpGet("{id:guid}")]

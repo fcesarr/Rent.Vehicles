@@ -19,7 +19,7 @@ public class EventController : Controller
     }
 
     [HttpGet("{sagaId:guid}")]
-    [ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(EventResponse))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IList<EventResponse>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

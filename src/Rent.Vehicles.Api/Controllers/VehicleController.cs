@@ -17,13 +17,11 @@ namespace Rent.Vehicles.Api.Controllers;
 public class VehicleController : Controller
 {
     private readonly IValidator<CreateVehiclesCommand> _createCommandValidator;
-
     private readonly IVehicleProjectionFacade _vehicleProjectionFacade;
-
     private readonly IValidator<DeleteVehiclesCommand> _deleteCommandValidator;
     private readonly IPublisher _publisher;
-
     private readonly IValidator<UpdateVehiclesCommand> _updateCommandValidator;
+    private readonly Func<Guid, string> GetLocationUri = (Guid sagaId) =>  $"api/event/{sagaId.ToString()}";
 
     public VehicleController(IPublisher publisher, IValidator<CreateVehiclesCommand> createCommandValidator,
         IValidator<UpdateVehiclesCommand> updateCommandValidator,
@@ -53,9 +51,7 @@ public class VehicleController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        var locationUri = $"/Events/status/{command.SagaId}";
-
-        return Results.Accepted(locationUri, new CommandResponse(command.Id));
+        return Results.Accepted(GetLocationUri(command.SagaId), new CommandResponse(command.Id));
     }
 
     [HttpPut]
@@ -73,21 +69,23 @@ public class VehicleController : Controller
             return result.Exception.TreatExceptionToResult(HttpContext);
         }
 
-
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        var locationUri = $"/Events/status/{command.SagaId}";
-
-        return Results.Accepted(locationUri, new CommandResponse(command.Id));
+        return Results.Accepted(GetLocationUri(command.SagaId), new CommandResponse(command.Id));
     }
 
-    [HttpDelete]
+    [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(CommandResponse))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IResult> DeleteAsync([FromBody] DeleteVehiclesCommand command,
+    public async Task<IResult> DeleteAsync([FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
+        var command = new DeleteVehiclesCommand
+        {
+            Id = id,
+        };
+
         var result = await _deleteCommandValidator
             .ValidateAsync(command, cancellationToken);
 
@@ -98,13 +96,11 @@ public class VehicleController : Controller
 
         await _publisher.PublishCommandAsync(command, cancellationToken);
 
-        var locationUri = $"/Events/status/{command.SagaId}";
-
-        return Results.Accepted(locationUri, new CommandResponse(command.Id));
+        return Results.Accepted(GetLocationUri(command.SagaId), new CommandResponse(command.Id));
     }
 
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(VehicleProjection))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VehicleProjection))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -122,7 +118,7 @@ public class VehicleController : Controller
     }
 
     [HttpGet("{licensePlate}")]
-    [ProducesResponseType(StatusCodes.Status202Accepted, Type = typeof(VehicleProjection))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VehicleProjection))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
