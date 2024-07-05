@@ -1,17 +1,13 @@
 services:
   broker-rabbitmq:
-    image: rabbitmq:3.13.3-management-alpine
+    image: broker-rabbitmq:latest
+    build:
+        context: .
+        dockerfile: ./config/RabbitMq/Dockerfile
     container_name: broker-rabbitmq
     ports:
       - "5672:5672"      # AMQP port
       - "15672:15672"    # Management interface port
-    volumes:
-      - type: bind
-        source: ./config/rabbitmq.conf
-        target: /etc/rabbitmq/rabbitmq.conf
-      - type: bind
-        source: ./config/definitions.json
-        target: /etc/rabbitmq/definitions.json
   
   database-postgres:
     image: postgres:14.9-alpine3.18
