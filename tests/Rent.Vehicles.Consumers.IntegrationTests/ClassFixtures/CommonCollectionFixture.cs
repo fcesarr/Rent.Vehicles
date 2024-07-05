@@ -11,3 +11,9 @@ namespace Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 public class CommonCollectionFixture : ICollectionFixture<CommonFixture>
 {
 }
+
+
+[CollectionDefinition(nameof(IntegrationTestWebAppFactoryFixture))]
+public class IntegrationTestWebAppFactoryFixture : ICollectionFixture<IntegrationTestWebAppFactory>
+{
+}

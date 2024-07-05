@@ -38,16 +38,16 @@ public abstract class CommandBackgroundServiceTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        // var connection = _classFixture.GetRequiredService<IConnection>();
+        var connection = _classFixture.GetRequiredService<IConnection>();
         
-        // var model = connection.CreateModel();
+        var model = connection.CreateModel();
 
-        // foreach (var queue in _queues)
-        // {
-        //     model.QueuePurge(queue);
-        // }
+        foreach (var queue in _queues)
+        {
+            model.QueuePurge(queue);
+        }
 
-        // model.Close();
+        model.Close();
 
         await _classFixture.ResetDatabaseAsync();
     }

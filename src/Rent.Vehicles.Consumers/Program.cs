@@ -48,7 +48,7 @@ builder.Host.UseSerilog((hostBuilderContext, loggerConfiguration) =>
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 builder.Services
-    .AddHealthCheck(builder.Configuration)
+    .AddCustomHealthCheck(builder.Configuration)
     .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
                                                             string.Empty)
     .AddTransient<IPeriodicTimer>(service =>

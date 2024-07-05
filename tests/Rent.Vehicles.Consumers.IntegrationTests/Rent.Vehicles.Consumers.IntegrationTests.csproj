@@ -20,6 +20,11 @@
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</Content>
+    <Content Include="appsettings.Development.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 	</ItemGroup>
 
   <ItemGroup>
@@ -62,6 +67,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Rent.Vehicles.Api\Rent.Vehicles.Api.csproj" />
     <ProjectReference Include="..\..\src\Rent.Vehicles.Consumers\Rent.Vehicles.Consumers.csproj" />
   </ItemGroup>
 

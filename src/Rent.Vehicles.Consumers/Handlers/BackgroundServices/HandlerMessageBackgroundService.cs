@@ -48,7 +48,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     public override Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Stop {ClassName}: {Guid}", this.GetType().Name, _guid);
+        _logger.LogInformation("StopAsync {ClassName}: {Guid}", this.GetType().Name, _guid);
         return base.StopAsync(cancellationToken);
     }
 

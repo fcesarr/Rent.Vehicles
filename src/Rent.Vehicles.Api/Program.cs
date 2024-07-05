@@ -54,7 +54,7 @@ builder.Host.UseSerilog((hostBuilderContext, loggerConfiguration) =>
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 builder.Services
-    .AddHealthCheck(builder.Configuration)
+    .AddCustomHealthCheck(builder.Configuration)
     .AddDbContextDependencies<IDbContext,
         RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??string.Empty)
     // UserProjection
@@ -215,4 +215,76 @@ app.UseHttpsRedirection();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
+
+public partial class Program
+{
+    
+}
+
+
+// using System.Text.Json.Serialization;
+
+// using Microsoft.OpenApi.Any;
+// using Microsoft.OpenApi.Models;
+
+// using MongoDB.Bson;
+// using MongoDB.Bson.Serialization;
+// using MongoDB.Bson.Serialization.Serializers;
+// using MongoDB.Driver;
+
+// using RabbitMQ.Client;
+
+// using Rent.Vehicles.Entities;
+// using Rent.Vehicles.Entities.Contexts;
+// using Rent.Vehicles.Entities.Contexts.Interfaces;
+// using Rent.Vehicles.Entities.Extensions;
+// using Rent.Vehicles.Entities.Projections;
+// using Rent.Vehicles.Lib.Serializers;
+// using Rent.Vehicles.Lib.Serializers.Interfaces;
+// using Rent.Vehicles.Messages.Commands;
+// using Rent.Vehicles.Messages.Types;
+// using Rent.Vehicles.Services;
+// using Rent.Vehicles.Services.DataServices;
+// using Rent.Vehicles.Services.DataServices.Interfaces;
+// using Rent.Vehicles.Services.Facades;
+// using Rent.Vehicles.Services.Facades.Interfaces;
+// using Rent.Vehicles.Services.Interfaces;
+// using Rent.Vehicles.Services.Repositories;
+// using Rent.Vehicles.Services.Repositories.Interfaces;
+// using Rent.Vehicles.Services.Validators;
+// using Rent.Vehicles.Services.Validators.Interfaces;
+// using Rent.Vehicles.Services.Extensions;
+// using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+// using HealthChecks.UI.Client;
+// using Rent.Vehicles.Lib.Constants;
+// using Rent.Vehicles.Lib.Extensions;
+// using Serilog;
+// using System.Reflection;
+// using System.Diagnostics;
+// using Rent.Vehicles.Messages;
+// using Rent.Vehicles.Api;
+
+// BsonClassMap.RegisterClassMap<Event>(map =>
+// {
+//     map.AutoMap();
+//     map.MapProperty(x => x.SagaId).SetSerializer(new GuidSerializer(BsonType.String));
+// });
+
+
+// await Host.CreateDefaultBuilder(args)
+//     .ConfigureWebHostDefaults(webBuilder =>
+//         webBuilder.UseStartup<Startup>())
+//     .UseSerilog((hostBuilderContext, loggerConfiguration) =>
+//     {
+//         var assembly = Assembly.GetExecutingAssembly();
+//         var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+//         var version = fvi.FileVersion;
+
+//         loggerConfiguration.ReadFrom.Configuration(hostBuilderContext.Configuration)
+//             .Enrich.WithProperty("Version", version);
+//     })
+//     .UseConsoleLifetime()
+//     .Build()
+//     .RunAsync();
+

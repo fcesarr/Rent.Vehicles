@@ -1,9 +1,11 @@
+
 using System.Linq.Expressions;
-using System.Runtime.InteropServices.Marshalling;
 
 using AutoFixture;
 
 using FluentAssertions;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
@@ -16,170 +18,99 @@ using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
-using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 
 using Xunit.Abstractions;
+using RabbitMQ.Client;
+using System.Net;
+using System.Text;
+using Microsoft.OpenApi.Writers;
+using Rent.Vehicles.Services.Responses;
+using Amqp.Types;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Net.Mime;
+using Rent.Vehicles.Entities.Types;
+using System.Collections;
+using Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices.ClassDatas;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(CommonCollectionFixture))]
-public class DeleteVehiclesCommandBackgroundServiceTests : CommandBackgroundServiceTests
+[Collection(nameof(IntegrationTestWebAppFactoryFixture))]
+public class DeleteVehiclesCommandBackgroundServiceTests
 {
     private readonly Fixture _fixture;
 
-    public DeleteVehiclesCommandBackgroundServiceTests(CommonFixture classFixture) : base(classFixture)
+    private readonly IntegrationTestWebAppFactory _integrationTestWebAppFactory;
+
+    private readonly HttpClient _httpClient;
+
+    private readonly JsonSerializerOptions _options = new JsonSerializerOptions
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        PropertyNameCaseInsensitive = true
+    };
+
+    public DeleteVehiclesCommandBackgroundServiceTests(IntegrationTestWebAppFactory integrationTestWebAppFactory)
     {
         _fixture = new Fixture();
 
-        _queues.Add("DeleteVehiclesCommand");
-        _queues.Add("DeleteVehiclesEvent");
-        _queues.Add("DeleteVehiclesProjectionEvent");
-        _queues.Add("Event");
+        _integrationTestWebAppFactory = integrationTestWebAppFactory;
+
+        _httpClient = _integrationTestWebAppFactory.CreateClient();
     }
 
-    private static Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
-
-    private static Expression<Func<Vehicle, bool>> GetPredicate(Vehicle entity)
-    {
-        var predicate = GetPredicate<Vehicle>(entity.Id);
-
-        return predicate.And(x => x.Year == entity.Year &&
-            x.LicensePlate == entity.LicensePlate &&
-            x.Type == (Entities.Types.VehicleType)entity.Type &&
-            x.Model == entity.Model);
-    }
-
-    [Fact]
-    public async Task SendDeleteVehiclesCommandVerifyEntityAndProjectionAreDeleted()
+    [Theory(DisplayName = $"{nameof(CreateVehiclesCommandBackgroundServiceTests)}.{nameof(SendDeleteVehiclesCommandVerifyEventStatusAndStatusCode)}")]
+    [ClassData(typeof(DeleteVehiclesCommandBackgroundServiceTestData))]
+    public async Task SendDeleteVehiclesCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
+        HttpStatusCode statusCode,
+        bool isRented)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
-
-        var command = _fixture
-            .Build<DeleteVehiclesCommand>()
-            .Create();
-
-        await _classFixture.GetRequiredService<IPublisher>()
-            .PublishCommandAsync(command, cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<DeleteVehiclesCommandBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<DeleteVehiclesEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<DeleteVehiclesProjectionEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        var commandDataService = _classFixture
-            .GetRequiredService<ICommandDataService>();
-
-        var entityDataService = _classFixture
-            .GetRequiredService<IVehicleDataService>();
-
-        var projectionDataService = _classFixture
-            .GetRequiredService<IVehicleProjectionDataService>();
-
-        var entityRepository = _classFixture
-            .GetRequiredService<IRepository<Vehicle>>();
-
-        var @event = _fixture
-            .Build<Vehicle>()
-                .With(x => x.Id, command.Id)
-                .With(x => x.IsRented, false)
-            .Create(); 
-
-        await entityRepository.CreateAsync(@event, cancellationTokenSource.Token);
-
-        var found = false;
-
-        do
-        {
-            var commandResult = await commandDataService
-                .GetAsync(x => x.SagaId == command.SagaId);
-
-            var entityResult = await entityDataService
-                .GetAsync(GetPredicate(@event));
-
-            found = commandResult.IsSuccess &&
-                !entityResult.IsSuccess &&
-                entityResult.Exception is not null &&
-                entityResult.Exception.GetType() == typeof(NullException);
-
-            await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
-        } while (!found && !cancellationTokenSource.IsCancellationRequested);
-
-        // Assert
-        found.Should().BeTrue();
-
-        await _classFixture.GetRequiredService<DeleteVehiclesProjectionEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<DeleteVehiclesEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-        
-        await _classFixture.GetRequiredService<DeleteVehiclesCommandBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-    }
-
-    [Fact]
-    public async Task SendDeleteVehiclesCommandVerifyEntityAndEventFail()
-    {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
-
-        var command = _fixture
-            .Build<DeleteVehiclesCommand>()
-            .Create();
-
-        await _classFixture.GetRequiredService<IPublisher>()
-            .PublishCommandAsync(command, cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<DeleteVehiclesCommandBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<DeleteVehiclesEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<EventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        var commandDataService = _classFixture
-            .GetRequiredService<ICommandDataService>();
-
-        var eventDataService = _classFixture
-            .GetRequiredService<IEventDataService>();
-
-        var vehicleRepository = _classFixture
-            .GetRequiredService<IRepository<Vehicle>>();
 
         var entity = _fixture
-            .Build<Vehicle>()
-                .With(x => x.Id, command.Id)
-                .With(x => x.IsRented, true)
-            .Create(); 
+                .Build<Vehicle>()
+                    .With(x => x.IsRented, isRented)
+                .Create(); 
 
-        await vehicleRepository.CreateAsync(entity, cancellationTokenSource.Token);
+        entity = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
+
+        _ = await _integrationTestWebAppFactory.SaveProjectionAsync(entity.ToProjection<VehicleProjection>());
+
+        var response = await _httpClient.DeleteAsync($"/api/vehicle/{entity.Id.ToString()}", cancellationToken: cancellationTokenSource.Token);
+
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationTokenSource.Token);
+
+        var commandResponse = JsonSerializer.Deserialize<Rent.Vehicles.Api.Responses.CommandResponse>(responseBody, _options);
+
+        var location = response?.Headers?.Location?.ToString();
 
         var found = false;
 
         do
         {
-            var commandResult = await commandDataService
-                .GetAsync(x => x.SagaId == command.SagaId);
+            var locationResponse = await _httpClient.GetAsync(location, cancellationToken: cancellationTokenSource.Token);
 
-            var eventResult = await eventDataService
-                .GetAsync(x => x.SagaId == command.SagaId && 
-                    x.StatusType == Entities.Types.StatusType.Fail &&
-                    x.Name == typeof(DeleteVehiclesEvent).Name);
+            IList<EventResponse> events = [];
 
-            found = commandResult.IsSuccess &&
-                eventResult.IsSuccess;
+            if(locationResponse.StatusCode == HttpStatusCode.OK)
+            {
+                var locationResponseBody = await locationResponse.Content.ReadAsStringAsync(cancellationTokenSource.Token);
+                events = JsonSerializer.Deserialize<IList<EventResponse>>(locationResponseBody, _options) ?? [];
+            }
+
+            var entityResponse = await _httpClient.GetAsync($"/api/vehicle/{commandResponse?.Id.ToString()}", cancellationToken: cancellationTokenSource.Token);
+
+            found = events.GroupBy(v => v.SagaId)
+                .Where(g => g.Count() == tuples.Length)
+                .SelectMany(x => x.ToArray())
+                    .AllOrFalseIfEmpty(x => tuples.Any(y => y.Item1 == x.Name && y.Item2 == x.StatusType )) &&
+                entityResponse.StatusCode == statusCode;
 
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
@@ -187,13 +118,6 @@ public class DeleteVehiclesCommandBackgroundServiceTests : CommandBackgroundServ
         // Assert
         found.Should().BeTrue();
 
-        await _classFixture.GetRequiredService<EventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<DeleteVehiclesEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-        
-        await _classFixture.GetRequiredService<DeleteVehiclesCommandBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
+        response?.StatusCode.Should().Be(HttpStatusCode.Accepted);
     }
 }
