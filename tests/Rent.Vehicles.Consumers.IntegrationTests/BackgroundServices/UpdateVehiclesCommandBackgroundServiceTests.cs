@@ -36,7 +36,7 @@ using Rent.Vehicles.Services.Extensions;
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
 [Collection(nameof(IntegrationTestWebAppFactoryFixture))]
-public class UpdateVehiclesCommandBackgroundServiceTests
+public class UpdateVehiclesCommandBackgroundServiceTests : IAsyncLifetime
 {
     private readonly Fixture _fixture;
 
@@ -59,29 +59,34 @@ public class UpdateVehiclesCommandBackgroundServiceTests
         _httpClient = _integrationTestWebAppFactory.CreateClient();
     }
 
+    public async Task DisposeAsync()
+    {
+        await _integrationTestWebAppFactory.ResetDatabaseAsync();
+    }
+
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
     [Theory(DisplayName = $"{nameof(UpdateVehiclesCommandBackgroundServiceTests)}.{nameof(SendUpdateVehiclesCommandVerifyEventStatusAndStatusCode)}")]
     [ClassData(typeof(UpdateVehiclesCommandBackgroundServiceTestData))]
     public async Task SendUpdateVehiclesCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        Vehicle entity)
+        IEnumerable<Vehicle> entities,
+        UpdateVehiclesCommand command)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
         
-        entity = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
+        foreach (var entity in entities)
+        {
+            _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 
-        _ = await _integrationTestWebAppFactory.SaveProjectionAsync(entity.ToProjection<VehicleProjection>(), cancellationTokenSource.Token);
-
-        var commandBuilder = _fixture
-            .Build<UpdateVehiclesCommand>()
-                .With(x => x.Id, entity.Id)
-            .Without(x => x.Id);
+            _ = await _integrationTestWebAppFactory.SaveProjectionAsync(entity.ToProjection<VehicleProjection>(), cancellationTokenSource.Token);
+        }
         
-        var licensePlate = entity.LicensePlate;
-
-        var command = commandBuilder.Create();
-
         var json = JsonSerializer.Serialize(command);
 
 		var httpContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);

@@ -40,7 +40,7 @@ using Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices.ClassDatas;
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
 [Collection(nameof(IntegrationTestWebAppFactoryFixture))]
-public class DeleteVehiclesCommandBackgroundServiceTests
+public class DeleteVehiclesCommandBackgroundServiceTests : IAsyncLifetime
 {
     private readonly Fixture _fixture;
 
@@ -63,20 +63,25 @@ public class DeleteVehiclesCommandBackgroundServiceTests
         _httpClient = _integrationTestWebAppFactory.CreateClient();
     }
 
+    public async Task DisposeAsync()
+    {
+        await _integrationTestWebAppFactory.ResetDatabaseAsync();
+    }
+
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
     [Theory(DisplayName = $"{nameof(CreateVehiclesCommandBackgroundServiceTests)}.{nameof(SendDeleteVehiclesCommandVerifyEventStatusAndStatusCode)}")]
     [ClassData(typeof(DeleteVehiclesCommandBackgroundServiceTestData))]
     public async Task SendDeleteVehiclesCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        bool isRented)
+        Vehicle entity)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
-
-        var entity = _fixture
-                .Build<Vehicle>()
-                    .With(x => x.IsRented, isRented)
-                .Create(); 
 
         entity = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 

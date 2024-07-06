@@ -40,7 +40,7 @@ using Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices.ClassDatas;
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
 [Collection(nameof(IntegrationTestWebAppFactoryFixture))]
-public class CreateVehiclesCommandBackgroundServiceTests
+public class CreateVehiclesCommandBackgroundServiceTests : IAsyncLifetime
 {
     private readonly Fixture _fixture;
 
@@ -63,38 +63,31 @@ public class CreateVehiclesCommandBackgroundServiceTests
         _httpClient = _integrationTestWebAppFactory.CreateClient();
     }
 
+    public async Task DisposeAsync()
+    {
+        await _integrationTestWebAppFactory.ResetDatabaseAsync();
+    }
+
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
     [Theory(DisplayName = $"{nameof(CreateVehiclesCommandBackgroundServiceTests)}.{nameof(SendCreateVehiclesCommandVerifyEventStatusAndStatusCode)}")]
     [ClassData(typeof(CreateVehiclesCommandBackgroundServiceTestData))]
-    public async Task SendCreateVehiclesCommandVerifyEventStatusAndStatusCode(int year,
-        Tuple<string, StatusType>[] tuples,
+    public async Task SendCreateVehiclesCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        bool createEntity)
+        IEnumerable<Vehicle> entities,
+        CreateVehiclesCommand command)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
-        var commandBuilder = _fixture
-            .Build<CreateVehiclesCommand>()
-            .Without(x => x.Id)
-            .With(x => x.Year, () => {
-                var random = new Random();
-                return random.Next(year, year);
-            });
-        
-        if(createEntity)
+        foreach (var entity in entities)
         {
-            var entity = _fixture
-                .Build<Vehicle>()
-                .Create(); 
-
-            entity = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
-
-            commandBuilder = commandBuilder
-                .With(x => x.LicensePlate, entity.LicensePlate);
+            _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
         }
-
-        var command = commandBuilder.Create();
 
         var json = JsonSerializer.Serialize(command);
 
