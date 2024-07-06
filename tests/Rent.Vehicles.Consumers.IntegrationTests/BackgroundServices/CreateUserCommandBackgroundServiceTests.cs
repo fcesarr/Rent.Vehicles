@@ -40,7 +40,7 @@ using Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices.ClassDatas;
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
 [Collection(nameof(IntegrationTestWebAppFactoryFixture))]
-public class CreateUserCommandBackgroundServiceTests
+public class CreateUserCommandBackgroundServiceTests : IAsyncLifetime
 {
     private readonly Fixture _fixture;
 
@@ -63,46 +63,31 @@ public class CreateUserCommandBackgroundServiceTests
         _httpClient = _integrationTestWebAppFactory.CreateClient();
     }
 
+    public async Task DisposeAsync()
+    {
+        await _integrationTestWebAppFactory.ResetDatabaseAsync();
+    }
+
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
+
     [Theory(DisplayName = $"{nameof(CreateUserCommandBackgroundServiceTests)}.{nameof(SendCreateUserCommandVerifyEventStatusAndStatusCode)}")]
     [ClassData(typeof(CreateUserCommandBackgroundServiceTestData))]
     public async Task SendCreateUserCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        string base64String,
-        bool createEntity,
-        bool sameNumber,
-        bool sameLicenseNumber)
+        IEnumerable<User> entities,
+        CreateUserCommand command)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
-        var commandBuilder = _fixture
-            .Build<CreateUserCommand>()
-            .Without(x => x.Id)
-            .With(x => x.LicenseImage, base64String);
-        
-        if(createEntity)
+        foreach (var entity in entities)
         {
-            var entity = _fixture
-                .Build<User>()
-                .Create(); 
-
-            entity = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
-
-            if(sameNumber)
-            {
-                commandBuilder = commandBuilder
-                    .With(x => x.Number, entity.Number);
-            }
-
-            if(sameLicenseNumber)
-            {
-                commandBuilder = commandBuilder
-                    .With(x => x.LicenseNumber, entity.LicenseNumber);
-            }
+            _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
         }
-
-        var command = commandBuilder.Create();
 
         var json = JsonSerializer.Serialize(command);
 
