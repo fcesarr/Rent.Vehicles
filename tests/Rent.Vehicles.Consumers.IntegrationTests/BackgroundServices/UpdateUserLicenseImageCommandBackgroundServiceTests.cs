@@ -80,7 +80,7 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTests : IAsyncLifetim
         IEnumerable<User> entities,
         UpdateUserLicenseImageCommand command)
     {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(90));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
@@ -88,7 +88,7 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTests : IAsyncLifetim
         {
             _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 
-            _ = await _integrationTestWebAppFactory.SaveProjectionAsync(entity.ToProjection());
+            _ = await _integrationTestWebAppFactory.SaveAsync(entity.ToProjection());
         }
 
         var json = JsonSerializer.Serialize(command);

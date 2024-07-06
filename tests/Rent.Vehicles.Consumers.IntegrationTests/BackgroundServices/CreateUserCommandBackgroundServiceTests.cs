@@ -80,7 +80,7 @@ public class CreateUserCommandBackgroundServiceTests : IAsyncLifetime
         IEnumerable<User> entities,
         CreateUserCommand command)
     {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(90));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 

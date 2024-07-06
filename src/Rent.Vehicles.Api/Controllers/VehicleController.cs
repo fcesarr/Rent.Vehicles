@@ -8,6 +8,9 @@ using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Validators.Interfaces;
+using Rent.Vehicles.Services.Responses;
+
+using CommandResponse = Rent.Vehicles.Api.Responses.CommandResponse;
 
 namespace Rent.Vehicles.Api.Controllers;
 
@@ -100,7 +103,7 @@ public class VehicleController : Controller
     }
 
     [HttpGet("{id:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VehicleProjection))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VehicleResponse))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

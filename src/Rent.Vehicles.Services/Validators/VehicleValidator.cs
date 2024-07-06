@@ -21,6 +21,13 @@ public class VehicleValidator : Validator<Vehicle>, IVehicleValidator
             }).WithMessage("Veiculo com placa já cadastrada");
 
         RuleFor(x => x.IsRented)
-            .Must(x => !x).WithMessage("Veiculo já alugado");
+            .MustAsync(async (e, IsRented, cancellationToken) => {
+                
+                var entity = await repository.GetAsync(x => x.Id == e.Id &&
+                    x.IsRented == IsRented,
+                cancellationToken: cancellationToken);
+                
+                return entity is null;
+            }).WithMessage("Veiculo já alugado");
     }
 }

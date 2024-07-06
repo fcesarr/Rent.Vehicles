@@ -13,6 +13,7 @@ using Rent.Vehicles.Api;
 using Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Factories.Interfaces;
+using Rent.Vehicles.Services.Repositories;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 
 using Respawn;
@@ -23,34 +24,15 @@ namespace Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 
 public class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    protected override TestServer CreateServer(IWebHostBuilder builder)
-    {
-        builder
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .ConfigureAppConfiguration((context, config) =>
-            {
-                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-                config.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
-            })
-            .ConfigureServices((context, services) =>
-            {
-            
-                var configuration = context.Configuration;
-
-                services.AddServicesTests(configuration);
-            });
-
-        return base.CreateServer(builder);
-    }
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
         builder
+            .UseEnvironment("Tests")
             .UseContentRoot(Directory.GetCurrentDirectory())
             .ConfigureAppConfiguration((context, config) =>
             {
                 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-                config.AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
+                config.AddJsonFile("appsettings.Tests.json", optional: false, reloadOnChange: true);
             })
             .ConfigureServices((context, services) =>
             {
@@ -66,35 +48,19 @@ public class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsy
                 var configuration = context.Configuration;
 
                 services.AddServicesTests(configuration);
+
             });
         base.ConfigureWebHost(builder);
     }
     
     public async Task<T> SaveAsync<T>(T entity, CancellationToken cancellationToken = default) where T : Entity
     {
-        var factory = Services.GetRequiredService<IDbContextFactory>();
+        using var service =  Services.CreateScope();
 
-        using var context = await factory.CreateDbContextAsync(cancellationToken);
+        var serviceProvider = service.ServiceProvider;
 
-        var repository = await context.Set<T>().AddAsync(entity, cancellationToken);
-
-        await context.SaveChangesAsync(cancellationToken);
-
-        
-
-        return repository.Entity;
-    }
-
-    public async Task<TProjection> SaveProjectionAsync<TProjection>(TProjection entity, CancellationToken cancellationToken = default) where TProjection : Entity
-    {
-        var contextNoSql = Services.GetRequiredService<IMongoDatabase>();
-
-        var mongoCollection = contextNoSql
-            .GetCollection<TProjection>($"{typeof(TProjection).Name.ToLower()}s");
-
-        await mongoCollection.InsertOneAsync(entity);
-
-        return entity;
+        return await serviceProvider.GetRequiredService<IRepository<T>>()
+            .CreateAsync(entity, cancellationToken);
     }
 
     private Respawner _respawner = default!;
@@ -130,7 +96,7 @@ public class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsy
 
         using var connection = context.Database.GetDbConnection();
 
-        // await connection.OpenAsync();
+        await connection.OpenAsync();
 
         await context.Database.EnsureDeletedAsync();
     }

@@ -1,4 +1,6 @@
 
+using System.Linq.Expressions;
+
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Services.DataServices.Interfaces;
@@ -71,5 +73,15 @@ public class RentProjectionFacade : IRentProjectionFacade
         }
 
         return new CostResponse(entity.Value!.Cost);
+    }
+
+    public async Task<Result<RentResponse>> GetAsync(Expression<Func<RentProjection, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        var entity = await _projectionDataService.GetAsync(predicate, cancellationToken);
+
+        if(!entity.IsSuccess)
+            return entity.Exception!;
+        
+        return entity.Value!.ToResponse();
     }
 }
