@@ -14,16 +14,32 @@ using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 
 using Xunit.Abstractions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(CommonCollectionFixture))]
-public class UpdateRentCommandBackgroundServiceTests : CommandBackgroundServiceTests
+[Collection(nameof(IntegrationTestWebAppFactoryFixture))]
+public class UpdateRentCommandBackgroundServiceTests
 {
     private readonly Fixture _fixture;
 
-    public UpdateRentCommandBackgroundServiceTests(CommonFixture classFixture) : base(classFixture)
+    private readonly IntegrationTestWebAppFactory _integrationTestWebAppFactory;
+
+    private readonly HttpClient _httpClient;
+
+    private readonly JsonSerializerOptions _options = new JsonSerializerOptions
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        PropertyNameCaseInsensitive = true
+    };
+
+    public UpdateRentCommandBackgroundServiceTests(IntegrationTestWebAppFactory integrationTestWebAppFactory)
     {
         _fixture = new Fixture();
+
+        _integrationTestWebAppFactory = integrationTestWebAppFactory;
+
+        _httpClient = _integrationTestWebAppFactory.CreateClient();
     }
 }

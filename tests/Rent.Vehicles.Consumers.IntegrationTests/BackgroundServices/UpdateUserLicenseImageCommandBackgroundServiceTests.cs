@@ -1,5 +1,5 @@
 
-using System.Reflection;
+using System.Linq.Expressions;
 
 using AutoFixture;
 
@@ -7,114 +7,123 @@ using FluentAssertions;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using RabbitMQ.Client;
-
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
+using Rent.Vehicles.Consumers.IntegrationTests.Extensions;
 using Rent.Vehicles.Entities;
+using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Commands;
+using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 
 using Xunit.Abstractions;
+using RabbitMQ.Client;
+using System.Net;
+using System.Text;
+using Microsoft.OpenApi.Writers;
+using Rent.Vehicles.Services.Responses;
+using Amqp.Types;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Net.Mime;
+using Rent.Vehicles.Entities.Types;
+using System.Collections;
+using Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices.ClassDatas;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(CommonCollectionFixture))]
-public class UpdateUserLicenseImageCommandBackgroundServiceTests : CommandBackgroundServiceTests
+[Collection(nameof(IntegrationTestWebAppFactoryFixture))]
+public class UpdateUserLicenseImageCommandBackgroundServiceTests : IAsyncLifetime
 {
     private readonly Fixture _fixture;
-    
-    public UpdateUserLicenseImageCommandBackgroundServiceTests(CommonFixture classFixture) : base(classFixture)
+
+    private readonly IntegrationTestWebAppFactory _integrationTestWebAppFactory;
+
+    private readonly HttpClient _httpClient;
+
+    private readonly JsonSerializerOptions _options = new JsonSerializerOptions
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        PropertyNameCaseInsensitive = true
+    };
+
+    public UpdateUserLicenseImageCommandBackgroundServiceTests(IntegrationTestWebAppFactory integrationTestWebAppFactory)
     {
         _fixture = new Fixture();
-        
-        _queues.Add("UpdateUserLicenseImageCommand");
-        _queues.Add("UpdateUserLicenseImageEvent");
-        _queues.Add("UploadUserLicenseImageEvent");
+
+        _integrationTestWebAppFactory = integrationTestWebAppFactory;
+
+        _httpClient = _integrationTestWebAppFactory.CreateClient();
     }
 
-
-    public static async Task<string> GetBase64StringAsync(string name, CancellationToken cancellationToken = default)
+    public async Task DisposeAsync()
     {
-        name = $"Rent.Vehicles.Consumers.IntegrationTests.Images.{name}";
+        await _integrationTestWebAppFactory.ResetDatabaseAsync();
+    }
 
-        var result = string.Empty;
+    public Task InitializeAsync()
+    {
+        return Task.CompletedTask;
+    }
 
-        var assembly = Assembly.GetExecutingAssembly();
+    [Theory(DisplayName = $"{nameof(UpdateUserCommandBackgroundServiceTests)}.{nameof(SendUpdateUserCommandVerifyEventStatusAndStatusCode)}")]
+    [ClassData(typeof(UpdateUserLicenseImageCommandBackgroundServiceTestData))]
+    public async Task SendUpdateUserCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
+        HttpStatusCode statusCode,
+        IEnumerable<User> entities,
+        UpdateUserLicenseImageCommand command)
+    {
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
-        if(assembly.GetManifestResourceStream(name) is Stream stream)
+        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+
+        foreach (var entity in entities)
         {
-            using StreamReader reader = new StreamReader(stream);
-            result = await reader.ReadToEndAsync(cancellationToken);
-            await stream.DisposeAsync();
+            _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
+
+            _ = await _integrationTestWebAppFactory.SaveProjectionAsync(entity.ToProjection());
         }
 
-        return result;
-    }
+        var json = JsonSerializer.Serialize(command);
 
-    [Theory]
-    [InlineData("pngBase64String", "299d8904e674332b32d2fc1c7fcf26ce.png")]
-    [InlineData("bmpBase64String", "c23ff0fb8955b91ef38bf12ffcd80c00.bmp")]
-    public async Task UpdateUserLicenseImageCommandVerifyImageAreUplodad(string name, string expected)
-    {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+		var httpContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
 
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        var response = await _httpClient.PutAsync("/api/user/upload/licenseImage", httpContent, cancellationToken: cancellationTokenSource.Token);
 
-        var userRepository = _classFixture
-            .GetRequiredService<IRepository<User>>();
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationTokenSource.Token);
 
-        var entity = _fixture
-            .Build<User>()
-            .Create(); 
+        var commandResponse = JsonSerializer.Deserialize<Rent.Vehicles.Api.Responses.CommandResponse>(responseBody, _options);
 
-        await userRepository.CreateAsync(entity, cancellationTokenSource.Token);
-
-        var base64String = await GetBase64StringAsync(name, cancellationTokenSource.Token);
-
-        var command = _fixture
-            .Build<UpdateUserLicenseImageCommand>()
-                .With(x => x.Id, entity.Id)
-                .With(x => x.LicenseImage, base64String)
-            .Create();
-
-        var streamUploadService = _classFixture.GetRequiredService<IStreamUploadService>();
-
-        streamUploadService.Bytes = Array.Empty<Byte>();
-
-        await _classFixture.GetRequiredService<IPublisher>()
-            .PublishCommandAsync(command, cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserLicenseImageCommandBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserLicenseImageEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UploadUserLicenseImageEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        var commandDataService = _classFixture.GetRequiredService<ICommandDataService>();
+        var location = response?.Headers?.Location?.ToString();
 
         var found = false;
 
         do
         {
-            var commandResult = await commandDataService
-                .GetAsync(x => x.SagaId == command.SagaId, cancellationTokenSource.Token);
+            var locationResponse = await _httpClient.GetAsync(location, cancellationToken: cancellationTokenSource.Token);
 
-            var nameResult = await streamUploadService
-                .GetPathAsync(base64String, cancellationTokenSource.Token);
+            IList<EventResponse> events = [];
 
-            found = commandResult.IsSuccess &&
-                nameResult.IsSuccess &&
-                nameResult.Value! == expected &&
-                streamUploadService.Bytes.SequenceEqual(Convert.FromBase64String(base64String));
+            if(locationResponse.StatusCode == HttpStatusCode.OK)
+            {
+                var locationResponseBody = await locationResponse.Content.ReadAsStringAsync(cancellationTokenSource.Token);
+                events = JsonSerializer.Deserialize<IList<EventResponse>>(locationResponseBody, _options) ?? [];
+            }
+
+            var entityResponse = await _httpClient.GetAsync($"/api/user/{commandResponse?.Id.ToString()}", cancellationToken: cancellationTokenSource.Token);
+
+            found = events.GroupBy(v => v.SagaId)
+                .Where(g => g.Count() == tuples.Length)
+                .SelectMany(x => x.ToArray())
+                    .AllOrFalseIfEmpty(x => tuples.Any(y => y.Item1 == x.Name && y.Item2 == x.StatusType )) &&
+                entityResponse.StatusCode == statusCode;
 
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
@@ -122,86 +131,6 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTests : CommandBackgr
         // Assert
         found.Should().BeTrue();
 
-        await _classFixture.GetRequiredService<UploadUserLicenseImageEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserLicenseImageEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-        
-        await _classFixture.GetRequiredService<UpdateUserLicenseImageCommandBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
+        response?.StatusCode.Should().Be(HttpStatusCode.Accepted);
     }
-
-    [Fact]
-    public async Task UpdateUserLicenseImageCommandVerifyImageNotUploaded()
-    {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(90));
-
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
-
-        var userRepository = _classFixture
-            .GetRequiredService<IRepository<User>>();
-
-        var entity = _fixture
-            .Build<User>()
-            .Create(); 
-
-        await userRepository.CreateAsync(entity, cancellationTokenSource.Token);
-
-        var base64String = await GetBase64StringAsync("jpgBase64String", cancellationTokenSource.Token);
-
-        var command = _fixture
-            .Build<UpdateUserLicenseImageCommand>()
-                .With(x => x.Id, entity.Id)
-                .With(x => x.LicenseImage, base64String)
-            .Create();
-        
-        var streamUploadService = _classFixture.GetRequiredService<IStreamUploadService>();
-
-        streamUploadService.Bytes = Array.Empty<Byte>();
-
-        await _classFixture.GetRequiredService<IPublisher>()
-            .PublishCommandAsync(command, cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserLicenseImageCommandBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserLicenseImageEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UploadUserLicenseImageEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        var commandDataService = _classFixture.GetRequiredService<ICommandDataService>();
-
-        var found = false;
-
-        do
-        {
-            var commandResult = await commandDataService
-                .GetAsync(x => x.SagaId == command.SagaId, cancellationTokenSource.Token);
-
-            var nameResult = await streamUploadService
-                .GetPathAsync(base64String, cancellationTokenSource.Token);
-
-            found = commandResult.IsSuccess &&
-                !nameResult.IsSuccess &&
-                nameResult.Exception is not null &&
-                streamUploadService.Bytes.Length == 0;
-
-            await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
-        } while (!found && !cancellationTokenSource.IsCancellationRequested);
-
-        // Assert
-        found.Should().BeTrue();
-
-        await _classFixture.GetRequiredService<UploadUserLicenseImageEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserLicenseImageEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-        
-        await _classFixture.GetRequiredService<UpdateUserLicenseImageCommandBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-    }    
 }

@@ -92,22 +92,4 @@ public class UpdateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    private static async Task<string> GetBase64StringAsync(string name, CancellationToken cancellationToken = default)
-    {
-        name = $"Rent.Vehicles.Consumers.IntegrationTests.Images.{name}";
-
-        var result = string.Empty;
-
-        var assembly = Assembly.GetExecutingAssembly();
-
-        if(assembly.GetManifestResourceStream(name) is Stream stream)
-        {
-            using StreamReader reader = new StreamReader(stream);
-            result = await reader.ReadToEndAsync(cancellationToken);
-            await stream.DisposeAsync();
-        }
-
-        return result;
-    }
 }
