@@ -23,8 +23,8 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
 
     public IEnumerator<object[]> GetEnumerator()
     {
-        yield return new Func<Task<object[]>>(async () => {
-
+        yield return new Func<Task<object[]>>(async () => 
+        {
             var command = _fixture.Build<CreateUserCommand>()
                     .Without(x => x.Id)
                     .With(x => x.LicenseImage, await GetBase64StringAsync("pngBase64String"))

@@ -18,129 +18,112 @@ using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 
 using Xunit.Abstractions;
+using RabbitMQ.Client;
+using System.Net;
+using System.Text;
+using Microsoft.OpenApi.Writers;
+using Rent.Vehicles.Services.Responses;
+using Amqp.Types;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Net.Mime;
+using Rent.Vehicles.Entities.Types;
+using System.Collections;
+using Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices.ClassDatas;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-[Collection(nameof(CommonCollectionFixture))]
-public class UpdateUserCommandBackgroundServiceTests : CommandBackgroundServiceTests
+[Collection(nameof(IntegrationTestWebAppFactoryFixture))]
+public class UpdateUserCommandBackgroundServiceTests : IAsyncLifetime
 {
     private readonly Fixture _fixture;
 
-    public UpdateUserCommandBackgroundServiceTests(CommonFixture classFixture) : base(classFixture)
+    private readonly IntegrationTestWebAppFactory _integrationTestWebAppFactory;
+
+    private readonly HttpClient _httpClient;
+
+    private readonly JsonSerializerOptions _options = new JsonSerializerOptions
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+        PropertyNameCaseInsensitive = true
+    };
+
+    public UpdateUserCommandBackgroundServiceTests(IntegrationTestWebAppFactory integrationTestWebAppFactory)
     {
         _fixture = new Fixture();
 
-        _queues.Add("UpdateUserCommand");
-        _queues.Add("UpdateUserEvent");
-        _queues.Add("UpdateUserProjectionEvent");
-        _queues.Add("Event");
+        _integrationTestWebAppFactory = integrationTestWebAppFactory;
+
+        _httpClient = _integrationTestWebAppFactory.CreateClient();
     }
 
-    private static Expression<Func<TEntity, bool>> GetPredicate<TEntity>(Guid id) where TEntity : Entity => x => x.Id == id;
-
-    private static Expression<Func<User, bool>> GetPredicate(UpdateUserCommand command)
+    public async Task DisposeAsync()
     {
-        var predicate = GetPredicate<User>(command.Id);
-
-        return predicate.And(x => x.Name == command.Name &&
-            x.Number == command.Number &&
-            x.Birthday == command.Birthday &&
-            x.LicenseNumber == command.LicenseNumber &&
-            x.LicenseType == (Entities.Types.LicenseType)command.LicenseType);
+        await _integrationTestWebAppFactory.ResetDatabaseAsync();
     }
 
-    private static Expression<Func<UserProjection, bool>> GetProjectionPredicate(UpdateUserCommand command)
+    public Task InitializeAsync()
     {
-        var predicate = GetPredicate<UserProjection>(command.Id);
-
-        return predicate.And(x => x.Name == command.Name &&
-            x.Number == command.Number &&
-            x.Birthday == command.Birthday &&
-            x.LicenseNumber == command.LicenseNumber &&
-            x.LicenseType == (Entities.Types.LicenseType)command.LicenseType);
+        return Task.CompletedTask;
     }
 
-    [Fact]
-    public async Task SendUpdateUserCommandVerifyEntityAndProjectionAreUpdated()
+    [Theory(DisplayName = $"{nameof(UpdateUserCommandBackgroundServiceTests)}.{nameof(SendUpdateUserCommandVerifyEventStatusAndStatusCode)}")]
+    [ClassData(typeof(UpdateUserCommandBackgroundServiceTestData))]
+    public async Task SendUpdateUserCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
+        HttpStatusCode statusCode,
+        IEnumerable<User> entities,
+        UpdateUserCommand command)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
-        var userRepository = _classFixture
-            .GetRequiredService<IRepository<User>>();
+        foreach (var entity in entities)
+        {
+            _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 
-        var entity = _fixture
-            .Build<User>()
-            .Create(); 
+            _ = await _integrationTestWebAppFactory.SaveProjectionAsync(entity.ToProjection());
+        }
 
-        await userRepository.CreateAsync(entity, cancellationTokenSource.Token);
+        var json = JsonSerializer.Serialize(command);
 
-        var command = _fixture
-            .Build<UpdateUserCommand>()
-                .With(x => x.Id, entity.Id)
-            .Create();
+		var httpContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
 
+        var response = await _httpClient.PutAsync("/api/user/", httpContent, cancellationToken: cancellationTokenSource.Token);
 
-        entity.Name = command.Name!;
-        entity.Number = command.Number!;
-        entity.Birthday = command.Birthday ?? DateTime.Now;
-        entity.LicenseNumber = command.LicenseNumber!;
-        entity.LicenseType = (Entities.Types.LicenseType) command.LicenseType!;
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationTokenSource.Token);
 
-        await _classFixture.GetRequiredService<IPublisher>()
-            .PublishCommandAsync(command, cancellationTokenSource.Token);
+        var commandResponse = JsonSerializer.Deserialize<Rent.Vehicles.Api.Responses.CommandResponse>(responseBody, _options);
 
-        await _classFixture.GetRequiredService<UpdateUserCommandBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserProjectionEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        var commandDataService = _classFixture
-            .GetRequiredService<ICommandDataService>();
-
-        var entityDataService = _classFixture
-            .GetRequiredService<IUserDataService>();
-
-        var projectionDataService = _classFixture
-            .GetRequiredService<IUserProjectionDataService>();
+        var location = response?.Headers?.Location?.ToString();
 
         var found = false;
 
         do
         {
-            var commandResult = await commandDataService
-                .GetAsync(x => x.SagaId == command.SagaId);
+            var locationResponse = await _httpClient.GetAsync(location, cancellationToken: cancellationTokenSource.Token);
 
-            var entityResult = await entityDataService
-                .GetAsync(GetPredicate(command));
+            IList<EventResponse> events = [];
 
-            var projectionResult = await projectionDataService
-                .GetAsync(GetProjectionPredicate(command));
+            if(locationResponse.StatusCode == HttpStatusCode.OK)
+            {
+                var locationResponseBody = await locationResponse.Content.ReadAsStringAsync(cancellationTokenSource.Token);
+                events = JsonSerializer.Deserialize<IList<EventResponse>>(locationResponseBody, _options) ?? [];
+            }
 
-            DateTime commandBirthday = command.Birthday ?? DateTime.Now;
+            var entityResponse = await _httpClient.GetAsync($"/api/user/{commandResponse?.Id.ToString()}", cancellationToken: cancellationTokenSource.Token);
 
-            found = commandResult.IsSuccess &&
-                entityResult.IsSuccess &&
-                entityResult.Value!.Name == command.Name &&
-                entityResult.Value!.Number == command.Number &&
-                entityResult.Value!.Birthday.Date == commandBirthday.Date &&
-                entityResult.Value!.LicenseNumber == command.LicenseNumber &&
-                entityResult.Value!.LicenseType == (Entities.Types.LicenseType) command.LicenseType &&
-                projectionResult.IsSuccess &&
-                projectionResult.Value!.Name == command.Name &&
-                projectionResult.Value!.Number == command.Number &&
-                projectionResult.Value!.Birthday.Date == commandBirthday.Date &&
-                projectionResult.Value!.LicenseNumber == command.LicenseNumber &&
-                projectionResult.Value!.LicenseType == (Entities.Types.LicenseType) command.LicenseType;
+            found = events.GroupBy(v => v.SagaId)
+                .Where(g => g.Count() == tuples.Length)
+                .SelectMany(x => x.ToArray())
+                    .AllOrFalseIfEmpty(x => tuples.Any(y => y.Item1 == x.Name && y.Item2 == x.StatusType )) &&
+                entityResponse.StatusCode == statusCode;
 
             await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
         } while (!found && !cancellationTokenSource.IsCancellationRequested);
@@ -148,173 +131,6 @@ public class UpdateUserCommandBackgroundServiceTests : CommandBackgroundServiceT
         // Assert
         found.Should().BeTrue();
 
-        await _classFixture.GetRequiredService<UpdateUserProjectionEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-        
-        await _classFixture.GetRequiredService<UpdateUserCommandBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-    }
-
-    [Fact]
-    public async Task SendUpdateUserCommandWithSameNumberVerifyEntityAndEventFail()
-    {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
-
-        var entityRepository = _classFixture
-            .GetRequiredService<IRepository<User>>();
-
-        var entity = _fixture
-            .Build<User>()
-            .Create(); 
-
-        await entityRepository.CreateAsync(entity, cancellationTokenSource.Token);
-
-        var number = entity.Number;
-
-        entity = _fixture
-            .Build<User>()
-            .Create(); 
-
-        await entityRepository.CreateAsync(entity, cancellationTokenSource.Token);
-
-        var command = _fixture
-            .Build<UpdateUserCommand>()
-                .With(x => x.Id, entity.Id)
-                .With(x => x.Number, number)
-            .Create();
-
-        await _classFixture.GetRequiredService<IPublisher>()
-            .PublishCommandAsync(command, cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserCommandBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<EventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        var commandDataService = _classFixture
-            .GetRequiredService<ICommandDataService>();
-
-        var eventDataService = _classFixture
-            .GetRequiredService<IEventDataService>();
-
-        var found = false;
-
-        do
-        {
-            var commandResult = await commandDataService
-                .GetAsync(x => x.SagaId == command.SagaId);
-
-            var eventResult = await eventDataService
-                .GetAsync(x => x.SagaId == command.SagaId && 
-                    x.StatusType == Entities.Types.StatusType.Fail &&
-                    x.Message.Contains("Error on Validate") &&
-                    x.Name == typeof(UpdateUserEvent).Name);
-
-            found = commandResult.IsSuccess &&
-                eventResult.IsSuccess;
-
-            await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
-        } while (!found && !cancellationTokenSource.IsCancellationRequested);
-
-        // Assert
-        found.Should().BeTrue();
-
-        await _classFixture.GetRequiredService<EventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-        
-        await _classFixture.GetRequiredService<UpdateUserCommandBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-    }
-
-    [Fact]
-    public async Task SendUpdateUserCommandWithSameLicenseNumberVerifyEntityAndEventFail()
-    {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
-
-        var entityRepository = _classFixture
-            .GetRequiredService<IRepository<User>>();
-
-        var entity = _fixture
-            .Build<User>()
-            .Create(); 
-
-        await entityRepository.CreateAsync(entity, cancellationTokenSource.Token);
-
-        var licenseNumber = entity.LicenseNumber;
-
-        entity = _fixture
-            .Build<User>()
-            .Create(); 
-
-        await entityRepository.CreateAsync(entity, cancellationTokenSource.Token);
-
-        var command = _fixture
-            .Build<UpdateUserCommand>()
-                .With(x => x.Id, entity.Id)
-                .With(x => x.LicenseNumber, licenseNumber)
-            .Create();
-
-        await _classFixture.GetRequiredService<IPublisher>()
-            .PublishCommandAsync(command, cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserCommandBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserEventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<EventBackgroundService>()
-            .StartAsync(cancellationTokenSource.Token);
-
-        var commandDataService = _classFixture
-            .GetRequiredService<ICommandDataService>();
-
-        var eventDataService = _classFixture
-            .GetRequiredService<IEventDataService>();
-
-        var found = false;
-
-        do
-        {
-            var commandResult = await commandDataService
-                .GetAsync(x => x.SagaId == command.SagaId);
-
-            var eventResult = await eventDataService
-                .GetAsync(x => x.SagaId == command.SagaId && 
-                    x.StatusType == Entities.Types.StatusType.Fail &&
-                    x.Message.Contains("Error on Validate") &&
-                    x.Name == typeof(UpdateUserEvent).Name);
-
-            found = commandResult.IsSuccess &&
-                eventResult.IsSuccess;
-
-            await periodicTimer.WaitForNextTickAsync(cancellationTokenSource.Token);
-        } while (!found && !cancellationTokenSource.IsCancellationRequested);
-
-        // Assert
-        found.Should().BeTrue();
-
-        await _classFixture.GetRequiredService<EventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-
-        await _classFixture.GetRequiredService<UpdateUserEventBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
-        
-        await _classFixture.GetRequiredService<UpdateUserCommandBackgroundService>()
-            .StopAsync(cancellationTokenSource.Token);
+        response?.StatusCode.Should().Be(HttpStatusCode.Accepted);
     }
 }

@@ -66,12 +66,12 @@ public class UpdateVehiclesCommandBackgroundServiceTestData : IEnumerable<object
                     .With(x => x.IsRented, false)    
                 .Create();
 
-            var entityHasExist = _fixture.Build<Vehicle>()
+            var entityHasCreated = _fixture.Build<Vehicle>()
                 .Create();
             
             var command = _fixture.Build<UpdateVehiclesCommand>()
                     .With(x => x.Id, entity.Id)
-                    .With(x => x.LicensePlate, entityHasExist.LicensePlate)
+                    .With(x => x.LicensePlate, entityHasCreated.LicensePlate)
                 .Create();
 
             return new object[] 
@@ -80,7 +80,7 @@ public class UpdateVehiclesCommandBackgroundServiceTestData : IEnumerable<object
                     Tuple.Create(nameof(UpdateVehiclesEvent), StatusType.Fail),
                 },
                 HttpStatusCode.OK,
-                new Vehicle[]{entity, entityHasExist},
+                new Vehicle[]{entity, entityHasCreated},
                 command
             };
         })();
