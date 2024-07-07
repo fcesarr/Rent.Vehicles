@@ -25,6 +25,8 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     private readonly string _guid;
 
+    private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 10);
+
     protected HandlerMessageBackgroundService(ILogger<HandlerMessageBackgroundService<TEventToConsume>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
@@ -56,7 +58,9 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     {
         // while (await _periodicTimer.WaitForNextTickAsync(cancellationToken))
         while (!cancellationToken.IsCancellationRequested)
-        {
+        {   
+            await _semaphoreSlim.WaitAsync(cancellationToken);
+            
             ConsumerResponse? consumerResponse = default;
             try
             {
@@ -101,6 +105,10 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
             catch (Exception ex)
             {
                 await TreatNoRetryExceptionAsync(consumerResponse, ex, cancellationToken);
+            }
+            finally
+            {
+                _semaphoreSlim.Release();
             }
         }
     }

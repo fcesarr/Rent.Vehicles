@@ -198,7 +198,7 @@ public static class ServiceExtensions
             => services.AddLogging(configure => {
                 var loggerConfiguration = new LoggerConfiguration()
                     .ReadFrom.Configuration(configuration);
-
-                configure.AddSerilog(loggerConfiguration.CreateLogger(), true);
+                configure.AddConsole();
+                //configure.AddSerilog(loggerConfiguration.CreateLogger(), true);
             });
 }

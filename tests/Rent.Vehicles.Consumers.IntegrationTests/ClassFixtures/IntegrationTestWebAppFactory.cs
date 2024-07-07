@@ -36,19 +36,7 @@ public class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsy
             })
             .ConfigureServices((context, services) =>
             {
-                    // Remova a configuração existente, se necessário
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(IRepository<Vehicle>));
-
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
-            
-                var configuration = context.Configuration;
-
-                services.AddServicesTests(configuration);
-
+                services.AddServicesTests(context.Configuration);   
             });
         base.ConfigureWebHost(builder);
     }

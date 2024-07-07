@@ -20,11 +20,11 @@ public class VehicleValidator : Validator<Vehicle>, IVehicleValidator
                 return entity is null;
             }).WithMessage("Veiculo com placa já cadastrada");
 
-        RuleFor(x => x.IsRented)
-            .MustAsync(async (e, IsRented, cancellationToken) => {
+        RuleFor(x => x)
+            .MustAsync(async (e, cancellationToken) => {
                 
                 var entity = await repository.GetAsync(x => x.Id == e.Id &&
-                    x.IsRented == IsRented,
+                    x.IsRented,
                 cancellationToken: cancellationToken);
                 
                 return entity is null;
