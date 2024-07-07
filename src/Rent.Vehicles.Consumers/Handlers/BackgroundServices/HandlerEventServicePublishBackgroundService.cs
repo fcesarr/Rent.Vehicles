@@ -19,7 +19,8 @@ public abstract class
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher)
+        IOptions<ConsumerSetting> consumerSetting,
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, consumerSetting)
     {
         _serviceScopeFactory = serviceScopeFactory;
     }

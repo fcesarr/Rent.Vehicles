@@ -17,7 +17,8 @@ public class EventProjectionEventBackgroundService : HandlerEventBackgroundServi
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer)
+        IServiceScopeFactory serviceScopeFactory,
+        IOptions<ConsumerSetting> consumerSetting) : base(logger, channel, periodicTimer, serializer, consumerSetting)
     {
         _serviceScopeFactory = serviceScopeFactory;
     }

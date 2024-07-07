@@ -1,4 +1,5 @@
 
+using Rent.Vehicles.Consumers.Settings;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib;
 using Rent.Vehicles.Lib.Interfaces;
@@ -17,7 +18,8 @@ public abstract class
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IPublisher publisher) : base(logger, channel, periodicTimer, serializer, publisher)
+        IPublisher publisher,
+        IOptions<ConsumerSetting> consumerSetting) : base(logger, channel, periodicTimer, serializer, publisher, consumerSetting)
     {
     }
 

@@ -20,8 +20,9 @@ public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEv
         ISerializer serializer,
         IServiceProvider serviceProvider,
         IPublisher publisher,
+        IOptions<ConsumerSetting> consumerSetting,
         IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
-        serviceScopeFactory)
+            consumerSetting, serviceScopeFactory)
     {
     }
 

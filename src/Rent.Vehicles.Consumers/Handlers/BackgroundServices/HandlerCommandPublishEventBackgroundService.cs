@@ -1,4 +1,7 @@
 
+using Microsoft.Extensions.Options;
+
+using Rent.Vehicles.Consumers.Settings;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib;
 using Rent.Vehicles.Lib.Interfaces;
@@ -22,7 +25,8 @@ public abstract class
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher)
+        IOptions<ConsumerSetting> consumerSetting,
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, consumerSetting)
     {
         _serviceScopeFactory = serviceScopeFactory;
     }

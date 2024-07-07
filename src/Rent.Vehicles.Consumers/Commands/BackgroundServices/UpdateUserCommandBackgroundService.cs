@@ -17,7 +17,14 @@ public class UpdateUserCommandBackgroundService : HandlerCommandPublishEventBack
     UpdateUserCommand,
     UpdateUserEvent>
 {
-    public UpdateUserCommandBackgroundService(ILogger<HandlerCommandPublishEventBackgroundService<UpdateUserCommand, UpdateUserEvent>> logger, IConsumer channel, IPeriodicTimer periodicTimer, ISerializer serializer, IPublisher publisher, IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, serviceScopeFactory)
+    public UpdateUserCommandBackgroundService(ILogger<HandlerCommandPublishEventBackgroundService<UpdateUserCommand, UpdateUserEvent>> logger,
+        IConsumer channel,
+        IPeriodicTimer periodicTimer,
+        ISerializer serializer,
+        IPublisher publisher,
+        IOptions<ConsumerSetting> consumerSetting,
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
+            consumerSetting, serviceScopeFactory)
     {
     }
 

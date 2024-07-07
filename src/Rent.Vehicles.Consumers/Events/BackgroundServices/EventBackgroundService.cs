@@ -22,7 +22,8 @@ public class EventBackgroundService : HandlerEventBackgroundService<Event>
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer)
+        IServiceScopeFactory serviceScopeFactory,
+        IOptions<ConsumerSetting> consumerSetting) : base(logger, channel, periodicTimer, serializer, consumerSetting)
     {
         _publisher = publisher;
         _serviceScopeFactory = serviceScopeFactory;
