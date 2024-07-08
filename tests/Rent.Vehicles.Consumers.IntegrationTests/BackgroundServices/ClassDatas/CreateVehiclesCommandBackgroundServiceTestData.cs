@@ -37,6 +37,8 @@ public class CreateVehiclesCommandBackgroundServiceTestData : IEnumerable<object
                 HttpStatusCode.OK,
                 Array.Empty<Vehicle>(),
                 command,
+                "/api/vehicle/",
+                $"/api/vehicle/{command.LicensePlate}"
             };
         })();
         yield return new Func<object[]>(() => {
@@ -52,6 +54,8 @@ public class CreateVehiclesCommandBackgroundServiceTestData : IEnumerable<object
                 HttpStatusCode.OK,
                 Array.Empty<Vehicle>(),
                 command,
+                "/api/vehicle/",
+                $"/api/vehicle/{command.LicensePlate}"
             };
         })();
         yield return new Func<object[]>(() => {
@@ -69,6 +73,8 @@ public class CreateVehiclesCommandBackgroundServiceTestData : IEnumerable<object
                 HttpStatusCode.NotFound,
                 new Vehicle[]{entity},
                 command,
+                "/api/vehicle/",
+                $"/api/vehicle/{command.LicensePlate}"
             };
         })();
     }

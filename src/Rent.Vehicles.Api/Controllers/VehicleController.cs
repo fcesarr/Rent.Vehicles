@@ -102,24 +102,6 @@ public class VehicleController : Controller
         return Results.Accepted(GetLocationUri(command.SagaId), new CommandResponse(command.Id));
     }
 
-    [HttpGet("{id:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VehicleResponse))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IResult> GetAsync([FromRoute] Guid id,
-        CancellationToken cancellationToken = default)
-    {
-        var entity = await _vehicleProjectionFacade.GetAsync(x => x.Id == id, cancellationToken);
-
-        if (!entity.IsSuccess)
-        {
-            return entity.Exception!.TreatExceptionToResult(HttpContext);
-        }
-
-        return Results.Ok(entity.Value);
-    }
-
     [HttpGet("{licensePlate}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VehicleProjection))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ProblemDetails))]

@@ -32,7 +32,9 @@ public class DeleteVehiclesCommandBackgroundServiceTestData : IEnumerable<object
                     Tuple.Create(nameof(DeleteVehiclesProjectionEvent), StatusType.Success),
                 },
                 HttpStatusCode.NotFound,
-                entity
+                entity,
+                $"/api/vehicle/{entity.Id.ToString()}",
+                $"/api/vehicle/{entity.LicensePlate}"
             };
         })();
         yield return new Func<object[]>(() => {
@@ -45,7 +47,9 @@ public class DeleteVehiclesCommandBackgroundServiceTestData : IEnumerable<object
                     Tuple.Create(nameof(DeleteVehiclesEvent), StatusType.Fail)
                 },
                 HttpStatusCode.OK,
-                entity
+                entity,
+                $"/api/vehicle/{entity.Id.ToString()}",
+                $"/api/vehicle/{entity.LicensePlate}"
             };
         })();
     }

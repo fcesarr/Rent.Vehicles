@@ -78,7 +78,9 @@ public class UpdateUserCommandBackgroundServiceTests : IAsyncLifetime
     public async Task SendUpdateUserCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
         IEnumerable<User> entities,
-        UpdateUserCommand command)
+        UpdateUserCommand command,
+        string endpointAction,
+        string endpointGet)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
@@ -95,7 +97,7 @@ public class UpdateUserCommandBackgroundServiceTests : IAsyncLifetime
 
 		var httpContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
 
-        var response = await _httpClient.PutAsync("/api/user/", httpContent, cancellationToken: cancellationTokenSource.Token);
+        var response = await _httpClient.PutAsync(endpointAction, httpContent, cancellationToken: cancellationTokenSource.Token);
 
         var responseBody = await response.Content.ReadAsStringAsync(cancellationTokenSource.Token);
 
@@ -117,7 +119,7 @@ public class UpdateUserCommandBackgroundServiceTests : IAsyncLifetime
                 events = JsonSerializer.Deserialize<IList<EventResponse>>(locationResponseBody, _options) ?? [];
             }
 
-            var entityResponse = await _httpClient.GetAsync($"/api/user/{commandResponse?.Id.ToString()}", cancellationToken: cancellationTokenSource.Token);
+            var entityResponse = await _httpClient.GetAsync(endpointGet, cancellationToken: cancellationTokenSource.Token);
 
             found = events.GroupBy(v => v.SagaId)
                 .Where(g => g.Count() == tuples.Length)

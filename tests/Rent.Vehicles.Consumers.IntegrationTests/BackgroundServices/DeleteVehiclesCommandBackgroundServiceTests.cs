@@ -77,7 +77,9 @@ public class DeleteVehiclesCommandBackgroundServiceTests : IAsyncLifetime
     [ClassData(typeof(DeleteVehiclesCommandBackgroundServiceTestData))]
     public async Task SendDeleteVehiclesCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        Vehicle entity)
+        Vehicle entity,
+        string endpointAction,
+        string endpointGet)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
@@ -87,7 +89,7 @@ public class DeleteVehiclesCommandBackgroundServiceTests : IAsyncLifetime
 
         _ = await _integrationTestWebAppFactory.SaveAsync(entity.ToProjection<VehicleProjection>());
 
-        var response = await _httpClient.DeleteAsync($"/api/vehicle/{entity.Id.ToString()}", cancellationToken: cancellationTokenSource.Token);
+        var response = await _httpClient.DeleteAsync(endpointAction, cancellationToken: cancellationTokenSource.Token);
 
         var responseBody = await response.Content.ReadAsStringAsync(cancellationTokenSource.Token);
 
@@ -109,7 +111,7 @@ public class DeleteVehiclesCommandBackgroundServiceTests : IAsyncLifetime
                 events = JsonSerializer.Deserialize<IList<EventResponse>>(locationResponseBody, _options) ?? [];
             }
 
-            var entityResponse = await _httpClient.GetAsync($"/api/vehicle/{commandResponse?.Id.ToString()}", cancellationToken: cancellationTokenSource.Token);
+            var entityResponse = await _httpClient.GetAsync(endpointGet, cancellationToken: cancellationTokenSource.Token);
 
             found = events.GroupBy(v => v.SagaId)
                 .Where(g => g.Count() == tuples.Length)

@@ -39,7 +39,8 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.OK,
                 Array.Empty<User>(),
-                command
+                command,
+                "/api/user/"
             };
         })().GetAwaiter().GetResult();
         yield return new Func<Task<object[]>>(async () => {
@@ -58,7 +59,8 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.OK,
                 Array.Empty<User>(),
-                command
+                command,
+                "/api/user/"
             };
         })().GetAwaiter().GetResult();
         yield return new Func<Task<object[]>>(async () => {
@@ -75,7 +77,8 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.NotFound,
                 Array.Empty<User>(),
-                command
+                command,
+                "/api/user/"
             };
         })().GetAwaiter().GetResult();
         yield return new Func<Task<object[]>>(async () => {
@@ -94,7 +97,8 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.NotFound,
                 new User[]{entity},
-                command
+                command,
+                "/api/user/"
             };
         })().GetAwaiter().GetResult();
         yield return new Func<Task<object[]>>(async () => {
@@ -113,7 +117,8 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.NotFound,
                 new User[]{entity},
-                command
+                command,
+                "/api/user/"
             };
         })().GetAwaiter().GetResult();
         yield return new Func<Task<object[]>>(async () => {
@@ -132,7 +137,8 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.NotFound,
                 new User[]{entity},
-                command
+                command,
+                "/api/user/"
             };
         })().GetAwaiter().GetResult();
         yield return new Func<Task<object[]>>(async () => {
@@ -151,7 +157,8 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.NotFound,
                 new User[]{entity},
-                command
+                command,
+                "/api/user/"
             };
         })().GetAwaiter().GetResult();
     }

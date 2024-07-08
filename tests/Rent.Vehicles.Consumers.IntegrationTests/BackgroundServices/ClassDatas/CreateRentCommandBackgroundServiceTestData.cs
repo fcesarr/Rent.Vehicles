@@ -44,6 +44,7 @@ public class CreateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                 HttpStatusCode.OK,
                 new Entity[]{ user, rentPlane, vehicle },
                 command,
+                "/api/rent/"
             };
         })();
         yield return new Func<object[]>(() => {
@@ -67,6 +68,7 @@ public class CreateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                 HttpStatusCode.NotFound,
                 new Entity[]{ user, rentPlane, vehicle },
                 command,
+                "/api/rent/"
             };
         })();
         yield return new Func<object[]>(() => {
@@ -87,6 +89,7 @@ public class CreateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                 HttpStatusCode.NotFound,
                 new Entity[]{ rentPlane, vehicle },
                 command,
+                "/api/rent/"
             };
         })();
         yield return new Func<object[]>(() => {
@@ -106,6 +109,7 @@ public class CreateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                 HttpStatusCode.NotFound,
                 new Entity[]{ user, rentPlane },
                 command,
+                "/api/rent/"
             };
         })();
         yield return new Func<object[]>(() => {
@@ -128,6 +132,7 @@ public class CreateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                 HttpStatusCode.NotFound,
                 new Entity[]{ user, vehicle },
                 command,
+                "/api/rent/"
             };
         })();
     }

@@ -40,7 +40,9 @@ public class UpdateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.OK,
                 new User[]{entity},
-                command
+                command,
+                "/api/user/",
+                $"/api/user/{command?.Id.ToString()}"
             };
         })();
         yield return new Func<object[]>(() => 
@@ -63,7 +65,9 @@ public class UpdateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.OK,
                 new User[]{entity, entityHasCreated},
-                command
+                command,
+                "/api/user/",
+                $"/api/user/{entityHasCreated.Id.ToString()}"
             };
         })();
         yield return new Func<object[]>(() => 
@@ -86,7 +90,9 @@ public class UpdateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 },
                 HttpStatusCode.OK,
                 new User[]{entity, entityHasCreated},
-                command
+                command,
+                "/api/user/",
+                $"/api/user/{entityHasCreated.Id.ToString()}"
             };
         })();
     }

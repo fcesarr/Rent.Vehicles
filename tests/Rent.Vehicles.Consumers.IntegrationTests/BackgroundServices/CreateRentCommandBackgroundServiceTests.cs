@@ -78,7 +78,8 @@ public class CreateRentCommandBackgroundServiceTests : IAsyncLifetime
     public async Task SendCreateRentCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
         IEnumerable<dynamic> entities,
-        CreateRentCommand command)
+        CreateRentCommand command,
+        string endpointAction)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
@@ -93,7 +94,7 @@ public class CreateRentCommandBackgroundServiceTests : IAsyncLifetime
 
 		var httpContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
 
-        var response = await _httpClient.PostAsync("/api/rent/", httpContent, cancellationToken: cancellationTokenSource.Token);
+        var response = await _httpClient.PostAsync(endpointAction, httpContent, cancellationToken: cancellationTokenSource.Token);
 
         var responseBody = await response.Content.ReadAsStringAsync(cancellationTokenSource.Token);
 
@@ -115,7 +116,7 @@ public class CreateRentCommandBackgroundServiceTests : IAsyncLifetime
                 events = JsonSerializer.Deserialize<IList<EventResponse>>(locationResponseBody, _options) ?? [];
             }
 
-            var entityResponse = await _httpClient.GetAsync($"/api/rent/{commandResponse?.Id.ToString()}", cancellationToken: cancellationTokenSource.Token);
+            var entityResponse = await _httpClient.GetAsync($"{endpointAction}{commandResponse?.Id.ToString()}", cancellationToken: cancellationTokenSource.Token);
 
             found = events.GroupBy(v => v.SagaId)
                 .Where(g => g.Count() == tuples.Length)

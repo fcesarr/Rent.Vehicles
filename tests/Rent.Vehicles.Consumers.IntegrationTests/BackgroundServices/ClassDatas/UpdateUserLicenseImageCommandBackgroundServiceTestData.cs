@@ -42,7 +42,9 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTestData : IEnumerabl
                 },
                 HttpStatusCode.OK,
                 new User[]{entity},
-                command
+                command,
+                "/api/user/upload/licenseImage",
+                $"/api/user/{command.Id.ToString()}"
             };
         })().GetAwaiter().GetResult();
         yield return new Func<Task<object[]>>(async () => 
@@ -64,7 +66,9 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTestData : IEnumerabl
                 },
                 HttpStatusCode.OK,
                 new User[]{entity},
-                command
+                command,
+                "/api/user/upload/licenseImage",
+                $"/api/user/{command.Id.ToString()}"
             };
         })().GetAwaiter().GetResult();
         yield return new Func<Task<object[]>>(async () => 
@@ -84,7 +88,9 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTestData : IEnumerabl
                 },
                 HttpStatusCode.OK,
                 new User[]{entity},
-                command
+                command,
+                "/api/user/upload/licenseImage",
+                $"/api/user/{command.Id.ToString()}"
             };
         })().GetAwaiter().GetResult();
     }
