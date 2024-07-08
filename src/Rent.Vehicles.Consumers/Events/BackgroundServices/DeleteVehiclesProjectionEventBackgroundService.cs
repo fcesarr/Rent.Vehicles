@@ -18,8 +18,9 @@ public class DeleteVehiclesProjectionEventBackgroundService : HandlerEventServic
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
+        IOptions<ConsumerSetting> consumerSetting,
         IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
-        serviceScopeFactory)
+            consumerSetting, serviceScopeFactory)
     {
     }
 

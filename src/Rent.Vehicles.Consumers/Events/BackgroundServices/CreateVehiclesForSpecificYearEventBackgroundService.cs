@@ -20,7 +20,8 @@ public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerEventP
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
-        IPublisher publisher) : base(logger, channel, periodicTimer, serializer, publisher)
+        IPublisher publisher,
+        IOptions<ConsumerSetting> consumerSetting) : base(logger, channel, periodicTimer, serializer, publisher, consumerSetting)
     {
     }
 

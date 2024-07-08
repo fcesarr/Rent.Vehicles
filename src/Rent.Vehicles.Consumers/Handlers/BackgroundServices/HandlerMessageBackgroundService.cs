@@ -1,4 +1,8 @@
 
+using Microsoft.Extensions.Options;
+
+using Rent.Vehicles.Consumers.Settings;
+using Rent.Vehicles.Consumers.Types;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib;
 using Rent.Vehicles.Lib.Extensions;
@@ -15,6 +19,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     where TEventToConsume : Message
 {
     protected readonly IConsumer _channel;
+    
     protected readonly ILogger<HandlerMessageBackgroundService<TEventToConsume>> _logger;
 
     private readonly IPeriodicTimer _periodicTimer;
@@ -23,24 +28,40 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     protected readonly ISerializer _serializer;
 
+    private readonly ConsumerSetting _consumerSetting;
+
     private readonly string _guid;
 
     private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 10);
+    
+    protected abstract ConsumerType _type { get; }
 
     protected HandlerMessageBackgroundService(ILogger<HandlerMessageBackgroundService<TEventToConsume>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
-        ISerializer serializer)
+        ISerializer serializer,
+        IOptions<ConsumerSetting> consumerSetting)
     {
         _logger = logger;
         _channel = channel;
         _periodicTimer = periodicTimer;
         _serializer = serializer;
+        _consumerSetting = consumerSetting.Value;
         _guid = Guid.NewGuid().ToString();
     }
 
     public override Task StartAsync(CancellationToken cancellationToken)
     {
+        if(_consumerSetting.Type != ConsumerType.Both &&
+            _consumerSetting.Type != _type)
+            return Task.CompletedTask;
+        
+        if(!_consumerSetting.ToIncluded.Any() && _consumerSetting.ToExcluded.Contains(typeof(TEventToConsume).Name))
+            return Task.CompletedTask;
+        
+        if(!_consumerSetting.ToExcluded.Any() && _consumerSetting.ToIncluded.Any() && !_consumerSetting.ToIncluded.Contains(typeof(TEventToConsume).Name))
+            return Task.CompletedTask;
+
         _channel.SubscribeAsync(typeof(TEventToConsume).Name, cancellationToken);
 
         _logger.LogInformation("StartAsync {ClassName}: {Guid}", this.GetType().Name, _guid);

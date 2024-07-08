@@ -15,9 +15,13 @@ public class UpdateUserLicenseImageEventBackgroundService : HandlerEventServiceP
     UpdateUserLicenseImageEvent>
 {
     public UpdateUserLicenseImageEventBackgroundService(ILogger<UpdateUserLicenseImageEventBackgroundService> logger,
-        IConsumer channel, IPeriodicTimer periodicTimer, ISerializer serializer, IPublisher publisher,
+        IConsumer channel, 
+        IPeriodicTimer periodicTimer, 
+        ISerializer serializer, 
+        IPublisher publisher,
+        IOptions<ConsumerSetting> consumerSetting,
         IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
-        serviceScopeFactory)
+            consumerSetting, serviceScopeFactory)
     {
     }
 

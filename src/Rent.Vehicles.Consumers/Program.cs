@@ -32,178 +32,224 @@ using Rent.Vehicles.Lib.Extensions;
 using Serilog;
 using System.Reflection;
 using System.Diagnostics;
+using System.CommandLine;
+using Rent.Vehicles.Consumers.Types;
+using Rent.Vehicles.Consumers.Settings;
 
-var builder = WebApplication.CreateBuilder(args);
+var rootCommand = new RootCommand("Sample command-line app");
 
-builder.Host.UseSerilog((hostBuilderContext, loggerConfiguration) =>
+var consumerTypeOption = new Option<ConsumerType>(
+	new string[] {"-t", "--type"},
+	description: "Type of consumer",
+	getDefaultValue: () => ConsumerType.Both);
+
+rootCommand.AddOption(consumerTypeOption);
+
+var bufferSizeOption = new Option<int>(
+	new string[] {"-s", "--size"},
+	description: "Buffer Size",
+	getDefaultValue: () => 5);
+
+rootCommand.AddOption(bufferSizeOption);
+
+var toExcludedOption = new Option<IEnumerable<string>>(
+	new string[] {"-e", "--excluded"},
+	description: "To Excluded",
+	getDefaultValue: () => []);
+
+rootCommand.AddOption(toExcludedOption);
+
+var toIncludedOption = new Option<IEnumerable<string>>(
+	new string[] {"-i", "--included"},
+	description: "To Included",
+	getDefaultValue: () => []);
+
+rootCommand.AddOption(toIncludedOption);
+
+rootCommand.SetHandler(async (consumerType, bufferSize, toExcluded, toIncluded) =>
 {
-	var assembly = Assembly.GetExecutingAssembly();
-	var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-	var version = fvi.FileVersion;
+    var builder = WebApplication.CreateBuilder();
 
-	loggerConfiguration.ReadFrom.Configuration(hostBuilderContext.Configuration)
-		.Enrich.WithProperty("Version", version);
-});
-
-builder.Services.AddRouting(options => options.LowercaseUrls = true);
-
-builder.Services
-    .AddCustomHealthCheck(builder.Configuration)
-    .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
-                                                            string.Empty)
-    .AddTransient<IPeriodicTimer>(service =>
+    builder.Host.UseSerilog((hostBuilderContext, loggerConfiguration) =>
     {
-        PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(500));
+        var assembly = Assembly.GetExecutingAssembly();
+        var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+        var version = fvi.FileVersion;
 
-        return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
-    })
-    // UserProjection
-    .AddProjectionDomain<UserProjection,
-        IUserProjectionDataService,
-        UserProjectionDataService,
-        IUserProjectionFacade,
-        UserProjectionFacade>()
-    // UserProjection
-    // VehicleProjection
-    .AddProjectionDomain<VehicleProjection,
-        IVehicleProjectionDataService,
-        VehicleProjectionDataService,
-        IVehicleProjectionFacade,
-        VehicleProjectionFacade>()
-    // VehicleProjection
-    // VehiclesForSpecificYearProjection
-    .AddProjectionDomain<VehiclesForSpecificYearProjection,
-        IVehiclesForSpecificYearProjectionDataService,
-        VehiclesForSpecificYearProjectionDataService,
-        IVehiclesForSpecificYearProjectionFacade,
-        VehiclesForSpecificYearProjectionFacade>()
-    // VehiclesForSpecificYearProjection
-    // RentProjection
-    .AddProjectionDomain<RentProjection,
-        IRentProjectionDataService,
-        RentProjectionDataService,
-        IRentProjectionFacade,
-        RentProjectionFacade>()
-    // RentProjection
-    // EventProjection
-    .AddProjectionDomain<EventProjection,
-        IEventProjectionDataService,
-        EventProjectionDataService,
-        IEventProjectionFacade,
-        EventProjectionFacade>()
-    // EventProjection
-    // Event
-    .AddDataDomain<Event,
-        IEventValidator,
-        EventValidator,
-        IEventDataService,
-        EventDataService,
-        IEventFacade,
-        EventFacade>()
-    // Event
-    // Command
-    .AddDataDomain<Command,
-        ICommandValidator,
-        CommandValidator,
-        ICommandDataService,
-        CommandDataService,
-        ICommandFacade,
-        CommandFacade>()
-    // Command
-    // Vehicle
-    .AddDataDomain<Vehicle,
-        IVehicleValidator,
-        VehicleValidator,
-        IVehicleDataService,
-        VehicleDataService,
-        IVehicleFacade,
-        VehicleFacade>()
-    // Vehicle
-    // User
-    .AddDataDomain<User,
-        IUserValidator,
-        UserValidator,
-        IUserDataService,
-        UserDataService,
-        IUserFacade,
-        UserFacade>()
-    // User
-    // Rent
-    .AddDataDomain<Rent.Vehicles.Entities.Rent,
-        IRentValidator,
-        RentValidator,
-        IRentDataService,
-        RentDataService,
-        IRentFacade,
-        RentFacade>()
-    // Rent
-    // RentPlane
-    .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
-    // RentPlane
-    .AddSingleton<IUploadService, FileUploadService>()
-    .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
-    .AddSingleton<IMongoDatabase>(service =>
+        loggerConfiguration.ReadFrom.Configuration(hostBuilderContext.Configuration)
+            .Enrich.WithProperty("Version", version);
+    });
+
+    builder.Services.Configure<ConsumerSetting>(options =>
     {
-        var configuration = service.GetRequiredService<IConfiguration>();
+        options.Type = consumerType;
+        options.BufferSize = bufferSize;
+        options.ToExcluded = toExcluded;
+        options.ToIncluded = toIncluded;
+    });
 
-        var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
+    builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
-        MongoClient client = new(connectionString);
+    builder.Services
+        .AddCustomHealthCheck(builder.Configuration)
+        .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
+                                                                string.Empty)
+        .AddTransient<IPeriodicTimer>(service =>
+        {
+            PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(500));
 
-        var databaseName = MongoUrl.Create(connectionString).DatabaseName;
+            return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
+        })
+        // UserProjection
+        .AddProjectionDomain<UserProjection,
+            IUserProjectionDataService,
+            UserProjectionDataService,
+            IUserProjectionFacade,
+            UserProjectionFacade>()
+        // UserProjection
+        // VehicleProjection
+        .AddProjectionDomain<VehicleProjection,
+            IVehicleProjectionDataService,
+            VehicleProjectionDataService,
+            IVehicleProjectionFacade,
+            VehicleProjectionFacade>()
+        // VehicleProjection
+        // VehiclesForSpecificYearProjection
+        .AddProjectionDomain<VehiclesForSpecificYearProjection,
+            IVehiclesForSpecificYearProjectionDataService,
+            VehiclesForSpecificYearProjectionDataService,
+            IVehiclesForSpecificYearProjectionFacade,
+            VehiclesForSpecificYearProjectionFacade>()
+        // VehiclesForSpecificYearProjection
+        // RentProjection
+        .AddProjectionDomain<RentProjection,
+            IRentProjectionDataService,
+            RentProjectionDataService,
+            IRentProjectionFacade,
+            RentProjectionFacade>()
+        // RentProjection
+        // EventProjection
+        .AddProjectionDomain<EventProjection,
+            IEventProjectionDataService,
+            EventProjectionDataService,
+            IEventProjectionFacade,
+            EventProjectionFacade>()
+        // EventProjection
+        // Event
+        .AddDataDomain<Event,
+            IEventValidator,
+            EventValidator,
+            IEventDataService,
+            EventDataService,
+            IEventFacade,
+            EventFacade>()
+        // Event
+        // Command
+        .AddDataDomain<Rent.Vehicles.Entities.Command,
+            ICommandValidator,
+            CommandValidator,
+            ICommandDataService,
+            CommandDataService,
+            ICommandFacade,
+            CommandFacade>()
+        // Command
+        // Vehicle
+        .AddDataDomain<Vehicle,
+            IVehicleValidator,
+            VehicleValidator,
+            IVehicleDataService,
+            VehicleDataService,
+            IVehicleFacade,
+            VehicleFacade>()
+        // Vehicle
+        // User
+        .AddDataDomain<User,
+            IUserValidator,
+            UserValidator,
+            IUserDataService,
+            UserDataService,
+            IUserFacade,
+            UserFacade>()
+        // User
+        // Rent
+        .AddDataDomain<Rent.Vehicles.Entities.Rent,
+            IRentValidator,
+            RentValidator,
+            IRentDataService,
+            RentDataService,
+            IRentFacade,
+            RentFacade>()
+        // Rent
+        // RentPlane
+        .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
+        // RentPlane
+        .AddSingleton<IUploadService, FileUploadService>()
+        .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
+        .AddSingleton<IMongoDatabase>(service =>
+        {
+            var configuration = service.GetRequiredService<IConfiguration>();
 
-        return client.GetDatabase(databaseName);
-    })
-    .AddAmqpLiteBroker(builder.Configuration)
-    .AddDefaultSerializer<MessagePackSerializer>()
-    .AddHostedService<CreateRentCommandBackgroundService>()
-    .AddHostedService<CreateUserCommandBackgroundService>()
-    .AddHostedService<CreateVehiclesCommandBackgroundService>()
-    .AddHostedService<DeleteVehiclesCommandBackgroundService>()
-    .AddHostedService<UpdateRentCommandBackgroundService>()
-    .AddHostedService<UpdateUserCommandBackgroundService>()
-    .AddHostedService<UpdateUserLicenseImageCommandBackgroundService>()
-    .AddHostedService<UpdateVehiclesCommandBackgroundService>()
-    .AddHostedService<CreateRentEventBackgroundService>()
-    .AddHostedService<CreateRentProjectionEventBackgroundService>()
-    .AddHostedService<CreateUserEventBackgroundService>()
-    .AddHostedService<CreateUserProjectionEventBackgroundService>()
-    .AddHostedService<CreateVehiclesEventBackgroundService>()
-    .AddHostedService<CreateVehiclesForSpecificYearEventBackgroundService>()
-    .AddHostedService<CreateVehiclesForSpecificYearProjectionEventBackgroundService>()
-    .AddHostedService<CreateVehiclesProjectionEventBackgroundService>()
-    .AddHostedService<DeleteVehiclesEventBackgroundService>()
-    .AddHostedService<DeleteVehiclesProjectionEventBackgroundService>()
-    .AddHostedService<EventBackgroundService>()
-    .AddHostedService<EventProjectionEventBackgroundService>()
-    .AddHostedService<UpdateRentEventBackgroundService>()
-    .AddHostedService<UpdateRentProjectionEventBackgroundService>()
-    .AddHostedService<UpdateUserEventBackgroundService>()
-    .AddHostedService<UpdateUserLicenseImageEventBackgroundService>()
-    .AddHostedService<UpdateUserProjectionEventBackgroundService>()
-    .AddHostedService<UpdateVehiclesEventBackgroundService>()
-    .AddHostedService<UpdateVehiclesProjectionEventBackgroundService>()
-    .AddHostedService<UploadUserLicenseImageEventBackgroundService>();
+            var connectionString = configuration.GetConnectionString("NoSql") ?? string.Empty;
 
-builder.Services.AddOptions<FileUploadSetting>()
-    .BindConfiguration(nameof(FileUploadSetting))
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
+            MongoClient client = new(connectionString);
 
-var app = builder.Build();
+            var databaseName = MongoUrl.Create(connectionString).DatabaseName;
 
-app.UseRouting();
+            return client.GetDatabase(databaseName);
+        })
+        .AddAmqpLiteBroker(builder.Configuration)
+        .AddDefaultSerializer<MessagePackSerializer>()
+        .AddHostedService<CreateRentCommandBackgroundService>()
+        .AddHostedService<CreateUserCommandBackgroundService>()
+        .AddHostedService<CreateVehiclesCommandBackgroundService>()
+        .AddHostedService<DeleteVehiclesCommandBackgroundService>()
+        .AddHostedService<UpdateRentCommandBackgroundService>()
+        .AddHostedService<UpdateUserCommandBackgroundService>()
+        .AddHostedService<UpdateUserLicenseImageCommandBackgroundService>()
+        .AddHostedService<UpdateVehiclesCommandBackgroundService>()
+        .AddHostedService<CreateRentEventBackgroundService>()
+        .AddHostedService<CreateRentProjectionEventBackgroundService>()
+        .AddHostedService<CreateUserEventBackgroundService>()
+        .AddHostedService<CreateUserProjectionEventBackgroundService>()
+        .AddHostedService<CreateVehiclesEventBackgroundService>()
+        .AddHostedService<CreateVehiclesForSpecificYearEventBackgroundService>()
+        .AddHostedService<CreateVehiclesForSpecificYearProjectionEventBackgroundService>()
+        .AddHostedService<CreateVehiclesProjectionEventBackgroundService>()
+        .AddHostedService<DeleteVehiclesEventBackgroundService>()
+        .AddHostedService<DeleteVehiclesProjectionEventBackgroundService>()
+        .AddHostedService<EventBackgroundService>()
+        .AddHostedService<EventProjectionEventBackgroundService>()
+        .AddHostedService<UpdateRentEventBackgroundService>()
+        .AddHostedService<UpdateRentProjectionEventBackgroundService>()
+        .AddHostedService<UpdateUserEventBackgroundService>()
+        .AddHostedService<UpdateUserLicenseImageEventBackgroundService>()
+        .AddHostedService<UpdateUserProjectionEventBackgroundService>()
+        .AddHostedService<UpdateVehiclesEventBackgroundService>()
+        .AddHostedService<UpdateVehiclesProjectionEventBackgroundService>()
+        .AddHostedService<UploadUserLicenseImageEventBackgroundService>();
 
-app.MapHealthChecks(HealthCheckUri.Ready, new HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-});
+    builder.Services.AddOptions<FileUploadSetting>()
+        .BindConfiguration(nameof(FileUploadSetting))
+        .ValidateDataAnnotations()
+        .ValidateOnStart();
 
-app.MapHealthChecks(HealthCheckUri.Live, new HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-});
+    var app = builder.Build();
 
-await app.RunAsync();
+    app.UseRouting();
+
+    app.MapHealthChecks(HealthCheckUri.Ready, new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
+
+    app.MapHealthChecks(HealthCheckUri.Live, new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
+
+    await app.RunAsync();
+}, consumerTypeOption, bufferSizeOption, toExcludedOption, toIncludedOption);
+
+return await rootCommand.InvokeAsync(args);
