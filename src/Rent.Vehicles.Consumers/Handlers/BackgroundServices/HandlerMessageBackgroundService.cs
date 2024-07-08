@@ -53,6 +53,12 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         if(_consumerSetting.Type != ConsumerType.Both &&
             _consumerSetting.Type != _type)
             return Task.CompletedTask;
+        
+        if(!_consumerSetting.ToIncluded.Any() && _consumerSetting.ToExcluded.Contains(typeof(TEventToConsume).Name))
+            return Task.CompletedTask;
+        
+        if(!_consumerSetting.ToExcluded.Any() && _consumerSetting.ToIncluded.Any() && !_consumerSetting.ToIncluded.Contains(typeof(TEventToConsume).Name))
+            return Task.CompletedTask;
 
         _channel.SubscribeAsync(typeof(TEventToConsume).Name, cancellationToken);
 

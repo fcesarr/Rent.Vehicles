@@ -1,32 +1,43 @@
-using System.Reflection;
+﻿
 
-using DbUp;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
-var connectionString =
-    args.FirstOrDefault()
-    ??
-    "Server=localhost;Port=5432;User Id=postgres;Password=postgres;Database=rent-vehicles;Timeout=1024;CommandTimeout=10000;Pooling=true;Minimum Pool Size=10;Maximum Pool Size=20;Application Name=Rent.Vehicles.Database";
+using Rent.Vehicles.Entities.Extensions;
+using Rent.Vehicles.Entities.Contexts;
+using Rent.Vehicles.Entities.Contexts.Interfaces;
+using Rent.Vehicles.Entities.Factories.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Amazon.Runtime.Internal.Util;
+using Microsoft.Extensions.Logging;
 
-EnsureDatabase.For.PostgresqlDatabase(connectionString);
+var builder = Host.CreateApplicationBuilder(args);
 
-var upgrader =
-    DeployChanges.To
-        .PostgresqlDatabase(connectionString)
-        .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
-        .LogToConsole()
-        .Build();
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", true)
+	.AddJsonFile("appsettings.Docker.json", true)
+	.AddJsonFile("appsettings.Development.json", true);
 
-var result = upgrader.PerformUpgrade();
+var sqlConnectionString = builder.Configuration
+    .GetConnectionString("Sql") ?? throw new Exception("Connection String Empty");
 
-if (!result.Successful)
-{
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine(result.Error);
-    Console.ResetColor();
-    return -1;
-}
+builder.Services
+    .AddDbContextDependencies<IDbContext, RentVehiclesContext>(sqlConnectionString);
 
-Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine("Success!");
-Console.ResetColor();
-return 0;
+var host = builder
+    .Build();
+
+var logger = host.Services.GetRequiredService<ILogger<Program>>();
+
+logger.LogInformation(sqlConnectionString);
+
+var factory = host.Services.GetRequiredService<IDbContextFactory>();
+
+var context = await factory.CreateDbContextAsync();
+
+await context.Database.MigrateAsync();
+
+context.Dispose();
+

@@ -22,10 +22,6 @@
   <ItemGroup>
     <!-- <PackageReference Include="AMQPNetLite" Version="2.4.11" /> -->
     <PackageReference Include="AMQPNetLite.Core" Version="2.4.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.27.0" />

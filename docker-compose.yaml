@@ -26,8 +26,27 @@ services:
       start_period: 2s
       timeout: 10s
   
-  rent-vehicles-consumer-command:
-    image: rent-vehicles-consumer-command:latest
+  rent-vehicles-database:
+    image: rent-vehicles-database:latest
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.15'
+          memory: 256M
+    hostname: rent-vehicles-database
+    build:
+        context: .
+        dockerfile: ./src/Rent.Vehicles.Database/Dockerfile
+    restart: on-failure
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+  
+  rent-vehicles-consumer-commands:
+    image: rent-vehicles-consumer-commands:latest
     deploy:
       replicas: 2
       resources:
@@ -37,8 +56,8 @@ services:
         reservations:
           cpus: '0.15'
           memory: 256M
-    entrypoint: ["dotnet", "Rent.Vehicles.Consumers.dll", "--type", "Command"]
-    hostname: rent-vehicles-consumer-Command
+    command: ["-t", "Command"]
+    hostname: rent-vehicles-consumer-commands
     expose:
       - "80"
     build:
@@ -54,8 +73,8 @@ services:
       start_period: 2s
       timeout: 10s
 
-  rent-vehicles-consumer-event:
-    image: rent-vehicles-consumer-event:latest
+  rent-vehicles-consumer-events:
+    image: rent-vehicles-consumer-events:latest
     deploy:
       replicas: 3
       resources:
@@ -65,8 +84,36 @@ services:
         reservations:
           cpus: '0.15'
           memory: 256M
-    entrypoint: ["dotnet", "Rent.Vehicles.Consumers.dll", "--type", "Event"]
-    hostname: rent-vehicles-consumer-event
+    command: ["-t", "Event", "-e", "Event, EventProjection"]
+    hostname: rent-vehicles-consumer-events
+    expose:
+      - "80"
+    build:
+        context: .
+        dockerfile: ./src/Rent.Vehicles.Consumers/Dockerfile
+    restart: on-failure
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    healthcheck:
+      test: curl --fail http://localhost/health/ready || exit 1
+      interval: 10s
+      retries: 5
+      start_period: 2s
+      timeout: 10s
+
+  rent-vehicles-consumer-events-events-projection:
+    image: rent-vehicles-consumer-events-events-projection:latest
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.15'
+          memory: 256M
+    command: ["-t", "Event", "-i", "Event, EventProjection"]
+    hostname: rent-vehicles-consumer-events-events-projection
     expose:
       - "80"
     build:
@@ -100,8 +147,6 @@ services:
       - 4001:4001
     depends_on:
       - rent-vehicles-api
-      - rent-vehicles-consumer-event
-      - rent-vehicles-consumer-command
 
 networks:
   default:

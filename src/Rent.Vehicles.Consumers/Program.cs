@@ -44,9 +44,31 @@ var consumerTypeOption = new Option<ConsumerType>(
 	getDefaultValue: () => ConsumerType.Both);
 
 rootCommand.AddOption(consumerTypeOption);
-rootCommand.SetHandler(async (consumerType) =>
+
+var bufferSizeOption = new Option<int>(
+	new string[] {"-s", "--size"},
+	description: "Buffer Size",
+	getDefaultValue: () => 5);
+
+rootCommand.AddOption(bufferSizeOption);
+
+var toExcludedOption = new Option<IEnumerable<string>>(
+	new string[] {"-e", "--excluded"},
+	description: "To Excluded",
+	getDefaultValue: () => []);
+
+rootCommand.AddOption(toExcludedOption);
+
+var toIncludedOption = new Option<IEnumerable<string>>(
+	new string[] {"-i", "--included"},
+	description: "To Included",
+	getDefaultValue: () => []);
+
+rootCommand.AddOption(toIncludedOption);
+
+rootCommand.SetHandler(async (consumerType, bufferSize, toExcluded, toIncluded) =>
 {
-    var builder = WebApplication.CreateBuilder(args);
+    var builder = WebApplication.CreateBuilder();
 
     builder.Host.UseSerilog((hostBuilderContext, loggerConfiguration) =>
     {
@@ -60,7 +82,10 @@ rootCommand.SetHandler(async (consumerType) =>
 
     builder.Services.Configure<ConsumerSetting>(options =>
     {
-        options.Type = builder.Configuration.GetValue<ConsumerType>("type");
+        options.Type = consumerType;
+        options.BufferSize = bufferSize;
+        options.ToExcluded = toExcluded;
+        options.ToIncluded = toIncluded;
     });
 
     builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -225,6 +250,6 @@ rootCommand.SetHandler(async (consumerType) =>
     });
 
     await app.RunAsync();
-}, consumerTypeOption);
+}, consumerTypeOption, bufferSizeOption, toExcludedOption, toIncludedOption);
 
 return await rootCommand.InvokeAsync(args);
