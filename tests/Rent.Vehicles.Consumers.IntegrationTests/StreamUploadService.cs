@@ -13,7 +13,7 @@ namespace Rent.Vehicles.Consumers.IntegrationTests;
 
 public interface IStreamUploadService : IUploadService
 {
-    byte[] Bytes { get; set; }
+   
 }
 
 public class StreamUploadService : UploadService, IStreamUploadService
@@ -23,16 +23,10 @@ public class StreamUploadService : UploadService, IStreamUploadService
     {
     }
 
-    private byte[] _bytes = Array.Empty<byte>();
-
-    public byte[] Bytes { get => _bytes; set => _bytes = value; }
-
-    protected override Task<string> ToUploadAsync(string fileName,
+    protected override Task<string> ToUploadAsync(string name,
         byte[] bytes,
         CancellationToken cancellationToken = default)
     {
-        Bytes = bytes;
-
-        return Task.FromResult(fileName);
+        return Task.FromResult(name);
     }
 }

@@ -79,9 +79,9 @@ public class DeleteVehiclesCommandBackgroundServiceTests : IAsyncLifetime
         HttpStatusCode statusCode,
         Vehicle entity)
     {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 
         entity = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 

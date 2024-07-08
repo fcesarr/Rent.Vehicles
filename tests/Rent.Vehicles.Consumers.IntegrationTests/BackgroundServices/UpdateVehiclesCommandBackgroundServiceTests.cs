@@ -76,9 +76,9 @@ public class UpdateVehiclesCommandBackgroundServiceTests : IAsyncLifetime
         IEnumerable<Vehicle> entities,
         UpdateVehiclesCommand command)
     {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
-        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+        var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
         
         foreach (var entity in entities)
         {
