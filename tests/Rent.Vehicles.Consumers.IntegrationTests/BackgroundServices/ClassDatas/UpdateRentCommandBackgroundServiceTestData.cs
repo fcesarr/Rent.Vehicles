@@ -23,6 +23,13 @@ public class UpdateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
     public IEnumerator<object[]> GetEnumerator()
     {
         yield return new Func<object[]>(() => {
+            var user = _fixture.Build<User>()
+                .Create();
+
+            var vehicle = _fixture.Build<Vehicle>()
+                    .With(x => x.IsRented, true)
+                .Create();
+
             var startDate = DateTime.Now.Date.AddDays(1);
 
             var numberOfDays = _fixture.Create<int>();
@@ -31,6 +38,10 @@ public class UpdateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                     .With(x => x.StartDate, startDate)
                     .With(x => x.NumberOfDays, numberOfDays)
                     .With(x => x.EndDate, startDate.AddDays(numberOfDays))
+                    .With(x => x.UserId, user.Id)
+                    .With(x => x.User, user)
+                    .With(x => x.VehicleId, vehicle.Id)
+                    .With(x => x.Vehicle, vehicle)
                 .Create();
 
             var rentPlane = _fixture.Build<RentalPlane>()
@@ -38,15 +49,6 @@ public class UpdateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                     .With(x => x.DailyCost, entity.DailyCost)
                     .With(x => x.PreEndDatePercentageFine, entity.PreEndDatePercentageFine)
                     .With(x => x.PostEndDateFine, entity.PostEndDateFine)
-                .Create();
-
-            var vehicle = _fixture.Build<Vehicle>()
-                    .With(x => x.Id, entity.VehicleId)
-                    .With(x => x.IsRented, true)
-                .Create();
-
-            var user = _fixture.Build<User>()
-                    .With(x => x.Id, entity.UserId)
                 .Create();
             
             var command = _fixture.Build<UpdateRentCommand>()
@@ -61,7 +63,53 @@ public class UpdateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                     Tuple.Create(nameof(UpdateRentProjectionEvent), StatusType.Success),
                 },
                 HttpStatusCode.OK,
-                new Entity[]{ entity, user, rentPlane, vehicle },
+                new Entity[]{ entity, rentPlane },
+                command,
+                "/api/rent/",
+                $"/api/rent/{command.Id.ToString()}"
+            };
+        })();
+        yield return new Func<object[]>(() => {
+           var user = _fixture.Build<User>()
+                .Create();
+
+            var vehicle = _fixture.Build<Vehicle>()
+                    .With(x => x.IsRented, true)
+                .Create();
+
+            var startDate = DateTime.Now.Date.AddDays(1);
+
+            var numberOfDays = _fixture.Create<int>();
+
+            var entity = _fixture.Build<Entities.Rent>()
+                    .With(x => x.StartDate, startDate)
+                    .With(x => x.NumberOfDays, numberOfDays)
+                    .With(x => x.EndDate, startDate.AddDays(numberOfDays))
+                    .With(x => x.UserId, user.Id)
+                    .With(x => x.User, user)
+                    .With(x => x.VehicleId, vehicle.Id)
+                    .With(x => x.Vehicle, vehicle)
+                .Create();
+
+            var rentPlane = _fixture.Build<RentalPlane>()
+                    .With(x => x.NumberOfDays, entity.NumberOfDays)
+                    .With(x => x.DailyCost, entity.DailyCost)
+                    .With(x => x.PreEndDatePercentageFine, entity.PreEndDatePercentageFine)
+                    .With(x => x.PostEndDateFine, entity.PostEndDateFine)
+                .Create();
+            
+            var command = _fixture.Build<UpdateRentCommand>()
+                    .With(x => x.Id, entity.Id)
+                    .With(x => x.EstimatedDate, startDate.AddDays(-1))
+                .Create();
+
+            return new object[] 
+            { 
+                new Tuple<string, StatusType>[] { 
+                    Tuple.Create(nameof(UpdateRentEvent), StatusType.Fail)
+                },
+                HttpStatusCode.OK,
+                new Entity[]{ entity, rentPlane },
                 command,
                 "/api/rent/",
                 $"/api/rent/{command.Id.ToString()}"
