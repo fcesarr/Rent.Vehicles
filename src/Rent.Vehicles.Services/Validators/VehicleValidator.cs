@@ -32,7 +32,6 @@ public class VehicleValidator : Validator<Vehicle>, IVehicleValidator
                 if(entity.IsRented && isRented)
                     return false;
                     
-                //return entity.IsRented != isRented;
                 return true;
             }).WithMessage("Veiculo já alugado");
     }

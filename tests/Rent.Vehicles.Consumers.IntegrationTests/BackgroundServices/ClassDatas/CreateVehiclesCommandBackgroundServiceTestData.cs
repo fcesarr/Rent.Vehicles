@@ -43,6 +43,7 @@ public class CreateVehiclesCommandBackgroundServiceTestData : IEnumerable<object
         })();
         yield return new Func<object[]>(() => {
             var command = _fixture.Build<CreateVehiclesCommand>()
+                    .With(x => x.Year, 2025)
                 .Create();
 
             return new object[]{
