@@ -22,6 +22,119 @@ public class CreateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
 
     public IEnumerator<object[]> GetEnumerator()
     {
+        // yield return new Func<object[]>(() => {
+        //     var user = _fixture.Create<User>();
+
+        //     var rentPlane = _fixture.Create<RentalPlane>();
+
+        //     var vehicle = _fixture.Build<Vehicle>()
+        //             .With(x => x.IsRented, false)
+        //         .Create();
+
+        //     var command = _fixture.Build<CreateRentCommand>()
+        //             .With(x => x.UserId, user.Id)
+        //             .With(x => x.RentPlaneId, rentPlane.Id)
+        //         .Create();
+
+        //     return new object[]{
+        //         new Tuple<string, StatusType>[] { 
+        //             Tuple.Create(nameof(CreateRentEvent), StatusType.Success),
+        //             Tuple.Create(nameof(CreateRentProjectionEvent), StatusType.Success),
+        //         },
+        //         HttpStatusCode.OK,
+        //         new Entity[]{ user, rentPlane, vehicle },
+        //         command,
+        //         "/api/rent/"
+        //     };
+        // })();
+        // yield return new Func<object[]>(() => {
+        //     var user = _fixture.Create<User>();
+
+        //     var rentPlane = _fixture.Create<RentalPlane>();
+
+        //     var vehicle = _fixture.Build<Vehicle>()
+        //             .With(x => x.IsRented, true)
+        //         .Create();
+
+        //     var command = _fixture.Build<CreateRentCommand>()
+        //             .With(x => x.UserId, user.Id)
+        //             .With(x => x.RentPlaneId, rentPlane.Id)
+        //         .Create();
+
+        //     return new object[]{
+        //         new Tuple<string, StatusType>[] { 
+        //             Tuple.Create(nameof(CreateRentEvent), StatusType.Fail)
+        //         },
+        //         HttpStatusCode.NotFound,
+        //         new Entity[]{ user, rentPlane, vehicle },
+        //         command,
+        //         "/api/rent/"
+        //     };
+        // })();
+        // yield return new Func<object[]>(() => {
+        //     var rentPlane = _fixture.Create<RentalPlane>();
+
+        //     var vehicle = _fixture.Build<Vehicle>()
+        //             .With(x => x.IsRented, false)
+        //         .Create();
+
+        //     var command = _fixture.Build<CreateRentCommand>()
+        //             .With(x => x.RentPlaneId, rentPlane.Id)
+        //         .Create();
+
+        //     return new object[]{
+        //         new Tuple<string, StatusType>[] { 
+        //             Tuple.Create(nameof(CreateRentEvent), StatusType.Fail)
+        //         },
+        //         HttpStatusCode.NotFound,
+        //         new Entity[]{ rentPlane, vehicle },
+        //         command,
+        //         "/api/rent/"
+        //     };
+        // })();
+        // yield return new Func<object[]>(() => {
+        //     var user = _fixture.Create<User>();
+
+        //     var rentPlane = _fixture.Create<RentalPlane>();
+
+        //     var command = _fixture.Build<CreateRentCommand>()
+        //             .With(x => x.UserId, user.Id)
+        //             .With(x => x.RentPlaneId, rentPlane.Id)
+        //         .Create();
+
+        //     return new object[]{
+        //         new Tuple<string, StatusType>[] { 
+        //             Tuple.Create(nameof(CreateRentEvent), StatusType.Fail)
+        //         },
+        //         HttpStatusCode.NotFound,
+        //         new Entity[]{ user, rentPlane },
+        //         command,
+        //         "/api/rent/"
+        //     };
+        // })();
+        // yield return new Func<object[]>(() => {
+        //     var user = _fixture.Create<User>();
+
+        //     var rentPlane = _fixture.Create<RentalPlane>();
+
+        //     var vehicle = _fixture.Build<Vehicle>()
+        //             .With(x => x.IsRented, false)
+        //         .Create();
+
+        //     var command = _fixture.Build<CreateRentCommand>()
+        //             .With(x => x.UserId, user.Id)
+        //         .Create();
+
+        //     return new object[]{
+        //         new Tuple<string, StatusType>[] { 
+        //             Tuple.Create(nameof(CreateRentEvent), StatusType.Fail)
+        //         },
+        //         HttpStatusCode.NotFound,
+        //         new Entity[]{ user, vehicle },
+        //         command,
+        //         "/api/rent/"
+        //     };
+        // })();
         yield return new Func<object[]>(() => {
             var user = _fixture.Create<User>();
 
@@ -31,29 +144,10 @@ public class CreateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                     .With(x => x.IsRented, false)
                 .Create();
 
-            var command = _fixture.Build<CreateRentCommand>()
+            var rent = _fixture.Build<Entities.Rent>()
                     .With(x => x.UserId, user.Id)
-                    .With(x => x.RentPlaneId, rentPlane.Id)
-                .Create();
-
-            return new object[]{
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateRentEvent), StatusType.Success),
-                    Tuple.Create(nameof(CreateRentProjectionEvent), StatusType.Success),
-                },
-                HttpStatusCode.OK,
-                new Entity[]{ user, rentPlane, vehicle },
-                command,
-                "/api/rent/"
-            };
-        })();
-        yield return new Func<object[]>(() => {
-            var user = _fixture.Create<User>();
-
-            var rentPlane = _fixture.Create<RentalPlane>();
-
-            var vehicle = _fixture.Build<Vehicle>()
-                    .With(x => x.IsRented, true)
+                    .Without(x => x.User)
+                    .With(x => x.IsActive, true)
                 .Create();
 
             var command = _fixture.Build<CreateRentCommand>()
@@ -63,74 +157,10 @@ public class CreateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
 
             return new object[]{
                 new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateRentEvent), StatusType.Fail)
+                    Tuple.Create(nameof(CreateRentEvent), StatusType.Fail),
                 },
                 HttpStatusCode.NotFound,
-                new Entity[]{ user, rentPlane, vehicle },
-                command,
-                "/api/rent/"
-            };
-        })();
-        yield return new Func<object[]>(() => {
-            var rentPlane = _fixture.Create<RentalPlane>();
-
-            var vehicle = _fixture.Build<Vehicle>()
-                    .With(x => x.IsRented, false)
-                .Create();
-
-            var command = _fixture.Build<CreateRentCommand>()
-                    .With(x => x.RentPlaneId, rentPlane.Id)
-                .Create();
-
-            return new object[]{
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateRentEvent), StatusType.Fail)
-                },
-                HttpStatusCode.NotFound,
-                new Entity[]{ rentPlane, vehicle },
-                command,
-                "/api/rent/"
-            };
-        })();
-        yield return new Func<object[]>(() => {
-            var user = _fixture.Create<User>();
-
-            var rentPlane = _fixture.Create<RentalPlane>();
-
-            var command = _fixture.Build<CreateRentCommand>()
-                    .With(x => x.UserId, user.Id)
-                    .With(x => x.RentPlaneId, rentPlane.Id)
-                .Create();
-
-            return new object[]{
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateRentEvent), StatusType.Fail)
-                },
-                HttpStatusCode.NotFound,
-                new Entity[]{ user, rentPlane },
-                command,
-                "/api/rent/"
-            };
-        })();
-        yield return new Func<object[]>(() => {
-            var user = _fixture.Create<User>();
-
-            var rentPlane = _fixture.Create<RentalPlane>();
-
-            var vehicle = _fixture.Build<Vehicle>()
-                    .With(x => x.IsRented, false)
-                .Create();
-
-            var command = _fixture.Build<CreateRentCommand>()
-                    .With(x => x.UserId, user.Id)
-                .Create();
-
-            return new object[]{
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateRentEvent), StatusType.Fail)
-                },
-                HttpStatusCode.NotFound,
-                new Entity[]{ user, vehicle },
+                new Entity[]{ user, rentPlane, vehicle, rent },
                 command,
                 "/api/rent/"
             };

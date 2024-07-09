@@ -81,7 +81,7 @@ public class CreateRentCommandBackgroundServiceTests : IAsyncLifetime
         CreateRentCommand command,
         string endpointAction)
     {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(90));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 

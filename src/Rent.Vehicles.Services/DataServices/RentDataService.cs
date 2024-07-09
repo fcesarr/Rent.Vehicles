@@ -35,7 +35,8 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
             PostEndDateFine = rentalPlane.PostEndDateFine,
             EstimatedDate = startDate.AddDays(rentalPlane.NumberOfDays),
             EndDate = startDate.AddDays(rentalPlane.NumberOfDays),
-            Cost = rentalPlane.DailyCost * rentalPlane.NumberOfDays
+            Cost = rentalPlane.DailyCost * rentalPlane.NumberOfDays,
+            IsActive = true
         };
 
         return await CreateAsync(entity, cancellationToken);
@@ -74,6 +75,8 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
         }
 
         var entityToUpdate = UpdateCostAndEstimatedDate(entity, endDate);
+        
+        entityToUpdate.IsActive = false;
 
         return await UpdateAsync(entityToUpdate, cancellationToken);
     }
@@ -96,7 +99,7 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
         return entity;
     }
 
-    private Entities.Rent UpdateCostAndEstimatedDate(Entities.Rent entity, DateTime endDate)
+    private static Entities.Rent UpdateCostAndEstimatedDate(Entities.Rent entity, DateTime endDate)
     {
         if (endDate.Date.Ticks < entity.EstimatedDate.Date.Ticks)
         {
@@ -118,7 +121,6 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
         }
 
         entity.EstimatedDate = endDate.Date;
-        entity.IsActive = true;
 
         return entity;
     }
