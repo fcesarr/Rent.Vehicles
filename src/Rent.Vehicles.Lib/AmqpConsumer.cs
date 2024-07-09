@@ -25,52 +25,45 @@ public class AmqpConsumer : IConsumer
     public Task AckAsync(dynamic id, CancellationToken cancellationToken = default)
     {
         return Task.Run(() => {
-            try
-            {
-                _receiverLink?.Accept((Amqp.Message)id);
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError(ex, $"{nameof(AmqpConsumer)}");
+            if(_receiverLink is null)
                 return;
-            }
+
+            _receiverLink.Accept((Amqp.Message)id);
         }, cancellationToken);
     }
 
     public async Task<ConsumerResponse?> ConsumeAsync(CancellationToken cancellationToken = default)
     {
-        Amqp.Message? receivedMessage;
-        
-        try
-        {
-            receivedMessage = await _receiverLink?.ReceiveAsync();
-    
-            if(receivedMessage == null)
-                return null;
-
-            byte[]? receivedBytes = (byte[])receivedMessage.Body ?? Array.Empty<byte>();
-    
-            if(receivedBytes == null)
-                return null;
-    
-            return new ConsumerResponse { Id = receivedMessage, Data = receivedBytes };
-        }
-        catch (System.Exception ex)
-        {
-            _logger.LogError(ex, $"{nameof(AmqpConsumer)}");
+        if(_receiverLink is null)
             return null;
-        }
+
+        var receivedMessage = await _receiverLink.ReceiveAsync();
+
+        if(receivedMessage == null)
+            return null;
+
+        byte[]? receivedBytes = (byte[])receivedMessage.Body ?? Array.Empty<byte>();
+
+        if(receivedBytes == null)
+            return null;
+
+        return new ConsumerResponse { Id = receivedMessage, Data = receivedBytes };
     }
 
     public Task RemoveAsync(dynamic id, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => _receiverLink?.Reject((Amqp.Message)id), cancellationToken);
+        return Task.Run(() => {
+            if(_receiverLink is null)
+                return;
+            
+            _receiverLink?.Reject((Amqp.Message)id);
+        }, cancellationToken);
     }
 
     public Task SubscribeAsync(string name, CancellationToken cancellationToken = default)
     {
         return Task.Run(() => {
-            _receiverLink = new ReceiverLink((Session)_session, Guid.NewGuid().ToString(), name);
+            _receiverLink = _session.CreateReceiver(Guid.NewGuid().ToString(), name);
         }, cancellationToken);
     }
 }
