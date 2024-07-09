@@ -44,7 +44,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
     public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         bool descending = false,
         Expression<Func<TEntity, dynamic>>? orderBy = default,
-        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
+        IEnumerable<Expression<Func<TEntity, dynamic?>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
         FindOptions<TEntity> findOptions = new();
@@ -86,7 +86,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
     public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
         bool descending = false,
         Expression<Func<TEntity, dynamic>>? orderBy = default,
-        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
+        IEnumerable<Expression<Func<TEntity, dynamic?>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
         FindOptions<TEntity> findOptions = new();

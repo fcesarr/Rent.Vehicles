@@ -77,7 +77,7 @@ public class UpdateUserCommandBackgroundServiceTests : IAsyncLifetime
     [ClassData(typeof(UpdateUserCommandBackgroundServiceTestData))]
     public async Task SendUpdateUserCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        IEnumerable<User> entities,
+        IEnumerable<dynamic> entities,
         UpdateUserCommand command,
         string endpointAction,
         string endpointGet)
@@ -90,7 +90,7 @@ public class UpdateUserCommandBackgroundServiceTests : IAsyncLifetime
         {
             _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 
-            _ = await _integrationTestWebAppFactory.SaveAsync(entity.ToProjection());
+            _ = await _integrationTestWebAppFactory.SaveAsync(ToExtension.ToProjection(entity), cancellationTokenSource.Token);
         }
 
         var json = JsonSerializer.Serialize(command);

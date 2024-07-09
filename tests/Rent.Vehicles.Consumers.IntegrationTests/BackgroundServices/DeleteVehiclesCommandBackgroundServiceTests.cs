@@ -87,7 +87,7 @@ public class DeleteVehiclesCommandBackgroundServiceTests : IAsyncLifetime
 
         entity = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 
-        _ = await _integrationTestWebAppFactory.SaveAsync(entity.ToProjection<VehicleProjection>());
+        _ = await _integrationTestWebAppFactory.SaveAsync(ToExtension.ToProjection<VehicleProjection>(entity), cancellationTokenSource.Token);
 
         var response = await _httpClient.DeleteAsync(endpointAction, cancellationToken: cancellationTokenSource.Token);
 

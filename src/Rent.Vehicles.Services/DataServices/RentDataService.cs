@@ -66,21 +66,21 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
     public async Task<Result<Entities.Rent>> UpdateAsync(Guid id, DateTime endDate,
         CancellationToken cancellationToken = default)
     {
-        var entity = await GetAsync(x => x.Id == id, cancellationToken);
+        var entity = await _repository.GetAsync(x => x.Id == id, cancellationToken: cancellationToken);
 
-        if (!entity.IsSuccess)
+        if (entity is null)
         {
-            return entity.Exception!;
+            return Result<Entities.Rent>.Failure(new NullException($"Entity {typeof(Entities.Rent).Name} not found"));
         }
 
-        var entityToUpdate = UpdateCostAndEstimatedDate(entity.Value!, endDate);
+        var entityToUpdate = UpdateCostAndEstimatedDate(entity, endDate);
 
         return await UpdateAsync(entityToUpdate, cancellationToken);
     }
 
     public async override Task<Result<Entities.Rent>> GetAsync(Expression<Func<Entities.Rent, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        var includes = new List<Expression<Func<Entities.Rent, dynamic>>>
+        var includes = new List<Expression<Func<Entities.Rent, dynamic?>>>
         {
             x => x.Vehicle,
             x => x.User,

@@ -77,7 +77,7 @@ public class CreateVehiclesCommandBackgroundServiceTests : IAsyncLifetime
     [ClassData(typeof(CreateVehiclesCommandBackgroundServiceTestData))]
     public async Task SendCreateVehiclesCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        IEnumerable<Vehicle> entities,
+        IEnumerable<dynamic> entities,
         CreateVehiclesCommand command,
         string endpointAction,
         string endpointGet)

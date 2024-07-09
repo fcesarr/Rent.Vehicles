@@ -11,6 +11,7 @@ using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Responses;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib;
+using Microsoft.Extensions.Logging;
 
 namespace Rent.Vehicles.Lib.Extensions;
 
@@ -67,9 +68,11 @@ public static class BrokerExtension
             })
             .AddTransient<IConsumer>(services => 
             {
+                var logger = services.GetRequiredService<ILogger<AmqpConsumer>>();
+
                 var session = services.GetRequiredService<ISession>();
 
-                return new AmqpConsumer(session);
+                return new AmqpConsumer(logger, session);
             })
             .AddSingleton<IPublisher>(services => {
                 var serializer = services.GetRequiredService<ISerializer>();

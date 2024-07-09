@@ -31,6 +31,7 @@ public class IntegrationTestWebAppFactory : WebApplicationFactory<Program>, IAsy
             .UseContentRoot(Directory.GetCurrentDirectory())
             .ConfigureAppConfiguration((context, config) =>
             {
+                config.Sources.Clear();
                 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                 config.AddJsonFile("appsettings.Tests.json", optional: false, reloadOnChange: true);
             })

@@ -32,7 +32,7 @@ public class VehicleDataService : DataService<Vehicle>, IVehicleDataService
 
     public async Task<Result<Vehicle>> ReturnItAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = await GetAsync(x => !x.IsRented, cancellationToken);
+        var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
         if(!entity.IsSuccess)
         {

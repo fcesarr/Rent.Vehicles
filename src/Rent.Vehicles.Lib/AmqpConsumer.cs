@@ -1,4 +1,8 @@
+using Amazon.Runtime.Internal.Util;
+
 using Amqp;
+
+using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Responses;
@@ -7,12 +11,14 @@ namespace Rent.Vehicles.Lib;
 
 public class AmqpConsumer : IConsumer
 {
+    private readonly ILogger<AmqpConsumer> _logger;
     private readonly Amqp.ISession _session;
 
     private IReceiverLink? _receiverLink;
 
-    public AmqpConsumer(Amqp.ISession session)
+    public AmqpConsumer(ILogger<AmqpConsumer> logger, Amqp.ISession session)
     {
+        _logger = logger;
         _session = session;
     }
 
@@ -25,7 +31,7 @@ public class AmqpConsumer : IConsumer
             }
             catch (System.Exception ex)
             {
-                
+                _logger.LogError(ex, $"{nameof(AmqpConsumer)}");
                 return;
             }
         }, cancellationToken);
@@ -51,7 +57,7 @@ public class AmqpConsumer : IConsumer
         }
         catch (System.Exception ex)
         {
-            
+            _logger.LogError(ex, $"{nameof(AmqpConsumer)}");
             return null;
         }
     }

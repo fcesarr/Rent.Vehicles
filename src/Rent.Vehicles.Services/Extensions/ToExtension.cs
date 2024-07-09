@@ -241,6 +241,13 @@ public static class ToExtension
         };
     }
 
+    public static VehicleProjection ToProjection(this Vehicle entity)
+    {
+        return entity.ToProjection<VehicleProjection>();
+    }
+
+    
+
     public static UserProjection ToProjection(this User entity)
     {
         return new UserProjection

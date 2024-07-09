@@ -50,7 +50,7 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
     public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate,
         bool descending = false,
         Expression<Func<TEntity, dynamic>>? orderBy = default,
-        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
+        IEnumerable<Expression<Func<TEntity, dynamic?>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
         var context = _dbContext;
@@ -76,7 +76,7 @@ public sealed class EntityFrameworkRepository<TEntity> : IRepository, IRepositor
     public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate,
         bool descending = false,
         Expression<Func<TEntity, dynamic>>? orderBy = default,
-        IEnumerable<Expression<Func<TEntity, dynamic>>>? includes = default,
+        IEnumerable<Expression<Func<TEntity, dynamic?>>>? includes = default,
         CancellationToken cancellationToken = default)
     {
         var context = _dbContext;

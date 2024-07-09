@@ -32,7 +32,9 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
 
     private readonly string _guid;
 
-    private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(1, 10);
+    private readonly SemaphoreSlim _semaphoreSlim;
+
+    private readonly string _queueName = typeof(TEventToConsume).Name;
     
     protected abstract ConsumerType _type { get; }
 
@@ -48,36 +50,39 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         _serializer = serializer;
         _consumerSetting = consumerSetting.Value;
         _guid = Guid.NewGuid().ToString();
+        _semaphoreSlim = new SemaphoreSlim(1, _consumerSetting.BufferSize);
     }
 
-    public override Task StartAsync(CancellationToken cancellationToken)
+    public override async Task StartAsync(CancellationToken cancellationToken)
     {
         if(_consumerSetting.Type != ConsumerType.Both &&
             _consumerSetting.Type != _type)
-            return Task.CompletedTask;
+            return;
         
-        if(!_consumerSetting.ToIncluded.Any() && _consumerSetting.ToExcluded.Contains(typeof(TEventToConsume).Name))
-            return Task.CompletedTask;
+        if(!_consumerSetting.ToIncluded.Any() && _consumerSetting.ToExcluded.Contains(_queueName))
+            return;
         
-        if(!_consumerSetting.ToExcluded.Any() && _consumerSetting.ToIncluded.Any() && !_consumerSetting.ToIncluded.Contains(typeof(TEventToConsume).Name))
-            return Task.CompletedTask;
+        if(!_consumerSetting.ToExcluded.Any() && _consumerSetting.ToIncluded.Any() && !_consumerSetting.ToIncluded.Contains(_queueName))
+            return;
 
-        _channel.SubscribeAsync(typeof(TEventToConsume).Name, cancellationToken);
+        await _channel.SubscribeAsync(_queueName, cancellationToken);
 
         _logger.LogInformation("StartAsync {ClassName}: {Guid}", this.GetType().Name, _guid);
 
-        return base.StartAsync(cancellationToken);
+        await base.StartAsync(cancellationToken);
     }
 
-    public override Task StopAsync(CancellationToken cancellationToken)
+    public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("StopAsync {ClassName}: {Guid}", this.GetType().Name, _guid);
-        return base.StopAsync(cancellationToken);
+        
+        //await _channel.CloseAsync();
+
+        await base.StopAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        // while (await _periodicTimer.WaitForNextTickAsync(cancellationToken))
         while (!cancellationToken.IsCancellationRequested)
         {   
             await _semaphoreSlim.WaitAsync(cancellationToken);
@@ -102,7 +107,7 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
                     continue;
                 }
 
-                _logger.LogInformation("Handler message from type {MessageToConsume}", typeof(TEventToConsume).Name);
+                _logger.LogInformation("Handler message from type {MessageToConsume}", _queueName);
 
                 var result = await HandlerAsync(message, cancellationToken);
 

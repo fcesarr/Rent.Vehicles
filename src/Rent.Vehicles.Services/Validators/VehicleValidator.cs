@@ -20,14 +20,20 @@ public class VehicleValidator : Validator<Vehicle>, IVehicleValidator
                 return entity is null;
             }).WithMessage("Veiculo com placa já cadastrada");
 
-        RuleFor(x => x)
-            .MustAsync(async (e, cancellationToken) => {
+        RuleFor(x => x.IsRented)
+            .MustAsync(async (e, isRented, cancellationToken) => {
                 
-                var entity = await repository.GetAsync(x => x.Id == e.Id &&
-                    x.IsRented,
-                cancellationToken: cancellationToken);
+                var entity = await repository.GetAsync(x => x.Id == e.Id,
+                    cancellationToken: cancellationToken);
                 
-                return entity is null;
+                if(entity is null)
+                    return true;
+
+                if(entity.IsRented && isRented)
+                    return false;
+                    
+                //return entity.IsRented != isRented;
+                return true;
             }).WithMessage("Veiculo já alugado");
     }
 }

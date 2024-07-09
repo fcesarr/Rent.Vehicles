@@ -38,6 +38,7 @@ using Serilog;
 using Xunit.Abstractions;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib;
+using Rent.Vehicles.Consumers.Settings;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 
@@ -187,6 +188,11 @@ public static class ServiceExtensions
 
         services.AddOptions<StreamUploadSetting>()
             .BindConfiguration(nameof(StreamUploadSetting))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        
+        services.AddOptions<ConsumerSetting>()
+            .BindConfiguration(nameof(ConsumerSetting))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 

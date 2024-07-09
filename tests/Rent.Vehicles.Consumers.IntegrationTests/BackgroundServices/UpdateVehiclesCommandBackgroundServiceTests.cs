@@ -73,7 +73,7 @@ public class UpdateVehiclesCommandBackgroundServiceTests : IAsyncLifetime
     [ClassData(typeof(UpdateVehiclesCommandBackgroundServiceTestData))]
     public async Task SendUpdateVehiclesCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        IEnumerable<Vehicle> entities,
+        IEnumerable<dynamic> entities,
         UpdateVehiclesCommand command,
         string endpointAction,
         string endpointGet)
@@ -86,7 +86,7 @@ public class UpdateVehiclesCommandBackgroundServiceTests : IAsyncLifetime
         {
             _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 
-            _ = await _integrationTestWebAppFactory.SaveAsync(entity.ToProjection<VehicleProjection>(), cancellationTokenSource.Token);
+            _ = await _integrationTestWebAppFactory.SaveAsync(ToExtension.ToProjection<VehicleProjection>(entity), cancellationTokenSource.Token);
         }
         
         var json = JsonSerializer.Serialize(command);

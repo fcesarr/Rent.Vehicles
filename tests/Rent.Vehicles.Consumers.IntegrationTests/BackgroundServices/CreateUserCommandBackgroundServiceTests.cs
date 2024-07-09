@@ -77,11 +77,11 @@ public class CreateUserCommandBackgroundServiceTests : IAsyncLifetime
     [ClassData(typeof(CreateUserCommandBackgroundServiceTestData))]
     public async Task SendCreateUserCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        IEnumerable<User> entities,
+        IEnumerable<dynamic> entities,
         CreateUserCommand command,
         string endpointAction)
     {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 
