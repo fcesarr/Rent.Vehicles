@@ -84,7 +84,7 @@ services:
         reservations:
           cpus: '0.15'
           memory: 256M
-    command: ["-t", "Event", "-e", "Event, EventProjection"]
+    command: ["-t", "Event", "-e", "Event", "-e", "EventProjection", "-e", "EventProjectionEvent"]
     hostname: rent-vehicles-consumer-events
     expose:
       - "80"
@@ -112,7 +112,7 @@ services:
         reservations:
           cpus: '0.15'
           memory: 256M
-    command: ["-t", "Event", "-i", "Event, EventProjection"]
+    command: ["-t", "Event", "-i", "Event", "-i", "EventProjection", "-i", "EventProjectionEvent"]
     hostname: rent-vehicles-consumer-events-events-projection
     expose:
       - "80"

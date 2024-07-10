@@ -59,13 +59,8 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
             return;
         }
 
-        if (!_consumerSetting.ToIncluded.Any() && _consumerSetting.ToExcluded.Contains(_queueName))
-        {
-            return;
-        }
-
-        if (!_consumerSetting.ToExcluded.Any() && _consumerSetting.ToIncluded.Any() &&
-            !_consumerSetting.ToIncluded.Contains(_queueName))
+        if ((_consumerSetting.ToIncluded.Any() && !_consumerSetting.ToIncluded.Contains(_queueName)) ||
+            _consumerSetting.ToExcluded.Contains(_queueName))
         {
             return;
         }
@@ -80,8 +75,6 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("StopAsync {ClassName}: {Guid}", GetType().Name, _guid);
-
-        //await _channel.CloseAsync();
 
         await base.StopAsync(cancellationToken);
     }
