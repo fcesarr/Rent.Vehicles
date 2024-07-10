@@ -54,6 +54,8 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
 
         var entityToUpdate = UpdateCostAndEstimatedDate(entity.Value!, endDate);
 
+        entityToUpdate.IsActive = false;
+
         var result = await _validator.ValidateAsync(entityToUpdate, cancellationToken);
 
         if (!result.IsValid)
