@@ -1,8 +1,6 @@
 using Rent.Vehicles.Entities.Types;
 using Rent.Vehicles.Lib;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Lib.Types;
-using Rent.Vehicles.Messages;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
@@ -32,7 +30,8 @@ public class CommandFacade : ICommandFacade
         var data = await _serializer.SerializeAsync(@event, @event.GetType(), cancellationToken);
 
         var entity =
-            await _dataService.CreateAsync(command.ToEntity(actionType, _serializer.SerializerType, entityType, type, data),
+            await _dataService.CreateAsync(
+                command.ToEntity(actionType, _serializer.SerializerType, entityType, type, data),
                 cancellationToken);
 
         if (!entity.IsSuccess)

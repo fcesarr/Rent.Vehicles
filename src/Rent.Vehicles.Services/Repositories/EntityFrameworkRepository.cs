@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Contexts.Interfaces;
-using Rent.Vehicles.Entities.Factories.Interfaces;
 using Rent.Vehicles.Services.Repositories.Interfaces;
 
 namespace Rent.Vehicles.Services.Repositories;

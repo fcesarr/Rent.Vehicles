@@ -15,10 +15,12 @@ public class ConfigurationManager
     public static ConfigurationManager GetInstance()
     {
         if (_configurationManager != null)
+        {
             return _configurationManager;
+        }
 
         var configuration = new ConfigurationBuilder()
-            .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json"), optional: false)
+            .AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json"), false)
             .Build();
 
         _configurationManager = new ConfigurationManager(configuration);

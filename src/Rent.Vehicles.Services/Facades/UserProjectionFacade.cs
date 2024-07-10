@@ -48,9 +48,11 @@ public class UserProjectionFacade : IUserProjectionFacade
     {
         var entity = await _dataService.GetAsync(predicate, cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
+        {
             return entity.Exception!;
-        
+        }
+
         return entity.Value!.ToResponse();
     }
 

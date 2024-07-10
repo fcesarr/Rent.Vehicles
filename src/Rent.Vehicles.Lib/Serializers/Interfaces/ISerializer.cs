@@ -4,7 +4,10 @@ namespace Rent.Vehicles.Lib.Serializers.Interfaces;
 
 public interface ISerializer
 {
-    SerializerType SerializerType { get; }
+    SerializerType SerializerType
+    {
+        get;
+    }
 
     Task<byte[]> SerializeAsync<T>(T? entity,
         CancellationToken cancellationToken = default) where T : class;

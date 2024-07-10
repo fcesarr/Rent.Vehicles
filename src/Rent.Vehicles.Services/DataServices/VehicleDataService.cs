@@ -20,7 +20,7 @@ public class VehicleDataService : DataService<Vehicle>, IVehicleDataService
     {
         var entity = await GetAsync(x => !x.IsRented, cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
         {
             return new NoVehicleToRentException("Não existe veiculo disponível para aluguel");
         }
@@ -34,7 +34,7 @@ public class VehicleDataService : DataService<Vehicle>, IVehicleDataService
     {
         var entity = await GetAsync(x => x.Id == id, cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
         {
             return entity.Exception!;
         }

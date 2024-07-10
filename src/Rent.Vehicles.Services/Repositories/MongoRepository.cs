@@ -127,10 +127,7 @@ public sealed class MongoRepository<TEntity> : IRepository<TEntity> where TEntit
 
     public async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
-        var options = new ReplaceOptions
-        {
-            IsUpsert = true
-        };
+        var options = new ReplaceOptions { IsUpsert = true };
 
         var filter = Builders<TEntity>
             .Filter

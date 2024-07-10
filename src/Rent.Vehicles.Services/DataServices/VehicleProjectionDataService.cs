@@ -9,7 +9,9 @@ namespace Rent.Vehicles.Services.DataServices;
 
 public class VehicleProjectionDataService : DataService<VehicleProjection>, IVehicleProjectionDataService
 {
-    public VehicleProjectionDataService(ILogger<VehicleProjectionDataService> logger, IValidator<VehicleProjection> validator, IRepository<VehicleProjection> repository) : base(logger, validator, repository)
+    public VehicleProjectionDataService(ILogger<VehicleProjectionDataService> logger,
+        IValidator<VehicleProjection> validator, IRepository<VehicleProjection> repository) : base(logger, validator,
+        repository)
     {
     }
 }

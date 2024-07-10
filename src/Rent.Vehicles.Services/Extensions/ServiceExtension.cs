@@ -2,8 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Services;
-using Rent.Vehicles.Services.Facades;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Repositories;
@@ -47,10 +45,10 @@ public static class ServiceExtension
         where TFacadeImplementation : class, TIFacade
     {
         return services.AddDataDomain<TEntity,
-            TIValidator,
-            TValidatorImplementation,
-            TIService,
-            TServiceImplementation>()
+                TIValidator,
+                TValidatorImplementation,
+                TIService,
+                TServiceImplementation>()
             .AddScoped<TIFacade, TFacadeImplementation>();
     }
 

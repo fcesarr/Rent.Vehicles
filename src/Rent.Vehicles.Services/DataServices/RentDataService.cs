@@ -77,19 +77,16 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
         }
 
         var entityToUpdate = UpdateCostAndEstimatedDate(entity, endDate);
-        
+
         entityToUpdate.IsActive = false;
 
         return await UpdateAsync(entityToUpdate, cancellationToken);
     }
 
-    public async override Task<Result<Entities.Rent>> GetAsync(Expression<Func<Entities.Rent, bool>> predicate, CancellationToken cancellationToken = default)
+    public override async Task<Result<Entities.Rent>> GetAsync(Expression<Func<Entities.Rent, bool>> predicate,
+        CancellationToken cancellationToken = default)
     {
-        var includes = new List<Expression<Func<Entities.Rent, dynamic?>>>
-        {
-            x => x.Vehicle,
-            x => x.User,
-        };
+        var includes = new List<Expression<Func<Entities.Rent, dynamic?>>> { x => x.Vehicle, x => x.User };
 
         var entity = await _repository.GetAsync(predicate, includes: includes, cancellationToken: cancellationToken);
 

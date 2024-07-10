@@ -1,13 +1,8 @@
-
-using Microsoft.Extensions.Options;
-
-using Rent.Vehicles.Consumers.Settings;
 using Rent.Vehicles.Consumers.Types;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Messages;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 
@@ -16,8 +11,6 @@ public abstract class
     where TCommandToConsume : Command
 {
     protected readonly IPublisher _publisher;
-
-    protected override ConsumerType _type => ConsumerType.Command;
 
     protected HandlerCommandPublishBackgroundService(
         ILogger<HandlerCommandPublishBackgroundService<TCommandToConsume>> logger,
@@ -29,4 +22,6 @@ public abstract class
     {
         _publisher = publisher;
     }
+
+    protected override ConsumerType _type => ConsumerType.Command;
 }

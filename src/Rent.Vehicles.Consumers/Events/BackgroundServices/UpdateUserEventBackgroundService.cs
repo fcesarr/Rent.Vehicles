@@ -21,7 +21,7 @@ public class UpdateUserEventBackgroundService : HandlerEventServicePublishEventB
         IPublisher publisher,
         IOptions<ConsumerSetting> consumerSetting,
         IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
-            consumerSetting, serviceScopeFactory)
+        consumerSetting, serviceScopeFactory)
     {
     }
 

@@ -5,8 +5,6 @@ using Rent.Vehicles.Lib.Types;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Services.Responses;
 
-using ZstdSharp.Unsafe;
-
 using Event = Rent.Vehicles.Entities.Event;
 using StatusType = Rent.Vehicles.Messages.Types.StatusType;
 using VehicleType = Rent.Vehicles.Messages.Types.VehicleType;
@@ -129,7 +127,7 @@ public static class ToExtension
             PreEndDatePercentageFine = projection.PreEndDatePercentageFine,
             PostEndDateFine = projection.PostEndDateFine,
             Cost = projection.Cost,
-            Vehicle = projection.Vehicle!.ToResponse<VehicleProjection>(),
+            Vehicle = projection.Vehicle!.ToResponse(),
             User = projection.User!.ToResponse()
         };
     }
@@ -246,7 +244,6 @@ public static class ToExtension
         return entity.ToProjection<VehicleProjection>();
     }
 
-    
 
     public static UserProjection ToProjection(this User entity)
     {
@@ -280,7 +277,7 @@ public static class ToExtension
         };
     }
 
-    public static EventProjection ToProjection(this Entities.Event entity)
+    public static EventProjection ToProjection(this Event entity)
     {
         return new EventProjection
         {

@@ -1,17 +1,17 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using Rent.Vehicles.Lib.Extensions;
 using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Settings;
-using Rent.Vehicles.Lib.Extensions;
 
 namespace Rent.Vehicles.Services;
 
 public abstract class UploadService : IUploadService
 {
-    private readonly UploadSetting _uploadSetting;
     private readonly ILogger<UploadService> _logger;
+    private readonly UploadSetting _uploadSetting;
 
     public UploadService(ILogger<UploadService> logger,
         IOptions<UploadSetting> uploadSetting)
@@ -22,7 +22,8 @@ public abstract class UploadService : IUploadService
 
     public virtual Task<Result<string>> GetPathAsync(string base64String, CancellationToken cancellationToken = default)
     {
-        return Task.Run<Result<string>>(() => {
+        return Task.Run<Result<string>>(() =>
+        {
             //
             var bytes = Convert.FromBase64String(base64String);
 
@@ -43,8 +44,10 @@ public abstract class UploadService : IUploadService
     {
         var result = await GetPathAsync(base64String, cancellationToken);
 
-        if(!result.IsSuccess)
+        if (!result.IsSuccess)
+        {
             return result.Exception!;
+        }
 
         var bytes = Convert.FromBase64String(base64String);
 

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Rent.Vehicles.Api.Extensions;
-using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Lib.Interfaces;
+using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Responses;
 using Rent.Vehicles.Services.Validators.Interfaces;
@@ -21,7 +21,7 @@ public class UserController : Controller
     private readonly IPublisher _publisher;
     private readonly IValidator<UpdateUserCommand> _updateCommandValidator;
     private readonly IValidator<UpdateUserLicenseImageCommand> _updateImageCommandValidator;
-    private readonly Func<Guid, string> GetLocationUri = (Guid sagaId) =>  $"api/event/{sagaId.ToString()}";
+    private readonly Func<Guid, string> GetLocationUri = sagaId => $"api/event/{sagaId.ToString()}";
 
     public UserController(IValidator<CreateUserCommand> createCommandValidator,
         IUserProjectionFacade projectionFacade, IPublisher publisher,

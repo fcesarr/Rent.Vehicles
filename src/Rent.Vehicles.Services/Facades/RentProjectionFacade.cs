@@ -1,4 +1,3 @@
-
 using System.Linq.Expressions;
 
 using Rent.Vehicles.Entities.Projections;
@@ -12,9 +11,8 @@ namespace Rent.Vehicles.Services.Facades;
 
 public class RentProjectionFacade : IRentProjectionFacade
 {
-    private readonly IRentProjectionDataService _projectionDataService;
-
     private readonly IRentDataService _dataService;
+    private readonly IRentProjectionDataService _projectionDataService;
 
     public RentProjectionFacade(IRentProjectionDataService projectionDataService, IRentDataService dataService)
     {
@@ -22,7 +20,8 @@ public class RentProjectionFacade : IRentProjectionFacade
         _dataService = dataService;
     }
 
-    public async Task<Result<RentResponse>> CreateAsync(CreateRentProjectionEvent @event, CancellationToken cancellationToken = default)
+    public async Task<Result<RentResponse>> CreateAsync(CreateRentProjectionEvent @event,
+        CancellationToken cancellationToken = default)
     {
         var rent = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 
@@ -42,7 +41,8 @@ public class RentProjectionFacade : IRentProjectionFacade
         return entity.Value!.ToResponse();
     }
 
-    public async Task<Result<RentResponse>> UpdateAsync(UpdateRentProjectionEvent @event, CancellationToken cancellationToken = default)
+    public async Task<Result<RentResponse>> UpdateAsync(UpdateRentProjectionEvent @event,
+        CancellationToken cancellationToken = default)
     {
         var rent = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 
@@ -75,13 +75,16 @@ public class RentProjectionFacade : IRentProjectionFacade
         return new CostResponse(entity.Value!.Cost);
     }
 
-    public async Task<Result<RentResponse>> GetAsync(Expression<Func<RentProjection, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<Result<RentResponse>> GetAsync(Expression<Func<RentProjection, bool>> predicate,
+        CancellationToken cancellationToken = default)
     {
         var entity = await _projectionDataService.GetAsync(predicate, cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
+        {
             return entity.Exception!;
-        
+        }
+
         return entity.Value!.ToResponse();
     }
 }

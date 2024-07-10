@@ -1,7 +1,3 @@
-
-using Microsoft.Extensions.Options;
-
-using Rent.Vehicles.Consumers.Settings;
 using Rent.Vehicles.Consumers.Types;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib;
@@ -9,7 +5,6 @@ using Rent.Vehicles.Lib.Extensions;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Responses;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Messages;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.Exceptions;
 
@@ -19,24 +14,22 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     where TEventToConsume : Message
 {
     protected readonly IConsumer _channel;
-    
-    protected readonly ILogger<HandlerMessageBackgroundService<TEventToConsume>> _logger;
-
-    private readonly IPeriodicTimer _periodicTimer;
-
-    private readonly IDictionary<string, int> _retry = new Dictionary<string, int>();
-
-    protected readonly ISerializer _serializer;
 
     private readonly ConsumerSetting _consumerSetting;
 
     private readonly string _guid;
 
-    private readonly SemaphoreSlim _semaphoreSlim;
+    protected readonly ILogger<HandlerMessageBackgroundService<TEventToConsume>> _logger;
+
+    private readonly IPeriodicTimer _periodicTimer;
 
     private readonly string _queueName = typeof(TEventToConsume).Name;
-    
-    protected abstract ConsumerType _type { get; }
+
+    private readonly IDictionary<string, int> _retry = new Dictionary<string, int>();
+
+    private readonly SemaphoreSlim _semaphoreSlim;
+
+    protected readonly ISerializer _serializer;
 
     protected HandlerMessageBackgroundService(ILogger<HandlerMessageBackgroundService<TEventToConsume>> logger,
         IConsumer channel,
@@ -53,29 +46,41 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
         _semaphoreSlim = new SemaphoreSlim(1, _consumerSetting.BufferSize);
     }
 
+    protected abstract ConsumerType _type
+    {
+        get;
+    }
+
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        if(_consumerSetting.Type != ConsumerType.Both &&
+        if (_consumerSetting.Type != ConsumerType.Both &&
             _consumerSetting.Type != _type)
+        {
             return;
-        
-        if(!_consumerSetting.ToIncluded.Any() && _consumerSetting.ToExcluded.Contains(_queueName))
+        }
+
+        if (!_consumerSetting.ToIncluded.Any() && _consumerSetting.ToExcluded.Contains(_queueName))
+        {
             return;
-        
-        if(!_consumerSetting.ToExcluded.Any() && _consumerSetting.ToIncluded.Any() && !_consumerSetting.ToIncluded.Contains(_queueName))
+        }
+
+        if (!_consumerSetting.ToExcluded.Any() && _consumerSetting.ToIncluded.Any() &&
+            !_consumerSetting.ToIncluded.Contains(_queueName))
+        {
             return;
+        }
 
         await _channel.SubscribeAsync(_queueName, cancellationToken);
 
-        _logger.LogInformation("StartAsync {ClassName}: {Guid}", this.GetType().Name, _guid);
+        _logger.LogInformation("StartAsync {ClassName}: {Guid}", GetType().Name, _guid);
 
         await base.StartAsync(cancellationToken);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("StopAsync {ClassName}: {Guid}", this.GetType().Name, _guid);
-        
+        _logger.LogInformation("StopAsync {ClassName}: {Guid}", GetType().Name, _guid);
+
         //await _channel.CloseAsync();
 
         await base.StopAsync(cancellationToken);
@@ -84,9 +89,9 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
-        {   
+        {
             await _semaphoreSlim.WaitAsync(cancellationToken);
-            
+
             ConsumerResponse? consumerResponse = default;
             try
             {
@@ -142,10 +147,13 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
     private async Task TreatNoRetryExceptionAsync(ConsumerResponse? consumerResponse,
         Exception exception, CancellationToken cancellationToken = default)
     {
-        if(consumerResponse is not null)
+        if (consumerResponse is not null)
+        {
             await _channel.RemoveAsync(consumerResponse.Id, cancellationToken);
+        }
 
-        _logger.LogError(exception, "{ClassName} encountered an error: {ErrorMessage}", this.GetType().Name, exception.Message);
+        _logger.LogError(exception, "{ClassName} encountered an error: {ErrorMessage}", GetType().Name,
+            exception.Message);
     }
 
     private async Task TreatRetryExceptionAsync(ConsumerResponse consumerResponse,
@@ -159,7 +167,8 @@ public abstract class HandlerMessageBackgroundService<TEventToConsume> : Backgro
             _retry[hash] = ++count;
         }
 
-        _logger.LogError(exception, "{ClassName} encountered an error: {ErrorMessage}", this.GetType().Name, exception.Message);
+        _logger.LogError(exception, "{ClassName} encountered an error: {ErrorMessage}", GetType().Name,
+            exception.Message);
 
         if (count < 3)
         {

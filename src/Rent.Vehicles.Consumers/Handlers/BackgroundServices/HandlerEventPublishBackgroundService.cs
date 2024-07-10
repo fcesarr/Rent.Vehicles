@@ -1,7 +1,3 @@
-
-using Microsoft.Extensions.Options;
-
-using Rent.Vehicles.Consumers.Settings;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
@@ -59,7 +55,7 @@ public abstract class
         catch (Exception ex)
         {
             await TreatException(@event, ex, cancellationToken).Value!;
-            
+
             return ex;
         }
     }

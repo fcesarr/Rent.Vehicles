@@ -1,17 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 
 using Amqp;
-using Amqp.Framing;
-using Amqp.Types;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Rent.Vehicles.Lib.Interfaces;
-using Rent.Vehicles.Lib.Responses;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Lib;
-using Microsoft.Extensions.Logging;
+
+using ConnectionFactory = RabbitMQ.Client.ConnectionFactory;
+using IConnection = RabbitMQ.Client.IConnection;
 
 namespace Rent.Vehicles.Lib.Extensions;
 
@@ -22,12 +21,13 @@ public static class BrokerExtension
         IConfiguration configuration)
     {
         return services
-            .AddSingleton<RabbitMQ.Client.IConnection>(service => {
+            .AddSingleton<IConnection>(service =>
+            {
                 var configuration = service.GetRequiredService<IConfiguration>();
 
                 var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
 
-                var factory =  new RabbitMQ.Client.ConnectionFactory 
+                var factory = new ConnectionFactory
                 {
                     Uri = new Uri(connectionString),
                     DispatchConsumersAsync = true,
@@ -39,12 +39,12 @@ public static class BrokerExtension
             })
             .AddTransient<IConsumer>(service =>
             {
-                var connection = service.GetRequiredService<RabbitMQ.Client.IConnection>();
+                var connection = service.GetRequiredService<IConnection>();
                 return new RabbitMQConsumer(connection.CreateModel());
             })
-            .AddSingleton<IPublisher>(service => 
+            .AddSingleton<IPublisher>(service =>
             {
-                var connection = service.GetRequiredService<RabbitMQ.Client.IConnection>();
+                var connection = service.GetRequiredService<IConnection>();
                 var serializer = service.GetRequiredService<ISerializer>();
                 return new RabbitMQPublisher(connection.CreateModel(), serializer);
             });
@@ -54,7 +54,7 @@ public static class BrokerExtension
         IConfiguration configuration)
     {
         return services
-            .AddSingleton<ISession>(services => 
+            .AddSingleton<ISession>(services =>
             {
                 var brokerConnectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
 
@@ -64,9 +64,9 @@ public static class BrokerExtension
                     .GetAwaiter()
                     .GetResult();
 
-                return new Session((Connection)connection);
+                return new Session(connection);
             })
-            .AddTransient<IConsumer>(services => 
+            .AddTransient<IConsumer>(services =>
             {
                 var logger = services.GetRequiredService<ILogger<AmqpConsumer>>();
 
@@ -74,7 +74,8 @@ public static class BrokerExtension
 
                 return new AmqpConsumer(logger, session);
             })
-            .AddSingleton<IPublisher>(services => {
+            .AddSingleton<IPublisher>(services =>
+            {
                 var serializer = services.GetRequiredService<ISerializer>();
 
                 var session = services.GetRequiredService<ISession>();

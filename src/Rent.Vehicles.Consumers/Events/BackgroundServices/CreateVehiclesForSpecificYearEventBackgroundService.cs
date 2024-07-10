@@ -6,7 +6,6 @@ using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Services;
-using Rent.Vehicles.Services.Facades.Interfaces;
 
 using Event = Rent.Vehicles.Lib.Event;
 
@@ -21,7 +20,8 @@ public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerEventP
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
-        IOptions<ConsumerSetting> consumerSetting) : base(logger, channel, periodicTimer, serializer, publisher, consumerSetting)
+        IOptions<ConsumerSetting> consumerSetting) : base(logger, channel, periodicTimer, serializer, publisher,
+        consumerSetting)
     {
     }
 
@@ -38,7 +38,8 @@ public class CreateVehiclesForSpecificYearEventBackgroundService : HandlerEventP
     {
         if (@event.Year != 2024)
         {
-            return Task.Run(() => Result<Task>.Failure(new SpecificYearException("Veiculo com ano diferente de 2024")), cancellationToken);
+            return Task.Run(() => Result<Task>.Failure(new SpecificYearException("Veiculo com ano diferente de 2024")),
+                cancellationToken);
         }
 
         return Task.Run(() => Result<Task>.Success(Task.CompletedTask), cancellationToken);

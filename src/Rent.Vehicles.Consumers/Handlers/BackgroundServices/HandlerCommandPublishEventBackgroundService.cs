@@ -1,12 +1,7 @@
-
-using Microsoft.Extensions.Options;
-
-using Rent.Vehicles.Consumers.Settings;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Messages;
 using Rent.Vehicles.Services;
 
 namespace Rent.Vehicles.Consumers.Handlers.BackgroundServices;
@@ -26,7 +21,8 @@ public abstract class
         ISerializer serializer,
         IPublisher publisher,
         IOptions<ConsumerSetting> consumerSetting,
-        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher, consumerSetting)
+        IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
+        consumerSetting)
     {
         _serviceScopeFactory = serviceScopeFactory;
     }

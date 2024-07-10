@@ -82,24 +82,44 @@ public class RentVehiclesContext : DbContext, IDbContext, IUnitOfWorkerContext
         modelBuilder.Entity<RentalPlane>().HasData(
             new RentalPlane
             {
-                NumberOfDays = 7, DailyCost = 30.0m, PreEndDatePercentageFine = 1.20m, PostEndDateFine = 50.0m, Updated = default
+                NumberOfDays = 7,
+                DailyCost = 30.0m,
+                PreEndDatePercentageFine = 1.20m,
+                PostEndDateFine = 50.0m,
+                Updated = default
             },
             new RentalPlane
             {
-                NumberOfDays = 15, DailyCost = 28.0m, PreEndDatePercentageFine = 1.40m, PostEndDateFine = 50.0m, Updated = default
+                NumberOfDays = 15,
+                DailyCost = 28.0m,
+                PreEndDatePercentageFine = 1.40m,
+                PostEndDateFine = 50.0m,
+                Updated = default
             },
             new RentalPlane
             {
-                NumberOfDays = 30, DailyCost = 22.0m, PreEndDatePercentageFine = 1.0m, PostEndDateFine = 50.0m, Updated = default
+                NumberOfDays = 30,
+                DailyCost = 22.0m,
+                PreEndDatePercentageFine = 1.0m,
+                PostEndDateFine = 50.0m,
+                Updated = default
             },
             new RentalPlane
             {
-                NumberOfDays = 45, DailyCost = 20.0m, PreEndDatePercentageFine = 1.0m, PostEndDateFine = 50.0m, Updated = default
+                NumberOfDays = 45,
+                DailyCost = 20.0m,
+                PreEndDatePercentageFine = 1.0m,
+                PostEndDateFine = 50.0m,
+                Updated = default
             }
             ,
             new RentalPlane
             {
-                NumberOfDays = 50, DailyCost = 18.0m, PreEndDatePercentageFine = 1.0m, PostEndDateFine = 50.0m, Updated = default
+                NumberOfDays = 50,
+                DailyCost = 18.0m,
+                PreEndDatePercentageFine = 1.0m,
+                PostEndDateFine = 50.0m,
+                Updated = default
             }
         );
 

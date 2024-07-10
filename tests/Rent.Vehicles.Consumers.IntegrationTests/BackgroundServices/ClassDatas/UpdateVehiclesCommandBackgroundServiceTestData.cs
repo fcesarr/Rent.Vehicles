@@ -22,75 +22,68 @@ public class UpdateVehiclesCommandBackgroundServiceTestData : IEnumerable<object
 
     public IEnumerator<object[]> GetEnumerator()
     {
-        yield return new Func<object[]>(() => {
+        yield return new Func<object[]>(() =>
+        {
             var entity = _fixture.Build<Vehicle>()
-                    .With(x => x.IsRented, false)    
-                .Create();
-            
-            var command = _fixture.Build<UpdateVehiclesCommand>()
-                    .With(x => x.Id, entity.Id)
+                .With(x => x.IsRented, false)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
+            var command = _fixture.Build<UpdateVehiclesCommand>()
+                .With(x => x.Id, entity.Id)
+                .Create();
+
+            return new object[]
+            {
+                new[]
+                {
                     Tuple.Create(nameof(UpdateVehiclesEvent), StatusType.Success),
-                    Tuple.Create(nameof(UpdateVehiclesProjectionEvent), StatusType.Success),
+                    Tuple.Create(nameof(UpdateVehiclesProjectionEvent), StatusType.Success)
                 },
-                HttpStatusCode.OK,
-                new Vehicle[]{entity},
-                command,
-                "/api/vehicle/",
+                HttpStatusCode.OK, new[] { entity }, command, "/api/vehicle/",
                 $"/api/vehicle/{command.LicensePlate}"
             };
         })();
-        yield return new Func<object[]>(() => {
+        yield return new Func<object[]>(() =>
+        {
             var entity = _fixture.Build<Vehicle>()
-                    .With(x => x.IsRented, true)    
-                .Create();
-            
-            var command = _fixture.Build<UpdateVehiclesCommand>()
-                    .With(x => x.Id, entity.Id)
+                .With(x => x.IsRented, true)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(UpdateVehiclesEvent), StatusType.Fail),
-                },
-                HttpStatusCode.OK,
-                new Vehicle[]{entity},
-                command,
-                "/api/vehicle/",
-                $"/api/vehicle/{entity.LicensePlate}"
+            var command = _fixture.Build<UpdateVehiclesCommand>()
+                .With(x => x.Id, entity.Id)
+                .Create();
+
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(UpdateVehiclesEvent), StatusType.Fail) }, HttpStatusCode.OK,
+                new[] { entity }, command, "/api/vehicle/", $"/api/vehicle/{entity.LicensePlate}"
             };
         })();
-        yield return new Func<object[]>(() => {
+        yield return new Func<object[]>(() =>
+        {
             var entity = _fixture.Build<Vehicle>()
-                    .With(x => x.IsRented, false)    
+                .With(x => x.IsRented, false)
                 .Create();
 
             var entityHasCreated = _fixture.Build<Vehicle>()
                 .Create();
-            
+
             var command = _fixture.Build<UpdateVehiclesCommand>()
-                    .With(x => x.Id, entity.Id)
-                    .With(x => x.LicensePlate, entityHasCreated.LicensePlate)
+                .With(x => x.Id, entity.Id)
+                .With(x => x.LicensePlate, entityHasCreated.LicensePlate)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(UpdateVehiclesEvent), StatusType.Fail),
-                },
-                HttpStatusCode.OK,
-                new Vehicle[]{entity, entityHasCreated},
-                command,
-                "/api/vehicle/",
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(UpdateVehiclesEvent), StatusType.Fail) }, HttpStatusCode.OK,
+                new[] { entity, entityHasCreated }, command, "/api/vehicle/",
                 $"/api/vehicle/{entityHasCreated.LicensePlate}"
             };
         })();
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }

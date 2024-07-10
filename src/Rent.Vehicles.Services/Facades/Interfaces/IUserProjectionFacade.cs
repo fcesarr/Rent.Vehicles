@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 
 using Rent.Vehicles.Entities.Projections;
-using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Services.Responses;
 

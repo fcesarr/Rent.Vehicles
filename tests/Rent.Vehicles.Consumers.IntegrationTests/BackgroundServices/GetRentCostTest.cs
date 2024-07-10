@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.Json;
 
 using AutoFixture;
 
@@ -11,15 +10,14 @@ using Rent.Vehicles.Services.Extensions;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
-
 [Collection(nameof(IntegrationTestWebAppFactoryFixture))]
 public class GetRentCostTest : IAsyncLifetime
 {
     private readonly Fixture _fixture;
 
-    private readonly IntegrationTestWebAppFactory _integrationTestWebAppFactory;
-
     private readonly HttpClient _httpClient;
+
+    private readonly IntegrationTestWebAppFactory _integrationTestWebAppFactory;
 
     public GetRentCostTest(IntegrationTestWebAppFactory integrationTestWebAppFactory)
     {
@@ -54,11 +52,14 @@ public class GetRentCostTest : IAsyncLifetime
         {
             _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 
-            if(entity.GetType().Name != "RentalPlane")
-                _ = await _integrationTestWebAppFactory.SaveAsync(ToExtension.ToProjection(entity), cancellationTokenSource.Token);
+            if (entity.GetType().Name != "RentalPlane")
+            {
+                _ = await _integrationTestWebAppFactory.SaveAsync(ToExtension.ToProjection(entity),
+                    cancellationTokenSource.Token);
+            }
         }
 
-        var response = await _httpClient.GetAsync(endpointGet, cancellationToken: cancellationTokenSource.Token);
+        var response = await _httpClient.GetAsync(endpointGet, cancellationTokenSource.Token);
 
         var responseBody = await response.Content.ReadAsStringAsync(cancellationTokenSource.Token);
 

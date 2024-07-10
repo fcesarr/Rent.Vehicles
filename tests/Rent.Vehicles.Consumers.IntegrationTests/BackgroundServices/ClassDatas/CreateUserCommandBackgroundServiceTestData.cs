@@ -23,147 +23,125 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
 
     public IEnumerator<object[]> GetEnumerator()
     {
-        yield return new Func<Task<object[]>>(async () => 
+        yield return new Func<Task<object[]>>(async () =>
         {
             var command = _fixture.Build<CreateUserCommand>()
                 .Without(x => x.Id)
                 .With(x => x.LicenseImage, await GetBase64StringAsync("pngBase64String"))
-            .Create();
+                .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
+            return new object[]
+            {
+                new[]
+                {
                     Tuple.Create(nameof(CreateUserEvent), StatusType.Success),
                     Tuple.Create(nameof(UploadUserLicenseImageEvent), StatusType.Success),
-                    Tuple.Create(nameof(CreateUserProjectionEvent), StatusType.Success),
+                    Tuple.Create(nameof(CreateUserProjectionEvent), StatusType.Success)
                 },
-                HttpStatusCode.OK,
-                Array.Empty<User>(),
-                command,
-                "/api/user/"
+                HttpStatusCode.OK, Array.Empty<User>(), command, "/api/user/"
             };
         })().GetAwaiter().GetResult();
-        yield return new Func<Task<object[]>>(async () => {
-
+        yield return new Func<Task<object[]>>(async () =>
+        {
             var command = _fixture.Build<CreateUserCommand>()
-                    .Without(x => x.Id)
-                    .With(x => x.LicenseImage, await GetBase64StringAsync("bmpBase64String"))
+                .Without(x => x.Id)
+                .With(x => x.LicenseImage, await GetBase64StringAsync("bmpBase64String"))
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
+            return new object[]
+            {
+                new[]
+                {
                     Tuple.Create(nameof(CreateUserEvent), StatusType.Success),
                     Tuple.Create(nameof(UploadUserLicenseImageEvent), StatusType.Success),
-                    Tuple.Create(nameof(CreateUserProjectionEvent), StatusType.Success),
+                    Tuple.Create(nameof(CreateUserProjectionEvent), StatusType.Success)
                 },
-                HttpStatusCode.OK,
-                Array.Empty<User>(),
-                command,
-                "/api/user/"
+                HttpStatusCode.OK, Array.Empty<User>(), command, "/api/user/"
             };
         })().GetAwaiter().GetResult();
-        yield return new Func<Task<object[]>>(async () => {
-
+        yield return new Func<Task<object[]>>(async () =>
+        {
             var command = _fixture.Build<CreateUserCommand>()
-                    .Without(x => x.Id)
-                    .With(x => x.LicenseImage, await GetBase64StringAsync("jpgBase64String"))
+                .Without(x => x.Id)
+                .With(x => x.LicenseImage, await GetBase64StringAsync("jpgBase64String"))
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateUserEvent), StatusType.Fail)
-                },
-                HttpStatusCode.NotFound,
-                Array.Empty<User>(),
-                command,
-                "/api/user/"
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(CreateUserEvent), StatusType.Fail) }, HttpStatusCode.NotFound,
+                Array.Empty<User>(), command, "/api/user/"
             };
         })().GetAwaiter().GetResult();
-        yield return new Func<Task<object[]>>(async () => {
+        yield return new Func<Task<object[]>>(async () =>
+        {
             var entity = _fixture.Create<User>();
 
             var command = _fixture.Build<CreateUserCommand>()
-                    .Without(x => x.Id)
-                    .With(x => x.LicenseImage, await GetBase64StringAsync("pngBase64String"))
-                    .With(x => x.Number, entity.Number)
+                .Without(x => x.Id)
+                .With(x => x.LicenseImage, await GetBase64StringAsync("pngBase64String"))
+                .With(x => x.Number, entity.Number)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateUserEvent), StatusType.Fail)
-                },
-                HttpStatusCode.NotFound,
-                new User[]{entity},
-                command,
-                "/api/user/"
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(CreateUserEvent), StatusType.Fail) }, HttpStatusCode.NotFound,
+                new[] { entity }, command, "/api/user/"
             };
         })().GetAwaiter().GetResult();
-        yield return new Func<Task<object[]>>(async () => {
+        yield return new Func<Task<object[]>>(async () =>
+        {
             var entity = _fixture.Create<User>();
 
             var command = _fixture.Build<CreateUserCommand>()
-                    .Without(x => x.Id)
-                    .With(x => x.LicenseImage, await GetBase64StringAsync("bmpBase64String"))
-                    .With(x => x.Number, entity.Number)
+                .Without(x => x.Id)
+                .With(x => x.LicenseImage, await GetBase64StringAsync("bmpBase64String"))
+                .With(x => x.Number, entity.Number)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateUserEvent), StatusType.Fail)
-                },
-                HttpStatusCode.NotFound,
-                new User[]{entity},
-                command,
-                "/api/user/"
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(CreateUserEvent), StatusType.Fail) }, HttpStatusCode.NotFound,
+                new[] { entity }, command, "/api/user/"
             };
         })().GetAwaiter().GetResult();
-        yield return new Func<Task<object[]>>(async () => {
+        yield return new Func<Task<object[]>>(async () =>
+        {
             var entity = _fixture.Create<User>();
 
             var command = _fixture.Build<CreateUserCommand>()
-                    .Without(x => x.Id)
-                    .With(x => x.LicenseImage, await GetBase64StringAsync("pngBase64String"))
-                    .With(x => x.LicenseNumber, entity.LicenseNumber)
+                .Without(x => x.Id)
+                .With(x => x.LicenseImage, await GetBase64StringAsync("pngBase64String"))
+                .With(x => x.LicenseNumber, entity.LicenseNumber)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateUserEvent), StatusType.Fail)
-                },
-                HttpStatusCode.NotFound,
-                new User[]{entity},
-                command,
-                "/api/user/"
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(CreateUserEvent), StatusType.Fail) }, HttpStatusCode.NotFound,
+                new[] { entity }, command, "/api/user/"
             };
         })().GetAwaiter().GetResult();
-        yield return new Func<Task<object[]>>(async () => {
+        yield return new Func<Task<object[]>>(async () =>
+        {
             var entity = _fixture.Create<User>();
 
             var command = _fixture.Build<CreateUserCommand>()
-                    .Without(x => x.Id)
-                    .With(x => x.LicenseImage, await GetBase64StringAsync("bmpBase64String"))
-                    .With(x => x.LicenseNumber, entity.LicenseNumber)
+                .Without(x => x.Id)
+                .With(x => x.LicenseImage, await GetBase64StringAsync("bmpBase64String"))
+                .With(x => x.LicenseNumber, entity.LicenseNumber)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateUserEvent), StatusType.Fail)
-                },
-                HttpStatusCode.NotFound,
-                new User[]{entity},
-                command,
-                "/api/user/"
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(CreateUserEvent), StatusType.Fail) }, HttpStatusCode.NotFound,
+                new[] { entity }, command, "/api/user/"
             };
         })().GetAwaiter().GetResult();
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
     private static async Task<string> GetBase64StringAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -173,9 +151,9 @@ public class CreateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
 
         var assembly = Assembly.GetExecutingAssembly();
 
-        if(assembly.GetManifestResourceStream(name) is Stream stream)
+        if (assembly.GetManifestResourceStream(name) is Stream stream)
         {
-            using StreamReader reader = new StreamReader(stream);
+            using var reader = new StreamReader(stream);
             result = await reader.ReadToEndAsync(cancellationToken);
             await stream.DisposeAsync();
         }

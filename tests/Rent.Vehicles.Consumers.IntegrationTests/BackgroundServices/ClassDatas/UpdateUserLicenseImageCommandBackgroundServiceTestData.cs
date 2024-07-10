@@ -23,79 +23,72 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTestData : IEnumerabl
 
     public IEnumerator<object[]> GetEnumerator()
     {
-        yield return new Func<Task<object[]>>(async () => 
+        yield return new Func<Task<object[]>>(async () =>
         {
             var entity = _fixture
                 .Create<User>();
 
             var command = _fixture.Build<UpdateUserLicenseImageCommand>()
-                    .With(x => x.Id, entity.Id)
-                    .With(x => x.LicenseImage, await GetBase64StringAsync("pngBase64String"))
+                .With(x => x.Id, entity.Id)
+                .With(x => x.LicenseImage, await GetBase64StringAsync("pngBase64String"))
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
+            return new object[]
+            {
+                new[]
+                {
                     Tuple.Create(nameof(UpdateUserLicenseImageEvent), StatusType.Success),
                     Tuple.Create(nameof(UploadUserLicenseImageEvent), StatusType.Success),
-                    Tuple.Create(nameof(UpdateUserProjectionEvent), StatusType.Success),
+                    Tuple.Create(nameof(UpdateUserProjectionEvent), StatusType.Success)
                 },
-                HttpStatusCode.OK,
-                new User[]{entity},
-                command,
-                "/api/user/upload/licenseImage",
+                HttpStatusCode.OK, new[] { entity }, command, "/api/user/upload/licenseImage",
                 $"/api/user/{command.Id.ToString()}"
             };
         })().GetAwaiter().GetResult();
-        yield return new Func<Task<object[]>>(async () => 
+        yield return new Func<Task<object[]>>(async () =>
         {
             var entity = _fixture
                 .Create<User>();
 
             var command = _fixture.Build<UpdateUserLicenseImageCommand>()
-                    .With(x => x.Id, entity.Id)
-                    .With(x => x.LicenseImage, await GetBase64StringAsync("bmpBase64String"))
+                .With(x => x.Id, entity.Id)
+                .With(x => x.LicenseImage, await GetBase64StringAsync("bmpBase64String"))
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
+            return new object[]
+            {
+                new[]
+                {
                     Tuple.Create(nameof(UpdateUserLicenseImageEvent), StatusType.Success),
                     Tuple.Create(nameof(UploadUserLicenseImageEvent), StatusType.Success),
-                    Tuple.Create(nameof(UpdateUserProjectionEvent), StatusType.Success),
+                    Tuple.Create(nameof(UpdateUserProjectionEvent), StatusType.Success)
                 },
-                HttpStatusCode.OK,
-                new User[]{entity},
-                command,
-                "/api/user/upload/licenseImage",
+                HttpStatusCode.OK, new[] { entity }, command, "/api/user/upload/licenseImage",
                 $"/api/user/{command.Id.ToString()}"
             };
         })().GetAwaiter().GetResult();
-        yield return new Func<Task<object[]>>(async () => 
+        yield return new Func<Task<object[]>>(async () =>
         {
             var entity = _fixture
                 .Create<User>();
 
             var command = _fixture.Build<UpdateUserLicenseImageCommand>()
-                    .With(x => x.Id, entity.Id)
-                    .With(x => x.LicenseImage, await GetBase64StringAsync("jpgBase64String"))
+                .With(x => x.Id, entity.Id)
+                .With(x => x.LicenseImage, await GetBase64StringAsync("jpgBase64String"))
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(UpdateUserLicenseImageEvent), StatusType.Fail)
-                },
-                HttpStatusCode.OK,
-                new User[]{entity},
-                command,
-                "/api/user/upload/licenseImage",
-                $"/api/user/{command.Id.ToString()}"
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(UpdateUserLicenseImageEvent), StatusType.Fail) }, HttpStatusCode.OK,
+                new[] { entity }, command, "/api/user/upload/licenseImage", $"/api/user/{command.Id.ToString()}"
             };
         })().GetAwaiter().GetResult();
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
     private static async Task<string> GetBase64StringAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -105,9 +98,9 @@ public class UpdateUserLicenseImageCommandBackgroundServiceTestData : IEnumerabl
 
         var assembly = Assembly.GetExecutingAssembly();
 
-        if(assembly.GetManifestResourceStream(name) is Stream stream)
+        if (assembly.GetManifestResourceStream(name) is Stream stream)
         {
-            using StreamReader reader = new StreamReader(stream);
+            using var reader = new StreamReader(stream);
             result = await reader.ReadToEndAsync(cancellationToken);
             await stream.DisposeAsync();
         }

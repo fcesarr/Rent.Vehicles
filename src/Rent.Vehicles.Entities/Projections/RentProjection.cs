@@ -1,7 +1,4 @@
-using MongoDB.Bson.Serialization.Attributes;
-
 namespace Rent.Vehicles.Entities.Projections;
-
 
 public class RentProjection : Entity
 {

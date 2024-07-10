@@ -27,7 +27,8 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
         _repository = repository;
     }
 
-    public virtual async Task<Result<TEntity>> CreateAsync(TEntity? entity, CancellationToken cancellationToken = default)
+    public virtual async Task<Result<TEntity>> CreateAsync(TEntity? entity,
+        CancellationToken cancellationToken = default)
     {
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 
@@ -83,7 +84,8 @@ public abstract class DataService<TEntity> : IDataService<TEntity> where TEntity
         return entity;
     }
 
-    public virtual async Task<Result<TEntity>> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual async Task<Result<TEntity>> UpdateAsync(TEntity entity,
+        CancellationToken cancellationToken = default)
     {
         var result = await _validator.ValidateAsync(entity, cancellationToken);
 

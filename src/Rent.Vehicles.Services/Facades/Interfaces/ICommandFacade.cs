@@ -1,7 +1,5 @@
 using Rent.Vehicles.Entities.Types;
 using Rent.Vehicles.Lib;
-using Rent.Vehicles.Lib.Types;
-using Rent.Vehicles.Messages;
 using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Services.Facades.Interfaces;

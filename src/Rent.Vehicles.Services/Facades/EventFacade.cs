@@ -1,11 +1,10 @@
 using System.Linq.Expressions;
 
-using Rent.Vehicles.Entities;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
+using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Services.Facades;
@@ -22,7 +21,7 @@ public class EventFacade : IEventFacade
         _serializer = serializer;
     }
 
-    public async Task<Result<EventResponse>> CreateAsync(Messages.Events.Event @event,
+    public async Task<Result<EventResponse>> CreateAsync(Event @event,
         CancellationToken cancellationToken = default)
     {
         var data = await _serializer.SerializeAsync(@event, cancellationToken);
@@ -37,9 +36,9 @@ public class EventFacade : IEventFacade
         return entity.Value!.ToResponse();
     }
 
-    public async Task<Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Event, bool>> predicate,
+    public async Task<Result<IEnumerable<EventResponse>>> FindAsync(Expression<Func<Entities.Event, bool>> predicate,
         bool descending = false,
-        Expression<Func<Event, dynamic>>? orderBy = default,
+        Expression<Func<Entities.Event, dynamic>>? orderBy = default,
         CancellationToken cancellationToken = default)
     {
         var entities = await _dataService.FindAsync(predicate, false, orderBy, cancellationToken);

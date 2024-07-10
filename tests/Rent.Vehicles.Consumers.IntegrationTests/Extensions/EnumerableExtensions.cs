@@ -9,12 +9,16 @@ public static class EnumerableExtensions
         using (var enumerator = source.GetEnumerator())
         {
             if (!enumerator.MoveNext())
+            {
                 return false;
+            }
 
             do
             {
                 if (!predicate(enumerator.Current))
+                {
                     return false;
+                }
             } while (enumerator.MoveNext());
 
             return true;

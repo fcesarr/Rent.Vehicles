@@ -1,19 +1,13 @@
-
-
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using Rent.Vehicles.Services;
-using Rent.Vehicles.Services.Exceptions;
 using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Services.Settings;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests;
 
 public interface IStreamUploadService : IUploadService
 {
-   
 }
 
 public class StreamUploadService : UploadService, IStreamUploadService

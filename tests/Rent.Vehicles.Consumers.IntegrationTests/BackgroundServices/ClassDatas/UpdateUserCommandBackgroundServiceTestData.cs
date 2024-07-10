@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Net;
-using System.Reflection;
 
 using AutoFixture;
 
@@ -23,29 +22,27 @@ public class UpdateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
 
     public IEnumerator<object[]> GetEnumerator()
     {
-        yield return new Func<object[]>(() => 
+        yield return new Func<object[]>(() =>
         {
             var entity = _fixture
                 .Create<User>();
 
             var command = _fixture.Build<UpdateUserCommand>()
-                    .With(x => x.Id, entity.Id)
+                .With(x => x.Id, entity.Id)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
+            return new object[]
+            {
+                new[]
+                {
                     Tuple.Create(nameof(UpdateUserEvent), StatusType.Success),
-                    Tuple.Create(nameof(UpdateUserProjectionEvent), StatusType.Success),
+                    Tuple.Create(nameof(UpdateUserProjectionEvent), StatusType.Success)
                 },
-                HttpStatusCode.OK,
-                new User[]{entity},
-                command,
-                "/api/user/",
+                HttpStatusCode.OK, new[] { entity }, command, "/api/user/",
                 $"/api/user/{command?.Id.ToString()}"
             };
         })();
-        yield return new Func<object[]>(() => 
+        yield return new Func<object[]>(() =>
         {
             var entity = _fixture
                 .Create<User>();
@@ -54,23 +51,18 @@ public class UpdateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 .Create<User>();
 
             var command = _fixture.Build<UpdateUserCommand>()
-                    .With(x => x.Id, entity.Id)
-                    .With(x => x.LicenseNumber, entityHasCreated.LicenseNumber)
+                .With(x => x.Id, entity.Id)
+                .With(x => x.LicenseNumber, entityHasCreated.LicenseNumber)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(UpdateUserEvent), StatusType.Fail)
-                },
-                HttpStatusCode.OK,
-                new User[]{entity, entityHasCreated},
-                command,
-                "/api/user/",
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(UpdateUserEvent), StatusType.Fail) }, HttpStatusCode.OK,
+                new[] { entity, entityHasCreated }, command, "/api/user/",
                 $"/api/user/{entityHasCreated.Id.ToString()}"
             };
         })();
-        yield return new Func<object[]>(() => 
+        yield return new Func<object[]>(() =>
         {
             var entity = _fixture
                 .Create<User>();
@@ -79,23 +71,21 @@ public class UpdateUserCommandBackgroundServiceTestData : IEnumerable<object[]>
                 .Create<User>();
 
             var command = _fixture.Build<UpdateUserCommand>()
-                    .With(x => x.Id, entity.Id)
-                    .With(x => x.Number, entityHasCreated.Number)
+                .With(x => x.Id, entity.Id)
+                .With(x => x.Number, entityHasCreated.Number)
                 .Create();
 
-            return new object[] 
-            { 
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(UpdateUserEvent), StatusType.Fail)
-                },
-                HttpStatusCode.OK,
-                new User[]{entity, entityHasCreated},
-                command,
-                "/api/user/",
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(UpdateUserEvent), StatusType.Fail) }, HttpStatusCode.OK,
+                new[] { entity, entityHasCreated }, command, "/api/user/",
                 $"/api/user/{entityHasCreated.Id.ToString()}"
             };
         })();
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }

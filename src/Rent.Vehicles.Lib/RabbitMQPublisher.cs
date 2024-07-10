@@ -1,7 +1,7 @@
 using RabbitMQ.Client;
 
-using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Lib.Interfaces;
+using Rent.Vehicles.Lib.Serializers.Interfaces;
 
 namespace Rent.Vehicles.Lib;
 

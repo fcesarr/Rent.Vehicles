@@ -1,4 +1,3 @@
-using Rent.Vehicles.Messages;
 using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Services.Responses;
 

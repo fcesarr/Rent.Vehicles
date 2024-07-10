@@ -22,7 +22,7 @@ public class CreateVehiclesEventBackgroundService : HandlerEventServicePublishEv
         IPublisher publisher,
         IOptions<ConsumerSetting> consumerSetting,
         IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
-            consumerSetting, serviceScopeFactory)
+        consumerSetting, serviceScopeFactory)
     {
     }
 

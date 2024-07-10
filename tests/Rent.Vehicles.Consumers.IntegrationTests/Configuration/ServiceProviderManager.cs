@@ -1,6 +1,6 @@
-using Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit.Abstractions;
+
+using Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Configuration;
 
@@ -15,10 +15,21 @@ public class ServiceProviderManager : IDisposable
         _serviceProvider = serviceProvider;
     }
 
+
+    public void Dispose()
+    {
+        if (_serviceProvider != null)
+        {
+            _serviceProvider.Dispose();
+        }
+    }
+
     public static ServiceProviderManager GetInstance()
     {
-        if(_serviceProviderManager != null)
+        if (_serviceProviderManager != null)
+        {
             return _serviceProviderManager;
+        }
 
         var configuration = ConfigurationManager.GetInstance()
             .GetConfiguration();
@@ -26,20 +37,13 @@ public class ServiceProviderManager : IDisposable
         var services = new ServiceCollection();
 
         services.AddServicesTests(configuration)
-                .AddSingleton(configuration);
+            .AddSingleton(configuration);
 
         var serviceProvider = services.BuildServiceProvider();
 
         _serviceProviderManager = new ServiceProviderManager(serviceProvider);
 
         return _serviceProviderManager;
-    }
-
-
-    public void Dispose()
-    {
-        if (_serviceProvider != null)
-            _serviceProvider.Dispose();
     }
 
     public ServiceProvider GetServiceProvider()

@@ -1,10 +1,8 @@
-
 using Rent.Vehicles.Consumers.Handlers.BackgroundServices;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Entities.Types;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Lib.Types;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Services;
@@ -12,19 +10,19 @@ using Rent.Vehicles.Services.Facades.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Commands.BackgroundServices;
 
-
 public class UpdateUserCommandBackgroundService : HandlerCommandPublishEventBackgroundService<
     UpdateUserCommand,
     UpdateUserEvent>
 {
-    public UpdateUserCommandBackgroundService(ILogger<HandlerCommandPublishEventBackgroundService<UpdateUserCommand, UpdateUserEvent>> logger,
+    public UpdateUserCommandBackgroundService(
+        ILogger<HandlerCommandPublishEventBackgroundService<UpdateUserCommand, UpdateUserEvent>> logger,
         IConsumer channel,
         IPeriodicTimer periodicTimer,
         ISerializer serializer,
         IPublisher publisher,
         IOptions<ConsumerSetting> consumerSetting,
         IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
-            consumerSetting, serviceScopeFactory)
+        consumerSetting, serviceScopeFactory)
     {
     }
 
@@ -42,7 +40,8 @@ public class UpdateUserCommandBackgroundService : HandlerCommandPublishEventBack
         };
     }
 
-    protected async override Task<Result<Task>> HandlerMessageAsync(UpdateUserCommand command, CancellationToken cancellationToken = default)
+    protected override async Task<Result<Task>> HandlerMessageAsync(UpdateUserCommand command,
+        CancellationToken cancellationToken = default)
     {
         using var serviceScope = _serviceScopeFactory.CreateScope();
 

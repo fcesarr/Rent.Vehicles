@@ -11,8 +11,8 @@ namespace Rent.Vehicles.Services.Facades;
 
 public class VehicleProjectionFacade : IVehicleProjectionFacade
 {
-    private readonly IVehicleProjectionDataService _projectionDataService;
     private readonly IVehicleDataService _dataService;
+    private readonly IVehicleProjectionDataService _projectionDataService;
 
     public VehicleProjectionFacade(IVehicleDataService vehicleDataService, IVehicleProjectionDataService dataService)
     {
@@ -31,7 +31,8 @@ public class VehicleProjectionFacade : IVehicleProjectionFacade
         }
 
         var entity =
-            await _projectionDataService.CreateAsync(vehicle.Value!.ToProjection<VehicleProjection>(), cancellationToken);
+            await _projectionDataService.CreateAsync(vehicle.Value!.ToProjection<VehicleProjection>(),
+                cancellationToken);
 
         if (!entity.IsSuccess)
         {
@@ -54,13 +55,16 @@ public class VehicleProjectionFacade : IVehicleProjectionFacade
         return entity;
     }
 
-    public async Task<Result<VehicleResponse>> GetAsync(Expression<Func<VehicleProjection, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<Result<VehicleResponse>> GetAsync(Expression<Func<VehicleProjection, bool>> predicate,
+        CancellationToken cancellationToken = default)
     {
         var entity = await _projectionDataService.GetAsync(predicate, cancellationToken);
 
-        if(!entity.IsSuccess)
+        if (!entity.IsSuccess)
+        {
             return entity.Exception!;
-        
+        }
+
         return entity.Value!.ToResponse();
     }
 
@@ -75,7 +79,8 @@ public class VehicleProjectionFacade : IVehicleProjectionFacade
         }
 
         var entity =
-            await _projectionDataService.UpdateAsync(vehicle.Value!.ToProjection<VehicleProjection>(), cancellationToken);
+            await _projectionDataService.UpdateAsync(vehicle.Value!.ToProjection<VehicleProjection>(),
+                cancellationToken);
 
         if (!entity.IsSuccess)
         {

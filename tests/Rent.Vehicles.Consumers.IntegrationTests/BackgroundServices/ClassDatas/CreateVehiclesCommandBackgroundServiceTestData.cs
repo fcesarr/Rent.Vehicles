@@ -22,63 +22,62 @@ public class CreateVehiclesCommandBackgroundServiceTestData : IEnumerable<object
 
     public IEnumerator<object[]> GetEnumerator()
     {
-        yield return new Func<object[]>(() => {
+        yield return new Func<object[]>(() =>
+        {
             var command = _fixture.Build<CreateVehiclesCommand>()
-                    .With(x => x.Year, 2024)
+                .With(x => x.Year, 2024)
                 .Create();
 
-            return new object[]{
-                new Tuple<string, StatusType>[] { 
+            return new object[]
+            {
+                new[]
+                {
                     Tuple.Create(nameof(CreateVehiclesEvent), StatusType.Success),
                     Tuple.Create(nameof(CreateVehiclesForSpecificYearEvent), StatusType.Success),
                     Tuple.Create(nameof(CreateVehiclesProjectionEvent), StatusType.Success),
                     Tuple.Create(nameof(CreateVehiclesForSpecificYearProjectionEvent), StatusType.Success)
                 },
-                HttpStatusCode.OK,
-                Array.Empty<Vehicle>(),
-                command,
-                "/api/vehicle/",
+                HttpStatusCode.OK, Array.Empty<Vehicle>(), command, "/api/vehicle/",
                 $"/api/vehicle/{command.LicensePlate}"
             };
         })();
-        yield return new Func<object[]>(() => {
+        yield return new Func<object[]>(() =>
+        {
             var command = _fixture.Build<CreateVehiclesCommand>()
-                    .With(x => x.Year, 2025)
+                .With(x => x.Year, 2025)
                 .Create();
 
-            return new object[]{
-                new Tuple<string, StatusType>[] { 
+            return new object[]
+            {
+                new[]
+                {
                     Tuple.Create(nameof(CreateVehiclesEvent), StatusType.Success),
                     Tuple.Create(nameof(CreateVehiclesForSpecificYearEvent), StatusType.Fail),
                     Tuple.Create(nameof(CreateVehiclesProjectionEvent), StatusType.Success)
                 },
-                HttpStatusCode.OK,
-                Array.Empty<Vehicle>(),
-                command,
-                "/api/vehicle/",
+                HttpStatusCode.OK, Array.Empty<Vehicle>(), command, "/api/vehicle/",
                 $"/api/vehicle/{command.LicensePlate}"
             };
         })();
-        yield return new Func<object[]>(() => {
+        yield return new Func<object[]>(() =>
+        {
             var entity = _fixture
                 .Create<Vehicle>();
 
             var command = _fixture.Build<CreateVehiclesCommand>()
-                    .With(x => x.LicensePlate, entity.LicensePlate)
+                .With(x => x.LicensePlate, entity.LicensePlate)
                 .Create();
 
-            return new object[]{
-                new Tuple<string, StatusType>[] { 
-                    Tuple.Create(nameof(CreateVehiclesEvent), StatusType.Fail)
-                },
-                HttpStatusCode.NotFound,
-                new Vehicle[]{entity},
-                command,
-                "/api/vehicle/",
-                $"/api/vehicle/{command.LicensePlate}"
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(CreateVehiclesEvent), StatusType.Fail) }, HttpStatusCode.NotFound,
+                new[] { entity }, command, "/api/vehicle/", $"/api/vehicle/{command.LicensePlate}"
             };
         })();
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 }

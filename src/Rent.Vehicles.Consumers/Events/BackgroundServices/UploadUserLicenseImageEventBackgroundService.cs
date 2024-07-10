@@ -3,9 +3,7 @@ using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Events;
-using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Services;
-using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
 
 namespace Rent.Vehicles.Consumers.Events.BackgroundServices;
@@ -20,7 +18,7 @@ public class UploadUserLicenseImageEventBackgroundService : HandlerEventServiceP
         IPublisher publisher,
         IOptions<ConsumerSetting> consumerSetting,
         IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
-            consumerSetting, serviceScopeFactory)
+        consumerSetting, serviceScopeFactory)
     {
     }
 

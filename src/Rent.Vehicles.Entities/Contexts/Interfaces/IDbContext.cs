@@ -6,11 +6,18 @@ namespace Rent.Vehicles.Entities.Contexts.Interfaces;
 
 public interface IDbContext : IDisposable
 {
-    DatabaseFacade Database { get; }
+    DatabaseFacade Database
+    {
+        get;
+    }
+
+    ChangeTracker ChangeTracker
+    {
+        get;
+    }
+
     DbSet<TEntity> Set<TEntity>() where TEntity : class;
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     EntityEntry Entry(object entity);
-
-    ChangeTracker ChangeTracker { get; }
 }

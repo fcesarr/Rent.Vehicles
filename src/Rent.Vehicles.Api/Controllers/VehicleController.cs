@@ -1,14 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 
 using Rent.Vehicles.Api.Extensions;
-using Rent.Vehicles.Api.Responses;
 using Rent.Vehicles.Entities.Projections;
-using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Lib.Interfaces;
+using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Services.Facades.Interfaces;
-using Rent.Vehicles.Services.Interfaces;
 using Rent.Vehicles.Services.Validators.Interfaces;
-using Rent.Vehicles.Services.Responses;
 
 using CommandResponse = Rent.Vehicles.Api.Responses.CommandResponse;
 
@@ -20,11 +17,11 @@ namespace Rent.Vehicles.Api.Controllers;
 public class VehicleController : Controller
 {
     private readonly IValidator<CreateVehiclesCommand> _createCommandValidator;
-    private readonly IVehicleProjectionFacade _vehicleProjectionFacade;
     private readonly IValidator<DeleteVehiclesCommand> _deleteCommandValidator;
     private readonly IPublisher _publisher;
     private readonly IValidator<UpdateVehiclesCommand> _updateCommandValidator;
-    private readonly Func<Guid, string> GetLocationUri = (Guid sagaId) =>  $"api/event/{sagaId.ToString()}";
+    private readonly IVehicleProjectionFacade _vehicleProjectionFacade;
+    private readonly Func<Guid, string> GetLocationUri = sagaId => $"api/event/{sagaId.ToString()}";
 
     public VehicleController(IPublisher publisher, IValidator<CreateVehiclesCommand> createCommandValidator,
         IValidator<UpdateVehiclesCommand> updateCommandValidator,
@@ -84,10 +81,7 @@ public class VehicleController : Controller
     public async Task<IResult> DeleteAsync([FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
-        var command = new DeleteVehiclesCommand
-        {
-            Id = id,
-        };
+        var command = new DeleteVehiclesCommand { Id = id };
 
         var result = await _deleteCommandValidator
             .ValidateAsync(command, cancellationToken);

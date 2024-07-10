@@ -1,68 +1,67 @@
+using System.CommandLine;
+using System.Diagnostics;
+using System.Reflection;
+
+using HealthChecks.UI.Client;
+
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+
 using MongoDB.Driver;
 
-using RabbitMQ.Client;
-
-using Rent.Vehicles.Consumers;
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
-using Rent.Vehicles.Services.Extensions;
+using Rent.Vehicles.Consumers.Types;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Contexts;
 using Rent.Vehicles.Entities.Contexts.Interfaces;
 using Rent.Vehicles.Entities.Extensions;
 using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Lib.Constants;
+using Rent.Vehicles.Lib.Extensions;
 using Rent.Vehicles.Lib.Serializers;
-using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Services.Repositories;
-using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Settings;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
-using Rent.Vehicles.Lib.Constants;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using HealthChecks.UI.Client;
-using Rent.Vehicles.Lib.Extensions;
+
 using Serilog;
-using System.Reflection;
-using System.Diagnostics;
-using System.CommandLine;
-using Rent.Vehicles.Consumers.Types;
-using Rent.Vehicles.Consumers.Settings;
+
+using Command = Rent.Vehicles.Entities.Command;
 
 var rootCommand = new RootCommand("Sample command-line app");
 
 var consumerTypeOption = new Option<ConsumerType>(
-	new string[] {"-t", "--type"},
-	description: "Type of consumer",
-	getDefaultValue: () => ConsumerType.Both);
+    new[] { "-t", "--type" },
+    description: "Type of consumer",
+    getDefaultValue: () => ConsumerType.Both);
 
 rootCommand.AddOption(consumerTypeOption);
 
 var bufferSizeOption = new Option<int>(
-	new string[] {"-s", "--size"},
-	description: "Buffer Size",
-	getDefaultValue: () => 5);
+    new[] { "-s", "--size" },
+    description: "Buffer Size",
+    getDefaultValue: () => 5);
 
 rootCommand.AddOption(bufferSizeOption);
 
 var toExcludedOption = new Option<IEnumerable<string>>(
-	new string[] {"-e", "--excluded"},
-	description: "To Excluded",
-	getDefaultValue: () => []);
+    new[] { "-e", "--excluded" },
+    description: "To Excluded",
+    getDefaultValue: () => []);
 
 rootCommand.AddOption(toExcludedOption);
 
 var toIncludedOption = new Option<IEnumerable<string>>(
-	new string[] {"-i", "--included"},
-	description: "To Included",
-	getDefaultValue: () => []);
+    new[] { "-i", "--included" },
+    description: "To Included",
+    getDefaultValue: () => []);
 
 rootCommand.AddOption(toIncludedOption);
 
@@ -93,7 +92,7 @@ rootCommand.SetHandler(async (consumerType, bufferSize, toExcluded, toIncluded) 
     builder.Services
         .AddCustomHealthCheck(builder.Configuration)
         .AddDbContextDependencies<IDbContext, RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??
-                                                                string.Empty)
+                                                                   string.Empty)
         .AddTransient<IPeriodicTimer>(service =>
         {
             PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(500));
@@ -145,7 +144,7 @@ rootCommand.SetHandler(async (consumerType, bufferSize, toExcluded, toIncluded) 
             EventFacade>()
         // Event
         // Command
-        .AddDataDomain<Rent.Vehicles.Entities.Command,
+        .AddDataDomain<Command,
             ICommandValidator,
             CommandValidator,
             ICommandDataService,
@@ -181,7 +180,8 @@ rootCommand.SetHandler(async (consumerType, bufferSize, toExcluded, toIncluded) 
             RentFacade>()
         // Rent
         // RentPlane
-        .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
+        .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService,
+            RentalPlaneDataService>()
         // RentPlane
         .AddSingleton<IUploadService, FileUploadService>()
         .AddSingleton<Func<string, byte[], CancellationToken, Task>>(service => File.WriteAllBytesAsync)
@@ -237,17 +237,19 @@ rootCommand.SetHandler(async (consumerType, bufferSize, toExcluded, toIncluded) 
 
     app.UseRouting();
 
-    app.MapHealthChecks(HealthCheckUri.Ready, new HealthCheckOptions
-    {
-        Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
-        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    });
+    app.MapHealthChecks(HealthCheckUri.Ready,
+        new HealthCheckOptions
+        {
+            Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
 
-    app.MapHealthChecks(HealthCheckUri.Live, new HealthCheckOptions
-    {
-        Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
-        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    });
+    app.MapHealthChecks(HealthCheckUri.Live,
+        new HealthCheckOptions
+        {
+            Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
+            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
 
     await app.RunAsync();
 }, consumerTypeOption, bufferSizeOption, toExcludedOption, toIncludedOption);

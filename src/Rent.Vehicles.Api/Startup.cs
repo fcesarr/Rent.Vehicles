@@ -1,11 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+using HealthChecks.UI.Client;
+
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 using RabbitMQ.Client;
@@ -15,93 +16,86 @@ using Rent.Vehicles.Entities.Contexts;
 using Rent.Vehicles.Entities.Contexts.Interfaces;
 using Rent.Vehicles.Entities.Extensions;
 using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Lib.Constants;
+using Rent.Vehicles.Lib.Extensions;
 using Rent.Vehicles.Lib.Serializers;
-using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Services.Repositories;
-using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
-using Rent.Vehicles.Services.Extensions;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using HealthChecks.UI.Client;
-using Rent.Vehicles.Lib.Constants;
-using Rent.Vehicles.Lib.Extensions;
-using Serilog;
-using System.Reflection;
-using System.Diagnostics;
-using Rent.Vehicles.Messages;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Rent.Vehicles.Api;
 
 [ExcludeFromCodeCoverage]
 public class Startup
 {
-    public IConfiguration Configuration { get; }
-
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
+    }
+
+    public IConfiguration Configuration
+    {
+        get;
     }
 
     public void ConfigureServices(IServiceCollection services)
     {
         //
 
-            services.AddRouting(options => options.LowercaseUrls = true);
+        services.AddRouting(options => options.LowercaseUrls = true);
 
-            services
-                .AddCustomHealthCheck(Configuration)
-                .AddDbContextDependencies<IDbContext,
-                    RentVehiclesContext>(Configuration.GetConnectionString("Sql") ??string.Empty)
-                // UserProjection
-                .AddProjectionDomain<UserProjection,
-                    IUserProjectionDataService,
-                    UserProjectionDataService,
-                    IUserProjectionFacade,
-                    UserProjectionFacade>()
-                .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
-                // UserProjection
-                // VehicleProjection
-                .AddProjectionDomain<VehicleProjection,
-                    IVehicleProjectionDataService,
-                    VehicleProjectionDataService,
-                    IVehicleProjectionFacade,
-                    VehicleProjectionFacade>()
-                .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()
-                // VehicleProjection
-                // VehiclesForSpecificYearProjection
-                .AddProjectionDomain<VehiclesForSpecificYearProjection,
-                    IVehiclesForSpecificYearProjectionDataService,
-                    VehiclesForSpecificYearProjectionDataService,
-                    IVehiclesForSpecificYearProjectionFacade,
-                    VehiclesForSpecificYearProjectionFacade>()
-                // VehiclesForSpecificYearProjection
-                // RentProjection
-                .AddProjectionDomain<RentProjection,
-                    IRentProjectionDataService,
-                    RentProjectionDataService,
-                    IRentProjectionFacade,
-                    RentProjectionFacade>()
-                .AddDataDomain<Rent.Vehicles.Entities.Rent, IRentValidator, RentValidator, IRentDataService, RentDataService>()
-                // RentProjection
-                // EventProjection
-                .AddProjectionDomain<EventProjection,
-                    IEventProjectionDataService,
-                    EventProjectionDataService,
-                    IEventProjectionFacade,
-                    EventProjectionFacade>()
-                .AddDataDomain<Rent.Vehicles.Entities.Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
-                // EventProjection
-                .AddAmqpLiteBroker(Configuration)
+        services
+            .AddCustomHealthCheck(Configuration)
+            .AddDbContextDependencies<IDbContext,
+                RentVehiclesContext>(Configuration.GetConnectionString("Sql") ?? string.Empty)
+            // UserProjection
+            .AddProjectionDomain<UserProjection,
+                IUserProjectionDataService,
+                UserProjectionDataService,
+                IUserProjectionFacade,
+                UserProjectionFacade>()
+            .AddDataDomain<User, IUserValidator, UserValidator, IUserDataService, UserDataService>()
+            // UserProjection
+            // VehicleProjection
+            .AddProjectionDomain<VehicleProjection,
+                IVehicleProjectionDataService,
+                VehicleProjectionDataService,
+                IVehicleProjectionFacade,
+                VehicleProjectionFacade>()
+            .AddDataDomain<Vehicle, IVehicleValidator, VehicleValidator, IVehicleDataService, VehicleDataService>()
+            // VehicleProjection
+            // VehiclesForSpecificYearProjection
+            .AddProjectionDomain<VehiclesForSpecificYearProjection,
+                IVehiclesForSpecificYearProjectionDataService,
+                VehiclesForSpecificYearProjectionDataService,
+                IVehiclesForSpecificYearProjectionFacade,
+                VehiclesForSpecificYearProjectionFacade>()
+            // VehiclesForSpecificYearProjection
+            // RentProjection
+            .AddProjectionDomain<RentProjection,
+                IRentProjectionDataService,
+                RentProjectionDataService,
+                IRentProjectionFacade,
+                RentProjectionFacade>()
+            .AddDataDomain<Entities.Rent, IRentValidator, RentValidator, IRentDataService, RentDataService>()
+            // RentProjection
+            // EventProjection
+            .AddProjectionDomain<EventProjection,
+                IEventProjectionDataService,
+                EventProjectionDataService,
+                IEventProjectionFacade,
+                EventProjectionFacade>()
+            .AddDataDomain<Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
+            // EventProjection
+            .AddAmqpLiteBroker(Configuration)
             .AddSingleton<IMongoDatabase>(service =>
             {
                 var configuration = service.GetRequiredService<IConfiguration>();
@@ -114,12 +108,13 @@ public class Startup
 
                 return client.GetDatabase(databaseName);
             })
-            .AddSingleton<IConnection>(service => {
+            .AddSingleton<IConnection>(service =>
+            {
                 var configuration = service.GetRequiredService<IConfiguration>();
 
                 var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
 
-                var factory =  new ConnectionFactory 
+                var factory = new ConnectionFactory
                 {
                     Uri = new Uri(connectionString),
                     DispatchConsumersAsync = true,
@@ -129,15 +124,15 @@ public class Startup
                 return factory.CreateConnection();
             })
             .AddDefaultSerializer<MessagePackSerializer>()
-            .AddScoped<IValidator<CreateRentCommand>, Rent.Vehicles.Api.Validators.Validator<CreateRentCommand>>()
-            .AddScoped<IValidator<CreateUserCommand>, Rent.Vehicles.Api.Validators.Validator<CreateUserCommand>>()
-            .AddScoped<IValidator<CreateVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<CreateVehiclesCommand>>()
-            .AddScoped<IValidator<DeleteVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<DeleteVehiclesCommand>>()
-            .AddScoped<IValidator<UpdateRentCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateRentCommand>>()
-            .AddScoped<IValidator<UpdateUserCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateUserCommand>>()
-            .AddScoped<IValidator<UpdateUserLicenseImageCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateUserLicenseImageCommand>>()
-            .AddScoped<IValidator<UpdateVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateVehiclesCommand>>();
-            
+            .AddScoped<IValidator<CreateRentCommand>, Validators.Validator<CreateRentCommand>>()
+            .AddScoped<IValidator<CreateUserCommand>, Validators.Validator<CreateUserCommand>>()
+            .AddScoped<IValidator<CreateVehiclesCommand>, Validators.Validator<CreateVehiclesCommand>>()
+            .AddScoped<IValidator<DeleteVehiclesCommand>, Validators.Validator<DeleteVehiclesCommand>>()
+            .AddScoped<IValidator<UpdateRentCommand>, Validators.Validator<UpdateRentCommand>>()
+            .AddScoped<IValidator<UpdateUserCommand>, Validators.Validator<UpdateUserCommand>>()
+            .AddScoped<IValidator<UpdateUserLicenseImageCommand>, Validators.Validator<UpdateUserLicenseImageCommand>>()
+            .AddScoped<IValidator<UpdateVehiclesCommand>, Validators.Validator<UpdateVehiclesCommand>>();
+
         services.AddControllers();
 
         // Add services to the container.
@@ -194,17 +189,19 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHealthChecks(HealthCheckUri.Ready, new HealthCheckOptions
-            {
-                Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
-                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-            });
+            endpoints.MapHealthChecks(HealthCheckUri.Ready,
+                new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
 
-            endpoints.MapHealthChecks(HealthCheckUri.Live, new HealthCheckOptions
-            {
-                Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
-                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-            });
+            endpoints.MapHealthChecks(HealthCheckUri.Live,
+                new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
+                    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+                });
 
             endpoints.MapControllers();
         });

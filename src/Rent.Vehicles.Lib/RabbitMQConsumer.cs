@@ -22,8 +22,10 @@ public class RabbitMQConsumer : IConsumer
         {
             lock (_model)
             {
-                if(!_model.IsOpen)
+                if (!_model.IsOpen)
+                {
                     return null;
+                }
 
                 var basicGetResult = _model.BasicGet(_name, false);
 
@@ -50,7 +52,7 @@ public class RabbitMQConsumer : IConsumer
     public Task SubscribeAsync(string name, CancellationToken cancellationToken = default)
     {
         _name = name;
-        
+
         return Task.Run(() => _model.QueueDeclare(name,
             true,
             false,

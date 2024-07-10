@@ -90,7 +90,7 @@ public class RentFacade : IRentFacade
 
             var entity = await _dataService.UpdateAsync(@event.Id, @event.EstimatedDate, cancellationToken);
 
-            if(!entity.IsSuccess)
+            if (!entity.IsSuccess)
             {
                 throw entity.Exception!;
             }

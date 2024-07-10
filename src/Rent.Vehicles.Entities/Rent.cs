@@ -81,5 +81,5 @@ public class Rent : Entity
     {
         get;
         set;
-    }=false;
+    } = false;
 }

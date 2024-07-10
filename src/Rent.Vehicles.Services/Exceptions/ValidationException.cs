@@ -8,7 +8,8 @@ public class ValidationException : NoRetryException
 {
     private readonly IDictionary<string, string[]> _erros;
 
-    public ValidationException(string message, IDictionary<string, string[]> erros) : base($"{message}\n{FormatErrors(erros)}")
+    public ValidationException(string message, IDictionary<string, string[]> erros) : base(
+        $"{message}\n{FormatErrors(erros)}")
     {
         _erros = erros;
     }
@@ -25,6 +26,7 @@ public class ValidationException : NoRetryException
         {
             errorMessages.AppendLine($"{erro.Key}: {string.Join(", ", erro.Value)}");
         }
+
         return errorMessages.ToString();
     }
 }

@@ -9,17 +9,17 @@ namespace Rent.Vehicles.Lib.HealthChecks;
 [ExcludeFromCodeCoverage]
 internal sealed class VersionHealthCheck : IHealthCheck
 {
-	public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
-		CancellationToken cancellationToken = default)
-	{
-		var assembly = Assembly.GetExecutingAssembly();
-		var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
-		var version = fileVersionInfo.FileVersion ?? "1.0.0.0";
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly.Location);
+        var version = fileVersionInfo.FileVersion ?? "1.0.0.0";
 
-		var data = new Dictionary<string, object> { { "Version", version }, { "Hostname", Environment.MachineName } };
+        var data = new Dictionary<string, object> { { "Version", version }, { "Hostname", Environment.MachineName } };
 
-		var result = HealthCheckResult.Healthy(data: data);
+        var result = HealthCheckResult.Healthy(data: data);
 
-		return Task.FromResult(result);
-	}
+        return Task.FromResult(result);
+    }
 }

@@ -6,39 +6,28 @@ using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
 
-using RabbitMQ.Client;
-
-using Rent.Vehicles.Consumers;
 using Rent.Vehicles.Consumers.Commands.BackgroundServices;
 using Rent.Vehicles.Consumers.Events.BackgroundServices;
-using Rent.Vehicles.Services.Extensions;
+using Rent.Vehicles.Consumers.Settings;
 using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Contexts;
 using Rent.Vehicles.Entities.Contexts.Interfaces;
 using Rent.Vehicles.Entities.Extensions;
 using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Lib.Extensions;
 using Rent.Vehicles.Lib.Serializers;
-using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Services.Repositories;
-using Rent.Vehicles.Services.Repositories.Interfaces;
-using Rent.Vehicles.Services.Settings;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
-using Rent.Vehicles.Lib.Extensions;
 
 using Serilog;
-
-using Xunit.Abstractions;
-using Rent.Vehicles.Lib.Interfaces;
-using Rent.Vehicles.Lib;
-using Rent.Vehicles.Consumers.Settings;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.Extensions.DependencyInjection;
 
@@ -50,12 +39,12 @@ public static class ServiceExtensions
     {
         services = services.AddLogging(configuration)
             .AddDbContextDependencies<IDbContext, RentVehiclesContext>(configuration.GetConnectionString("Sql") ??
-                                                                    string.Empty)
+                                                                       string.Empty)
             .AddTransient<IPeriodicTimer>(service =>
             {
                 PeriodicTimer periodicTimer = new(TimeSpan.FromMilliseconds(500));
 
-                return new Rent.Vehicles.Consumers.Utils.PeriodicTimer(periodicTimer);
+                return new Utils.PeriodicTimer(periodicTimer);
             })
             // UserProjection
             .AddProjectionDomain<UserProjection,
@@ -93,7 +82,7 @@ public static class ServiceExtensions
                 EventProjectionFacade>()
             // EventProjection
             // Event
-            .AddDataDomain<Entities.Event,
+            .AddDataDomain<Event,
                 IEventValidator,
                 EventValidator,
                 IEventDataService,
@@ -102,7 +91,7 @@ public static class ServiceExtensions
                 EventFacade>()
             // Event
             // Command
-            .AddDataDomain<Entities.Command,
+            .AddDataDomain<Command,
                 ICommandValidator,
                 CommandValidator,
                 ICommandDataService,
@@ -129,7 +118,7 @@ public static class ServiceExtensions
                 UserFacade>()
             // User
             // Rent
-            .AddDataDomain<Rent.Vehicles.Entities.Rent,
+            .AddDataDomain<Entities.Rent,
                 IRentValidator,
                 RentValidator,
                 IRentDataService,
@@ -138,7 +127,8 @@ public static class ServiceExtensions
                 RentFacade>()
             // Rent
             // RentPlane
-            .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
+            .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService,
+                RentalPlaneDataService>()
             // RentPlane
             .AddSingleton<IStreamUploadService, StreamUploadService>()
             .AddSingleton<IUploadService>(services => services.GetRequiredService<IStreamUploadService>())
@@ -190,7 +180,7 @@ public static class ServiceExtensions
             .BindConfiguration(nameof(StreamUploadSetting))
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        
+
         services.AddOptions<ConsumerSetting>()
             .BindConfiguration(nameof(ConsumerSetting))
             .ValidateDataAnnotations()
@@ -198,13 +188,16 @@ public static class ServiceExtensions
 
         return services;
     }
-    
+
     public static IServiceCollection AddLogging(this IServiceCollection services,
         IConfiguration configuration)
-            => services.AddLogging(configure => {
-                var loggerConfiguration = new LoggerConfiguration()
-                    .ReadFrom.Configuration(configuration);
-                configure.AddConsole();
-                //configure.AddSerilog(loggerConfiguration.CreateLogger(), true);
-            });
+    {
+        return services.AddLogging(configure =>
+        {
+            var loggerConfiguration = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration);
+            configure.AddConsole();
+            //configure.AddSerilog(loggerConfiguration.CreateLogger(), true);
+        });
+    }
 }

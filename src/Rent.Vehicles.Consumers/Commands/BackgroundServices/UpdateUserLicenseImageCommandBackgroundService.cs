@@ -3,7 +3,6 @@ using Rent.Vehicles.Consumers.Utils.Interfaces;
 using Rent.Vehicles.Entities.Types;
 using Rent.Vehicles.Lib.Interfaces;
 using Rent.Vehicles.Lib.Serializers.Interfaces;
-using Rent.Vehicles.Lib.Types;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Events;
 using Rent.Vehicles.Services;
@@ -23,7 +22,7 @@ public class UpdateUserLicenseImageCommandBackgroundService : HandlerCommandPubl
         IPublisher publisher,
         IOptions<ConsumerSetting> consumerSetting,
         IServiceScopeFactory serviceScopeFactory) : base(logger, channel, periodicTimer, serializer, publisher,
-            consumerSetting, serviceScopeFactory)
+        consumerSetting, serviceScopeFactory)
     {
     }
 

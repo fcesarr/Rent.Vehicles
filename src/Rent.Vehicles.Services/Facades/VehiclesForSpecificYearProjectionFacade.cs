@@ -13,7 +13,8 @@ public class VehiclesForSpecificYearProjectionFacade : IVehiclesForSpecificYearP
     private readonly IVehiclesForSpecificYearProjectionDataService _dataProjectionService;
     private readonly IVehicleDataService _dataService;
 
-    public VehiclesForSpecificYearProjectionFacade(IVehiclesForSpecificYearProjectionDataService dataProjectionService, IVehicleDataService dataService)
+    public VehiclesForSpecificYearProjectionFacade(IVehiclesForSpecificYearProjectionDataService dataProjectionService,
+        IVehicleDataService dataService)
     {
         _dataProjectionService = dataProjectionService;
         _dataService = dataService;
@@ -29,7 +30,8 @@ public class VehiclesForSpecificYearProjectionFacade : IVehiclesForSpecificYearP
             return vehicle.Exception!;
         }
 
-        var entity = await _dataProjectionService.CreateAsync(vehicle.Value!.ToProjection<VehiclesForSpecificYearProjection>(),
+        var entity = await _dataProjectionService.CreateAsync(
+            vehicle.Value!.ToProjection<VehiclesForSpecificYearProjection>(),
             cancellationToken);
 
         if (!entity.IsSuccess)

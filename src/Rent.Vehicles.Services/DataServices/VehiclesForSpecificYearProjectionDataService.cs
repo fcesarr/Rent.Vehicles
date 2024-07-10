@@ -7,9 +7,12 @@ using Rent.Vehicles.Services.Validators.Interfaces;
 
 namespace Rent.Vehicles.Services.DataServices;
 
-public class VehiclesForSpecificYearProjectionDataService : DataService<VehiclesForSpecificYearProjection>, IVehiclesForSpecificYearProjectionDataService
+public class VehiclesForSpecificYearProjectionDataService : DataService<VehiclesForSpecificYearProjection>,
+    IVehiclesForSpecificYearProjectionDataService
 {
-    public VehiclesForSpecificYearProjectionDataService(ILogger<VehiclesForSpecificYearProjectionDataService> logger, IValidator<VehiclesForSpecificYearProjection> validator, IRepository<VehiclesForSpecificYearProjection> repository) : base(logger, validator, repository)
+    public VehiclesForSpecificYearProjectionDataService(ILogger<VehiclesForSpecificYearProjectionDataService> logger,
+        IValidator<VehiclesForSpecificYearProjection> validator,
+        IRepository<VehiclesForSpecificYearProjection> repository) : base(logger, validator, repository)
     {
     }
 }

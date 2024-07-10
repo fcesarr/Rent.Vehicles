@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 
-using Rent.Vehicles.Entities;
 using Rent.Vehicles.Entities.Projections;
 using Rent.Vehicles.Messages.Projections.Events;
 using Rent.Vehicles.Services.DataServices.Interfaces;
@@ -12,9 +11,8 @@ namespace Rent.Vehicles.Services.Facades;
 
 public class EventProjectionFacade : IEventProjectionFacade
 {
-    private readonly IEventProjectionDataService _projectionDataService;
-
     private readonly IEventDataService _dataService;
+    private readonly IEventProjectionDataService _projectionDataService;
 
     public EventProjectionFacade(IEventProjectionDataService projectionDataService, IEventDataService dataService)
     {
@@ -22,7 +20,8 @@ public class EventProjectionFacade : IEventProjectionFacade
         _dataService = dataService;
     }
 
-    public async Task<Result<EventResponse>> CreateAsync(EventProjectionEvent @event, CancellationToken cancellationToken = default)
+    public async Task<Result<EventResponse>> CreateAsync(EventProjectionEvent @event,
+        CancellationToken cancellationToken = default)
     {
         var rent = await _dataService.GetAsync(x => x.Id == @event.Id, cancellationToken);
 

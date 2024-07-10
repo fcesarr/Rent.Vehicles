@@ -1,5 +1,10 @@
+using System.Diagnostics;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
+using HealthChecks.UI.Client;
+
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
@@ -15,40 +20,33 @@ using Rent.Vehicles.Entities.Contexts;
 using Rent.Vehicles.Entities.Contexts.Interfaces;
 using Rent.Vehicles.Entities.Extensions;
 using Rent.Vehicles.Entities.Projections;
+using Rent.Vehicles.Lib.Constants;
+using Rent.Vehicles.Lib.Extensions;
 using Rent.Vehicles.Lib.Serializers;
-using Rent.Vehicles.Lib.Serializers.Interfaces;
 using Rent.Vehicles.Messages.Commands;
 using Rent.Vehicles.Messages.Types;
 using Rent.Vehicles.Services;
 using Rent.Vehicles.Services.DataServices;
 using Rent.Vehicles.Services.DataServices.Interfaces;
+using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
-using Rent.Vehicles.Services.Repositories;
-using Rent.Vehicles.Services.Repositories.Interfaces;
 using Rent.Vehicles.Services.Validators;
 using Rent.Vehicles.Services.Validators.Interfaces;
-using Rent.Vehicles.Services.Extensions;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using HealthChecks.UI.Client;
-using Rent.Vehicles.Lib.Constants;
-using Rent.Vehicles.Lib.Extensions;
+
 using Serilog;
-using System.Reflection;
-using System.Diagnostics;
-using Rent.Vehicles.Messages;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((hostBuilderContext, loggerConfiguration) =>
 {
-	var assembly = Assembly.GetExecutingAssembly();
-	var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-	var version = fvi.FileVersion;
+    var assembly = Assembly.GetExecutingAssembly();
+    var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+    var version = fvi.FileVersion;
 
-	loggerConfiguration.ReadFrom.Configuration(hostBuilderContext.Configuration)
-		.Enrich.WithProperty("Version", version);
+    loggerConfiguration.ReadFrom.Configuration(hostBuilderContext.Configuration)
+        .Enrich.WithProperty("Version", version);
 });
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
@@ -56,7 +54,7 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services
     .AddCustomHealthCheck(builder.Configuration)
     .AddDbContextDependencies<IDbContext,
-        RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ??string.Empty)
+        RentVehiclesContext>(builder.Configuration.GetConnectionString("Sql") ?? string.Empty)
     // UserProjection
     .AddProjectionDomain<UserProjection,
         IUserProjectionDataService,
@@ -94,7 +92,7 @@ builder.Services
         EventProjectionDataService,
         IEventProjectionFacade,
         EventProjectionFacade>()
-    .AddDataDomain<Rent.Vehicles.Entities.Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
+    .AddDataDomain<Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
     // EventProjection
     .AddAmqpLiteBroker(builder.Configuration)
     .AddSingleton<IMongoDatabase>(service =>
@@ -109,16 +107,15 @@ builder.Services
 
         return client.GetDatabase(databaseName);
     })
-    .AddSingleton<IConnection>(service => {
+    .AddSingleton<IConnection>(service =>
+    {
         var configuration = service.GetRequiredService<IConfiguration>();
 
         var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
 
-        var factory =  new ConnectionFactory 
+        var factory = new ConnectionFactory
         {
-            Uri = new Uri(connectionString),
-            DispatchConsumersAsync = true,
-            ConsumerDispatchConcurrency = 100
+            Uri = new Uri(connectionString), DispatchConsumersAsync = true, ConsumerDispatchConcurrency = 100
         };
 
         return factory.CreateConnection();
@@ -130,9 +127,10 @@ builder.Services
     .AddScoped<IValidator<DeleteVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<DeleteVehiclesCommand>>()
     .AddScoped<IValidator<UpdateRentCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateRentCommand>>()
     .AddScoped<IValidator<UpdateUserCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateUserCommand>>()
-    .AddScoped<IValidator<UpdateUserLicenseImageCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateUserLicenseImageCommand>>()
+    .AddScoped<IValidator<UpdateUserLicenseImageCommand>,
+        Rent.Vehicles.Api.Validators.Validator<UpdateUserLicenseImageCommand>>()
     .AddScoped<IValidator<UpdateVehiclesCommand>, Rent.Vehicles.Api.Validators.Validator<UpdateVehiclesCommand>>();
-    
+
 builder.Services.AddControllers();
 
 // Add services to the container.
@@ -191,17 +189,19 @@ var app = builder.Build();
 
 app.UseRouting();
 
-app.MapHealthChecks(HealthCheckUri.Ready, new HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-});
+app.MapHealthChecks(HealthCheckUri.Ready,
+    new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains(HealthCheckTag.Ready),
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
 
-app.MapHealthChecks(HealthCheckUri.Live, new HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-});
+app.MapHealthChecks(HealthCheckUri.Live,
+    new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains(HealthCheckTag.Live),
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
 
 app.UseDeveloperExceptionPage();
 
@@ -219,7 +219,6 @@ await app.RunAsync();
 
 public partial class Program
 {
-    
 }
 
 
@@ -287,4 +286,3 @@ public partial class Program
 //     .UseConsoleLifetime()
 //     .Build()
 //     .RunAsync();
-

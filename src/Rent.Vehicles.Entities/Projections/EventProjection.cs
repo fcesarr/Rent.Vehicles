@@ -38,5 +38,4 @@ public class EventProjection : Entity
         get;
         set;
     }
-
 }

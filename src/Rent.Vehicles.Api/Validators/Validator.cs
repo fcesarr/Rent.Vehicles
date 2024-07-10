@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
 using Rent.Vehicles.Lib;
-using Rent.Vehicles.Messages;
 using Rent.Vehicles.Services.Validators.Interfaces;
 
 using ValidationException = Rent.Vehicles.Services.Exceptions.ValidationException;

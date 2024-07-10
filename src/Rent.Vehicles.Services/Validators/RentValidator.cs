@@ -1,5 +1,3 @@
-using Amqp.Listener;
-
 using FluentValidation;
 
 using Rent.Vehicles.Services.Repositories.Interfaces;
@@ -16,27 +14,27 @@ public class RentValidator : Validator<Entities.Rent>, IRentValidator
             .WithMessage("Data estimada de termino menor que a data de inicio");
 
         RuleFor(x => x)
-            .CustomAsync(async (e, context, cancellationToken) => {
-                
+            .CustomAsync(async (e, context, cancellationToken) =>
+            {
                 var entity = await repository.GetAsync(x => x.UserId == e.UserId
-                    ,descending: true
-                    ,orderBy: x => x.Created
-                    ,cancellationToken: cancellationToken);
+                    , true
+                    , x => x.Created
+                    , cancellationToken: cancellationToken);
 
 
-                if(entity is Entities.Rent { IsActive: true, Updated:var updatedActive } && updatedActive == default && e.IsActive)
+                if (entity is Entities.Rent { IsActive: true, Updated: var updatedActive } &&
+                    updatedActive == default && e.IsActive)
                 {
                     context.AddFailure("IsActive", "Aluguel já está ativo");
                     return;
                 }
 
-                if(entity is Entities.Rent { IsActive: false, Updated:var updatedInactive } && updatedInactive != default && !e.IsActive)
+                if (entity is Entities.Rent { IsActive: false, Updated: var updatedInactive } &&
+                    updatedInactive != default && !e.IsActive)
                 {
                     context.AddFailure("IsActive", "Aluguel já está inativo");
                     return;
                 }
-
-                return;
             });
     }
 }
