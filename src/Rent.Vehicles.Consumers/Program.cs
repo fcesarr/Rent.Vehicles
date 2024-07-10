@@ -35,7 +35,7 @@ using Serilog;
 
 using Command = Rent.Vehicles.Entities.Command;
 
-var rootCommand = new RootCommand("Sample command-line app");
+var rootCommand = new RootCommand("Setup of Rent.Vehicles.Consumers");
 
 var consumerTypeOption = new Option<ConsumerType>(
     new[] { "-t", "--type" },
