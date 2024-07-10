@@ -22,7 +22,7 @@ public class VehicleDataService : DataService<Vehicle>, IVehicleDataService
 
         if(!entity.IsSuccess)
         {
-            return new NoVehicleToRentException(string.Empty);
+            return new NoVehicleToRentException("Não existe veiculo disponível para aluguel");
         }
 
         entity.Value!.IsRented = true;

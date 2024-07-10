@@ -21,7 +21,7 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
     public async Task<Result<Entities.Rent>> CreateAsync(RentalPlane rentalPlane, Guid id, Guid userId, Guid vehicleId,
         CancellationToken cancellationToken = default)
     {
-        var startDate = DateTime.Now.Date.AddDays(1);
+        var startDate = DateTime.SpecifyKind(DateTime.Now.Date.AddDays(1), DateTimeKind.Local);
 
         var entity = new Entities.Rent
         {
@@ -120,7 +120,7 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
             entity.Cost += cost;
         }
 
-        entity.EstimatedDate = endDate.Date;
+        entity.EstimatedDate = DateTime.SpecifyKind(endDate.Date, DateTimeKind.Local);
 
         return entity;
     }

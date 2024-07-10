@@ -1,3 +1,5 @@
+using Amqp.Listener;
+
 using FluentValidation;
 
 using Rent.Vehicles.Services.Repositories.Interfaces;
@@ -13,34 +15,28 @@ public class RentValidator : Validator<Entities.Rent>, IRentValidator
             .Must((e, estimatedDate) => estimatedDate > e.StartDate)
             .WithMessage("Data estimada de termino menor que a data de inicio");
 
-        RuleFor(x => x.IsActive)
-           .Must((e, isActive) => {
+        RuleFor(x => x)
+            .CustomAsync(async (e, context, cancellationToken) => {
                 
-                if(e.IsActive && isActive)
-                    return false;
-                    
-                return true;
-            }).WithMessage("Aluguel já esta ativo")
-            .WhenAsync(async (e, cancellationToken) => {
-                var entity = await repository.GetAsync(x => (x.Id == e.Id || x.UserId == e.UserId) && x.IsActive,
-                    cancellationToken: cancellationToken);
-                
-                return entity is not null;
-            });
-        
-        RuleFor(x => x.IsActive)
-            .Must((e, isActive) => {
-                
-                if(!e.IsActive && !isActive)
-                    return false;
-                    
-                return true;
-            }).WithMessage("Aluguel já está inativo")
-            .WhenAsync(async (e, cancellationToken) => {
-                var entity = await repository.GetAsync(x => (x.Id == e.Id || x.UserId == e.UserId) && !x.IsActive,
-                    cancellationToken: cancellationToken);
-                
-                return entity is not null;
+                var entity = await repository.GetAsync(x => x.UserId == e.UserId
+                    ,descending: true
+                    ,orderBy: x => x.Created
+                    ,cancellationToken: cancellationToken);
+
+
+                if(entity is Entities.Rent { IsActive: true, Updated:var updatedActive } && updatedActive == default && e.IsActive)
+                {
+                    context.AddFailure("IsActive", "Aluguel já está ativo");
+                    return;
+                }
+
+                if(entity is Entities.Rent { IsActive: false, Updated:var updatedInactive } && updatedInactive != default && !e.IsActive)
+                {
+                    context.AddFailure("IsActive", "Aluguel já está inativo");
+                    return;
+                }
+
+                return;
             });
     }
 }

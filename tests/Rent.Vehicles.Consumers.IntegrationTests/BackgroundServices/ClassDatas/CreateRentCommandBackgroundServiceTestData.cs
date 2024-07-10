@@ -148,6 +148,7 @@ public class CreateRentCommandBackgroundServiceTestData : IEnumerable<object[]>
                     .With(x => x.UserId, user.Id)
                     .Without(x => x.User)
                     .With(x => x.IsActive, true)
+                    .Without(x => x.Updated)
                 .Create();
 
             var command = _fixture.Build<CreateRentCommand>()

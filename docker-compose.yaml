@@ -46,7 +46,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
   
   rent-vehicles-consumer-commands:
-    image: rent-vehicles-consumer-commands:latest
+    image: rent-vehicles-consumer:latest
     deploy:
       replicas: 2
       resources:
@@ -74,7 +74,7 @@ services:
       timeout: 10s
 
   rent-vehicles-consumer-events:
-    image: rent-vehicles-consumer-events:latest
+    image: rent-vehicles-consumer:latest
     deploy:
       replicas: 3
       resources:
@@ -102,7 +102,7 @@ services:
       timeout: 10s
 
   rent-vehicles-consumer-events-events-projection:
-    image: rent-vehicles-consumer-events-events-projection:latest
+    image: rent-vehicles-consumer:latest
     deploy:
       replicas: 2
       resources:
@@ -128,7 +128,6 @@ services:
       retries: 5
       start_period: 2s
       timeout: 10s
-  
 
   nginx:
     image: nginx:latest
