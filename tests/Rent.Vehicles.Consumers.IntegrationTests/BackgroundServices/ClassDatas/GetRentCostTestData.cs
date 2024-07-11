@@ -27,7 +27,7 @@ public class GetRentCostTestData : IEnumerable<object[]>
 
         var startDate = DateTime.Now.Date.AddDays(1);
 
-        var numberOfDays = _fixture.Create<int>();
+        var numberOfDays = 7;
 
         var entity = _fixture.Build<Entities.Rent>()
             .With(x => x.StartDate, startDate)
@@ -39,6 +39,10 @@ public class GetRentCostTestData : IEnumerable<object[]>
             .With(x => x.VehicleId, vehicle.Id)
             .With(x => x.Vehicle, vehicle)
             .With(x => x.IsActive, true)
+            .With(x => x.DailyCost, 30.0m)
+            .With(x => x.PreEndDatePercentageFine, 1.2m)
+            .With(x => x.PostEndDateFine, 50.0m)
+            .With(x => x.Cost, 210.0m)
             .Without(x => x.Updated)
             .Create();
 
@@ -54,7 +58,8 @@ public class GetRentCostTestData : IEnumerable<object[]>
             return new object[]
             {
                 HttpStatusCode.OK, new Entity[] { entity, rentPlane },
-                $"/api/rent/cost/{entity.Id}/{entity.EstimatedDate.ToString("yyyy-MM-ddTHH:mm:ss zzz")}"
+                $"/api/rent/cost/{entity.Id}/{entity.EstimatedDate.ToString("yyyy-MM-ddTHH:mm:ss zzz")}",
+                210.0m
             };
         })();
         yield return new Func<object[]>(() =>
@@ -80,6 +85,10 @@ public class GetRentCostTestData : IEnumerable<object[]>
                 .With(x => x.VehicleId, vehicle.Id)
                 .With(x => x.Vehicle, vehicle)
                 .With(x => x.IsActive, true)
+                .With(x => x.DailyCost, 30.0m)
+                .With(x => x.PreEndDatePercentageFine, 1.2m)
+                .With(x => x.PostEndDateFine, 50.0m)
+                .With(x => x.Cost, 210.0m)
                 .Without(x => x.Updated)
                 .Create();
 
@@ -93,7 +102,8 @@ public class GetRentCostTestData : IEnumerable<object[]>
             return new object[]
             {
                 HttpStatusCode.OK, new Entity[] { entity, rentPlane },
-                $"/api/rent/cost/{entity.Id}/{entity.EstimatedDate.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ss zzz")}"
+                $"/api/rent/cost/{entity.Id}/{entity.EstimatedDate.AddDays(1).ToString("yyyy-MM-ddTHH:mm:ss zzz")}",
+                290.0m
             };
         })();
         yield return new Func<object[]>(() =>
@@ -132,7 +142,8 @@ public class GetRentCostTestData : IEnumerable<object[]>
             return new object[]
             {
                 HttpStatusCode.BadRequest, new Entity[] { entity, rentPlane },
-                $"/api/rent/cost/{entity.Id}/{DateTime.Now.AddDays(-1).ToString("yyyy-MM-ddTHH:mm:ss zzz")}"
+                $"/api/rent/cost/{entity.Id}/{DateTime.Now.AddDays(-1).ToString("yyyy-MM-ddTHH:mm:ss zzz")}",
+                0.0m
             };
         })();
         yield return new Func<object[]>(() =>
@@ -170,7 +181,8 @@ public class GetRentCostTestData : IEnumerable<object[]>
             return new object[]
             {
                 HttpStatusCode.BadRequest, new Entity[] { entity, rentPlane },
-                $"/api/rent/cost/{entity.Id}/{entity.EstimatedDate.ToString("yyyy-MM-ddTHH:mm:ss zzz")}"
+                $"/api/rent/cost/{entity.Id}/{entity.EstimatedDate.ToString("yyyy-MM-ddTHH:mm:ss zzz")}",
+                0.0m
             };
         })();
     }

@@ -114,7 +114,7 @@ public class RentDataService : DataService<Entities.Rent>, IRentDataService
         {
             var diff = endDate.Date - entity.EstimatedDate.Date;
 
-            var cost = entity.PostEndDateFine * diff.Days;
+            var cost = (entity.DailyCost + entity.PostEndDateFine) * diff.Days;
 
             entity.Cost += cost;
         }

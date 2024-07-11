@@ -1,4 +1,6 @@
 using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using AutoFixture;
 
@@ -7,6 +9,7 @@ using FluentAssertions;
 using Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices.ClassDatas;
 using Rent.Vehicles.Consumers.IntegrationTests.ClassFixtures;
 using Rent.Vehicles.Services.Extensions;
+using Rent.Vehicles.Services.Responses;
 
 namespace Rent.Vehicles.Consumers.IntegrationTests.BackgroundServices;
 
@@ -18,6 +21,11 @@ public class GetRentCostTest : IAsyncLifetime
     private readonly HttpClient _httpClient;
 
     private readonly IntegrationTestWebAppFactory _integrationTestWebAppFactory;
+
+    private readonly JsonSerializerOptions _options = new()
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }, PropertyNameCaseInsensitive = true
+    };
 
     public GetRentCostTest(IntegrationTestWebAppFactory integrationTestWebAppFactory)
     {
@@ -42,7 +50,8 @@ public class GetRentCostTest : IAsyncLifetime
     [ClassData(typeof(GetRentCostTestData))]
     public async Task GetCostAsync(HttpStatusCode statusCode,
         IEnumerable<dynamic> entities,
-        string endpointGet)
+        string endpointGet,
+        decimal cost)
     {
         var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(180));
 
@@ -63,6 +72,10 @@ public class GetRentCostTest : IAsyncLifetime
 
         var responseBody = await response.Content.ReadAsStringAsync(cancellationTokenSource.Token);
 
+        var commandResponse = JsonSerializer.Deserialize<CostResponse>(responseBody, _options);
+
         response?.StatusCode.Should().Be(statusCode);
+
+        commandResponse?.Cost.Should().Be(cost);
     }
 }
