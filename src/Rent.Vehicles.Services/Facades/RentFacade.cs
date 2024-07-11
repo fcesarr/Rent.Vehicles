@@ -52,6 +52,11 @@ public class RentFacade : IRentFacade
                 throw user.Exception!;
             }
 
+            if(user.Value!.LicenseType == Entities.Types.LicenseType.B)
+            {
+                throw new Exception("Usuário não habilitado nas categorias A ou AB");
+            }
+
             var vehicle = await _vehicleService.RentItAsync(cancellationToken);
 
             if (!vehicle.IsSuccess)
