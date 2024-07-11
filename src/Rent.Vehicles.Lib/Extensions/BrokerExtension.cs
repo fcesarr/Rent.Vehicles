@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 
 using Amqp;
+using Amqp.Framing;
+using Amqp.Types;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,9 +60,18 @@ public static class BrokerExtension
             {
                 var brokerConnectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
 
-                var address = new Address(brokerConnectionString);
+                Uri uri = new Uri(brokerConnectionString);
 
-                var connection = Connection.Factory.CreateAsync(address)
+                var address = new Address(uri.ToString());
+
+                string virtualHost = Uri.UnescapeDataString(uri.AbsolutePath.Substring(1));
+
+                var open = new Open
+                {
+                    HostName = $"vhost:{virtualHost}",
+                };
+
+                var connection = Connection.Factory.CreateAsync(address, open: open)
                     .GetAwaiter()
                     .GetResult();
 
