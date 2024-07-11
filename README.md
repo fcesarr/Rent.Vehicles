@@ -38,7 +38,17 @@ Este projeto é de suma importância, pois vai fornecer insumos para que o endpo
 >
 > ![Parâmetros](images/consumer.cli.png)
 
-## Considerações técnicas
+## Considerações sobre  utilização da Api
+
+Para efetuar o aluguel de algum `Veiculo` é necessário passar o id do plano de aluguel, para isso liste os planos através do endpoint `api/rent/rentalplanes`
+
+Todos os endpoints que utilizam os verbos `POST`,`PUT`,`DELETE`, retornam o status code 202 acompanhado por um response headers como o abaixo
+
+![response](images/response.png)
+
+Para saber o status dos eventos, basta fazer um requisição get para o endpoint retornado no header location
+
+## Considerações Técnicas
 
 ### Inicializar Aplicação
 
