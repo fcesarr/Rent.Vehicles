@@ -114,6 +114,18 @@ public static class ToExtension
         };
     }
 
+    public static RentalPlaneResponse ToResponse(this RentalPlane entity)
+    {
+        return new RentalPlaneResponse
+        {
+            Id = entity.Id,
+            NumberOfDays = entity.NumberOfDays,
+            DailyCost = entity.DailyCost,
+            PreEndDatePercentageFine = entity.PreEndDatePercentageFine,
+            PostEndDateFine = entity.PostEndDateFine
+        };
+    }
+
     public static RentResponse ToResponse(this RentProjection projection)
     {
         return new RentResponse

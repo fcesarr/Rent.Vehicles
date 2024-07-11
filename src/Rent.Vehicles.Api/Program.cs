@@ -94,6 +94,7 @@ builder.Services
         EventProjectionFacade>()
     .AddDataDomain<Event, IEventValidator, EventValidator, IEventDataService, EventDataService>()
     // EventProjection
+    .AddDataDomain<RentalPlane, IRentalPlaneValidator, RentalPlaneValidator, IRentalPlaneDataService, RentalPlaneDataService>()
     .AddAmqpLiteBroker(builder.Configuration)
     .AddSingleton<IMongoDatabase>(service =>
     {
@@ -106,19 +107,6 @@ builder.Services
         var databaseName = MongoUrl.Create(connectionString).DatabaseName;
 
         return client.GetDatabase(databaseName);
-    })
-    .AddSingleton<IConnection>(service =>
-    {
-        var configuration = service.GetRequiredService<IConfiguration>();
-
-        var connectionString = configuration.GetConnectionString("Broker") ?? string.Empty;
-
-        var factory = new ConnectionFactory
-        {
-            Uri = new Uri(connectionString), DispatchConsumersAsync = true, ConsumerDispatchConcurrency = 100
-        };
-
-        return factory.CreateConnection();
     })
     .AddDefaultSerializer<MessagePackSerializer>()
     .AddScoped<IValidator<CreateRentCommand>, Rent.Vehicles.Api.Validators.Validator<CreateRentCommand>>()

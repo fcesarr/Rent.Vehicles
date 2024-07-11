@@ -1,3 +1,5 @@
+using System.Collections;
+
 using Microsoft.AspNetCore.Mvc;
 
 using Rent.Vehicles.Api.Extensions;
@@ -103,6 +105,22 @@ public class RentController : Controller
         CancellationToken cancellationToken = default)
     {
         var cost = await _rentProjectionFacade.EstimateCostAsync(id, estimatedDate, cancellationToken);
+
+        if (!cost.IsSuccess)
+        {
+            return cost.Exception!.TreatExceptionToResult(HttpContext);
+        }
+
+        return Results.Ok(cost.Value);
+    }
+
+    [HttpGet("rentalPlanes")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<RentalPlaneResponse>))]
+    [ProducesResponseType(StatusCodes.Status204NoContent, Type = typeof(ProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IResult> FindAllRentalPlanesAsync(CancellationToken cancellationToken = default)
+    {
+        var cost = await _rentProjectionFacade.FindAllRentalPlanesAsync(cancellationToken);
 
         if (!cost.IsSuccess)
         {

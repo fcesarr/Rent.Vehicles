@@ -13,11 +13,13 @@ public class RentProjectionFacade : IRentProjectionFacade
 {
     private readonly IRentDataService _dataService;
     private readonly IRentProjectionDataService _projectionDataService;
+    private readonly IRentalPlaneDataService _rentalPlaneDataService;
 
-    public RentProjectionFacade(IRentProjectionDataService projectionDataService, IRentDataService dataService)
+    public RentProjectionFacade(IRentDataService dataService, IRentProjectionDataService projectionDataService, IRentalPlaneDataService rentalPlaneDataService)
     {
-        _projectionDataService = projectionDataService;
         _dataService = dataService;
+        _projectionDataService = projectionDataService;
+        _rentalPlaneDataService = rentalPlaneDataService;
     }
 
     public async Task<Result<RentResponse>> CreateAsync(CreateRentProjectionEvent @event,
@@ -86,5 +88,19 @@ public class RentProjectionFacade : IRentProjectionFacade
         }
 
         return entity.Value!.ToResponse();
+    }
+
+    public async Task<Result<IEnumerable<RentalPlaneResponse>>> FindAllRentalPlanesAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _rentalPlaneDataService.FindAsync(x => true, cancellationToken: cancellationToken);
+
+        if(!entities.IsSuccess)
+        {
+            return entities.Exception!;
+        }
+
+        return entities.Value!
+            .Select(x => x.ToResponse())
+            .ToList();
     }
 }

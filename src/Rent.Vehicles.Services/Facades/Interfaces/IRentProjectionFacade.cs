@@ -19,4 +19,6 @@ public interface IRentProjectionFacade : IFacade
 
     Task<Result<CostResponse>> EstimateCostAsync(Guid id, DateTime endDate,
         CancellationToken cancellationToken = default);
+
+    Task<Result<IEnumerable<RentalPlaneResponse>>> FindAllRentalPlanesAsync(CancellationToken cancellationToken = default);
 }
