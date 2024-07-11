@@ -57,18 +57,24 @@ public class DeleteVehiclesCommandBackgroundServiceTests : IAsyncLifetime
     [ClassData(typeof(DeleteVehiclesCommandBackgroundServiceTestData))]
     public async Task SendDeleteVehiclesCommandVerifyEventStatusAndStatusCode(Tuple<string, StatusType>[] tuples,
         HttpStatusCode statusCode,
-        Vehicle entity,
+        IEnumerable<dynamic> entities,
         string endpointAction,
         string endpointGet)
     {
-        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
         var periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 
-        entity = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
+        foreach (var entity in entities)
+        {
+            _ = await _integrationTestWebAppFactory.SaveAsync(entity, cancellationTokenSource.Token);
 
-        _ = await _integrationTestWebAppFactory.SaveAsync(entity.ToProjection<VehicleProjection>(),
-            cancellationTokenSource.Token);
+            if (entity.GetType().Name == "Vehicle")
+            {
+                _ = await _integrationTestWebAppFactory.SaveAsync(ToExtension.ToProjection<VehicleProjection>(entity),
+                    cancellationTokenSource.Token);
+            }
+        }
 
         var response = await _httpClient.DeleteAsync(endpointAction, cancellationTokenSource.Token);
 

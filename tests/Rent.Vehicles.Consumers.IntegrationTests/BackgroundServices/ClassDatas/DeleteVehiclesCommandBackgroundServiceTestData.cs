@@ -34,7 +34,7 @@ public class DeleteVehiclesCommandBackgroundServiceTestData : IEnumerable<object
                     Tuple.Create(nameof(DeleteVehiclesEvent), StatusType.Success),
                     Tuple.Create(nameof(DeleteVehiclesProjectionEvent), StatusType.Success)
                 },
-                HttpStatusCode.NotFound, entity, $"/api/vehicle/{entity.Id.ToString()}",
+                HttpStatusCode.NotFound, new[] { entity }, $"/api/vehicle/{entity.Id.ToString()}",
                 $"/api/vehicle/{entity.LicensePlate}"
             };
         })();
@@ -46,7 +46,24 @@ public class DeleteVehiclesCommandBackgroundServiceTestData : IEnumerable<object
 
             return new object[]
             {
-                new[] { Tuple.Create(nameof(DeleteVehiclesEvent), StatusType.Fail) }, HttpStatusCode.OK, entity,
+                new[] { Tuple.Create(nameof(DeleteVehiclesEvent), StatusType.Fail) }, HttpStatusCode.OK, new[] { entity },
+                $"/api/vehicle/{entity.Id.ToString()}", $"/api/vehicle/{entity.LicensePlate}"
+            };
+        })();
+        yield return new Func<object[]>(() =>
+        {
+            var entity = _fixture.Build<Vehicle>()
+                .With(x => x.IsRented, true)
+                .Create();
+            
+            var rent = _fixture.Build<Entities.Rent>()
+                    .With(x => x.VehicleId, entity.Id)
+                    .Without(x => x.Vehicle)
+                .Create();
+
+            return new object[]
+            {
+                new[] { Tuple.Create(nameof(DeleteVehiclesEvent), StatusType.Fail) }, HttpStatusCode.OK, new Entity[] { entity, rent },
                 $"/api/vehicle/{entity.Id.ToString()}", $"/api/vehicle/{entity.LicensePlate}"
             };
         })();

@@ -1,4 +1,5 @@
 using Rent.Vehicles.Messages.Events;
+using Rent.Vehicles.Services.DataServices.Interfaces;
 using Rent.Vehicles.Services.Extensions;
 using Rent.Vehicles.Services.Facades.Interfaces;
 using Rent.Vehicles.Services.Interfaces;
@@ -10,9 +11,12 @@ public class VehicleFacade : IVehicleFacade
 {
     private readonly IVehicleDataService _dataService;
 
-    public VehicleFacade(IVehicleDataService dataService)
+    private readonly IRentDataService _rentDataService;
+
+    public VehicleFacade(IVehicleDataService dataService, IRentDataService rentDataService)
     {
         _dataService = dataService;
+        _rentDataService = rentDataService;
     }
 
     public async Task<Result<VehicleResponse>> CreateAsync(CreateVehiclesEvent @event,
@@ -31,6 +35,14 @@ public class VehicleFacade : IVehicleFacade
     public async Task<Result<bool>> DeleteAsync(DeleteVehiclesEvent @event,
         CancellationToken cancellationToken = default)
     {
+        var rent = await _rentDataService.GetAsync(x =>x.VehicleId == @event.Id,
+            cancellationToken: cancellationToken);
+
+        if(rent.IsSuccess)
+        {
+            return new Exception("Veiculo possui alugueis cadastrados");
+        }
+
         var entity = await _dataService.DeleteAsync(@event.Id, cancellationToken);
 
         if (!entity.IsSuccess)
